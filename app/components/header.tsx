@@ -1,17 +1,23 @@
 import { useState } from "react";
-import { MdKeyboardArrowDown, MdOutlineSearch, MdOutlineFavorite, MdPerson } from "react-icons/md";
+import { MdKeyboardArrowDown, MdOutlineSearch, MdOutlineFavorite, MdPerson, MdKeyboardArrowRight } from "react-icons/md";
 import { HiOutlineLocationMarker } from "react-icons/hi";
+import { FaShoppingCart } from "react-icons/fa";
+import { useNavigate } from "react-router";
+import DepartmentMenu from "./departament";
+
 
 export function Header() {
+    let navigate = useNavigate();
+
     return (
-        <header className="w-full mx-auto py-5 px-8 max-w-[1920px] flex gap-5 items-start bg-header-light h-32 p-4 sticky top-0 z-50">
-            <img src="/logo_wordsystem.png" alt="" className="w-32 self-center" />
+        <header className="w-full mx-auto py-5 px-8 flex gap-5 items-start bg-header-light h-32 p-4 sticky top-0 z-50">
+            <img onClick={() => navigate('/')} src="/logo_wordsystem.png" alt="" className="w-32 self-center cursor-pointer" />
 
             <div className="flex flex-col gap-5 w-full">
                 <SearchBar />
 
                 <div className="flex gap-2">
-                    <ButtonDepartamentos />
+                    <DepartmentMenu />
                     <ButtonCupons />
                     <ButtonMaisVendidos />
                     <ButtonOthers titulo="Novidades" />
@@ -21,12 +27,16 @@ export function Header() {
                     <ButtonOthers titulo="Computadores" />
                     <ButtonOthers titulo="Periféricos" />
                     <ButtonOthers titulo="Escritório" />
-                    <ButtonOthers titulo="Venda no SITE" />
                     <ButtonMore />
                 </div>
             </div>
 
             <ButtonEntreOuCadastrese />
+
+            <div className="flex gap-4 justify-start items-center py-1 h-9">
+                <ButtonFavoritos />
+                <ButtonCarrinho />
+            </div>
         </header>
     );
 }
@@ -51,9 +61,12 @@ export function SearchBar() {
 }
 
 export function ButtonEntreOuCadastrese() {
+    let navigate = useNavigate();
+
     return (
         <div
             className="pl-4 pr-3 py-1 flex gap-2 cursor-pointer justify-start items-center w-42"
+            onClick={() => navigate('/login')}
         >
             <MdPerson size={24} color="white" className="border border-white rounded-xl" />
 
@@ -67,20 +80,16 @@ export function ButtonEntreOuCadastrese() {
 
 export function ButtonFavoritos() {
     return (
-        <div
-            className="pl-4 pr-3 py-1 flex gap-2 cursor-pointer justify-start items-center w-41"
-        >
-            <MdOutlineFavorite size={24} color="white" />
+        <div>
+            <MdOutlineFavorite size={20} color="white" />
         </div>
     );
 }
 
 export function ButtonCarrinho() {
     return (
-        <div
-            className="pl-4 pr-3 py-1 flex gap-2 cursor-pointer justify-start items-center w-41"
-        >
-            <HiOutlineLocationMarker size={24} color="white" />
+        <div>
+            <FaShoppingCart size={20} color="white" />
         </div>
     );
 }
@@ -112,18 +121,14 @@ export function ButtonDepartamentos() {
             <div
                 // 1. Trocamos 'mt-2' por 'pt-2' (padding-top)
                 // 2. Movemos os estilos visuais (bg, shadow, rounded) para a <ul>
-                className={`absolute left-0 top-full pt-2 w-64 text-black z-60 transition-opacity duration-200 ${isHovered ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+                className={`absolute left-0 top-full pt-2 w-52 text-black z-60 transition-opacity duration-200 ${isHovered ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
                 role="menu"
                 // 3. O onMouseEnter aqui "cancela" o onMouseLeave do pai, impedindo o menu de fechar
                 onMouseEnter={() => setIsHovered(true)}
             >
-                <ul className="text-sm bg-white rounded shadow-lg">
-                    <li className="px-2 py-2 hover:bg-gray-100 rounded cursor-pointer">Informática</li>
-                    <li className="px-2 py-2 hover:bg-gray-100 rounded cursor-pointer">Periféricos</li>
-                    <li className="px-2 py-2 hover:bg-gray-100 rounded cursor-pointer">Monitores</li>
-                    <li className="px-2 py-2 hover:bg-gray-100 rounded cursor-pointer">Componentes</li>
-                    <li className="px-2 py-2 hover:bg-gray-100 rounded cursor-pointer">Acessórios</li>
-                </ul>
+                {/* <ul className="text-xs bg-white rounded-xs shadow-lg h-98 overflow-y-auto no-scrollbar"> */}
+                    <DepartmentMenu />
+                {/* </ul> */}
             </div>
         </div>
     );
