@@ -2,7 +2,7 @@
 import { Header } from "~/components/header";
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 import { FaStar } from 'react-icons/fa';
-import { MdOutlineAddShoppingCart, MdFavoriteBorder  } from "react-icons/md";
+import { MdOutlineAddShoppingCart, MdFavoriteBorder } from "react-icons/md";
 
 // --- IMPORTS DO SWIPER (OS ÚNICOS NECESSÁRIOS) ---
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -19,6 +19,8 @@ import 'swiper/css/navigation'; // para as setas
 import 'swiper/css/pagination'; // para a paginação (pontos/indicadores)
 import 'swiper/css/effect-fade'; // para o efeito de banner
 import { useNavigate } from "react-router";
+import RatingStars from "~/components/rating_stars";
+import Footer from "~/components/footer";
 
 // ===================================================================
 // 1. DEFINIÇÃO DE TIPO PARA OS PRODUTOS
@@ -41,6 +43,97 @@ export interface Banner {
   imageUrl: string;
   colorHex: string;
 }
+
+const mockCategories: Category[] = [
+  {
+    id: '1',
+    title: 'Acessórios',
+  },
+  {
+    id: '1',
+    title: 'Roupas',
+  },
+  {
+    id: '1',
+    title: 'Bolsas',
+  },
+  {
+    id: '1',
+    title: 'Bijuterias & Bujigangas',
+  },
+  {
+    id: '1',
+    title: 'Brincos',
+  },
+  {
+    id: '1',
+    title: 'Sapatos',
+  },
+  {
+    id: '1',
+    title: 'Calças',
+  },
+  {
+    id: '1',
+    title: 'Shorts',
+  },
+  {
+    id: '1',
+    title: 'Tênis',
+  },
+  {
+    id: '1',
+    title: 'Bonés',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+  {
+    id: '1',
+    title: 'Camisas',
+  },
+];
 
 // ===================================================================
 // 2. MOCK DATA (DADOS DE EXEMPLO)
@@ -140,23 +233,74 @@ export function HomePage() {
   };
 
   return (
-    <main className="flex items-center justify-center pt-0 pb-0">
-      <div className={`flex-1 flex flex-col items-center gap-0 min-h-0`} style={backgroundStyle}>
-        <Header />
+    <div>
+      <Header />
 
-        <main className="max-w-344 bg-background-dark">
-          <CarouselBannersPrincipais
-            onColorChange={setDominantColor}
-            images={mockBanners}
-          />
+      <main className="flex items-center justify-center pt-0 pb-0">
 
-          <section className="my-8">
-            <CarouselBannersSecundarios products={mockProducts} />
-          </section>
+        <div className={`flex-1 flex flex-col items-center gap-0 min-h-0`} style={backgroundStyle}>
 
-        </main>
-      </div>
-    </main>
+          <main className="max-w-387 mx-auto w-full bg-background-dark">
+            <CarouselBannersPrincipais
+              onColorChange={setDominantColor}
+              images={mockBanners}
+            />
+
+            <div className="flex items-center px-8 w-full h-18 bg-primary">
+              <p className="text-xl font-bold text-white">BLACK FRIDAY</p>
+            </div>
+
+            <section className="my-8">
+              <CarouselBannersSecundarios products={mockProducts} />
+            </section>
+
+            <hr className="my-2 border-gray-200" />
+
+            <section className="my-8">
+              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
+                <p className="text-xl font-bold">MAIS PROCURADOS</p>
+                <p className="text-sm">VER TODOS</p>
+              </div>
+
+              <CarouselCategory categories={mockCategories} onChange={() => { }} />
+
+              <section className="my-4">
+                <CarouselBannersSecundarios products={mockProducts} />
+              </section>
+            </section>
+
+             <hr className="my-2 border-gray-200" />
+
+            <section className="my-8">
+              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
+                <p className="text-xl font-bold">ACABARAM DE CHEGAR</p>
+                <p className="text-sm">VER TODOS</p>
+              </div>
+
+              <CarouselCategory categories={mockCategories} onChange={() => { }} />
+
+              <section className="my-4">
+                <CarouselBannersSecundarios products={mockProducts} />
+              </section>
+            </section>
+
+             <hr className="my-2 border-gray-200" />
+
+            <section className="my-8">
+              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
+                <p className="text-xl font-bold">MAIS VENDIDOS</p>
+              </div>
+
+              <section className="my-4">
+                <CarouselBannersSecundarios products={mockProducts} />
+              </section>
+            </section>
+          </main>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
   );
 }
 
@@ -178,13 +322,10 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
   return (
     // O 'relative' é essencial para posicionar as setas
     // O 'group' é útil para mostrar setas no hover (opcional)
-    <div className="relative group">
+    <div className="relative group w-full">
       <Swiper
-        // Adicionamos uma classe customizada para podermos estilizar
-        // a paginação (indicadores) separadamente de outros carrosséis
         className="main-banner-carousel"
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
-        // --- Configuração de "Banner" ---
         effect="fade" // Efeito de transição
         slidesPerView={1} // 1 slide por vez
         loop={true} // (infiniteLoop)
@@ -192,10 +333,7 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
           delay: 10000,
           disableOnInteraction: false,
         }}
-        // 5. O PULO DO GATO!
-        //    Quando o slide mudar, atualize o 'currentImageUrl'
         onSlideChange={(swiper) => {
-          // 'realIndex' é o índice correto mesmo com o loop
           onColorChange(images[swiper.realIndex].colorHex);
         }}
 
@@ -207,18 +345,17 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
 
         // --- Paginação (Indicadores) ---
         pagination={{
-          clickable: true, // Permite clicar nos "pontos"
-          // Não vamos usar renderBullet, é mais fácil estilizar o padrão
+          clickable: true,
         }}
       >
         {images?.map((image, index) => (
           <SwiperSlide key={index}>
-            <img src={image.imageUrl} className="w-full object-cover" />
+            <img src={image.imageUrl} className="w-full object-cover h-[200px] md:h-[300px] lg:h-[450px]" />
           </SwiperSlide>
         ))}
       </Swiper>
 
-      {/* --- Setas Customizadas (mesmo estilo do seu código original) --- */}
+      {/* --- Setas Customizadas --- */}
       <div
         className={`${prevButtonId} absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-white rounded-3xl flex justify-center items-center p-2 opacity-0 group-hover:opacity-100 transition-opacity`}
       >
@@ -232,6 +369,17 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
     </div>
   );
 };
+interface CategoryCardProps {
+  category: Category;
+}
+
+export function CategoryCard({ category }: CategoryCardProps) {
+  return (
+    <div className="border border-primary px-4 py-2 rounded-sm text-center w-auto">
+      <p>{category.title}</p>
+    </div>
+  );
+}
 
 // ===================================================================
 // 5. CARD DE PRODUTO (Nenhuma mudança)
@@ -252,7 +400,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group" onClick={() => {
-      navigate(`/product/${product.id}`);
+      navigate(`/produto/${product.id}`);
     }}>
       <div className="relative">
         {product.isHighlight && (
@@ -264,20 +412,14 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="absolute top-2 right-2 group-hover:opacity-0 opacity-100 transition-opacity p-1">
           {product.rating !== undefined && (
             <div className="flex items-center gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <FaStar
-                  key={i}
-                  size={8}
-                  className={i < Math.round(product.rating ?? 0) ? "text-primary" : "text-gray-300"}
-                />
-              ))}
+              <RatingStars rating={product.rating} variant="tiny" />
               <span className="text-tiny text-gray-400">({product.rating.toFixed(0)})</span>
             </div>
           )}
         </div>
 
         <div className="flex absolute top-2 right-2 group-hover:opacity-100 opacity-0 transition-opacity gap-2 p-1 z-10 cursor-auto">
-          <MdFavoriteBorder size={20} color="gray" className="cursor-pointer" /> 
+          <MdFavoriteBorder size={20} color="gray" className="cursor-pointer" />
           <MdOutlineAddShoppingCart size={20} color="gray" className="cursor-pointer" />
         </div>
 
@@ -308,12 +450,12 @@ export function ProductCard({ product }: ProductCardProps) {
               {currencyFormatter.format(product.price)}
             </span>
             {product.oldPrice && (
-              <span className="text-xs font-bold text-green-600 bg-green-100 px-1 py-0.5 rounded">
+              <span className="text-xs font-bold text-terciary bg-green-100 px-1 py-0.5 rounded">
                 {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}% OFF
               </span>
             )}
           </div>
-          
+
           <span className="text-xs text-gray-600 block">
             À vista no PIX
           </span>
@@ -373,6 +515,62 @@ export function CarouselBannersSecundarios({ products }: CarouselBannersSecundar
         {products.map((product) => (
           <SwiperSlide key={product.id} style={{ height: 'auto' }}>
             <ProductCard product={product} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      {/* --- Setas Customizadas (estilo da foto) --- */}
+      <div
+        className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+      >
+        <SlArrowLeft color="black" size={16} />
+      </div>
+      <div
+        className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+      >
+        <SlArrowRight color="black" size={16} />
+      </div>
+    </div>
+  );
+};
+
+interface Category {
+  id: string,
+  title: string,
+}
+
+interface CarouselCategoryProps {
+  categories: Category[];
+  onChange: (category: Category) => void;
+}
+
+export function CarouselCategory({ categories, onChange }: CarouselCategoryProps) {
+  const prevButtonId = `category-carousel-prev`;
+  const nextButtonId = `category-carousel-next`;
+
+  return (
+    <div className="relative w-full mx-auto px-12">
+      <Swiper
+        modules={[Navigation]}
+        navigation={{
+          prevEl: `.${prevButtonId}`, // Agora será um seletor válido
+          nextEl: `.${nextButtonId}`, // Agora será um seletor válido
+        }}
+        loop={true}
+        spaceBetween={16}
+        slidesPerView={"auto"} // Padrão
+
+        breakpoints={{
+          320: { spaceBetween: 10 },
+          768: { spaceBetween: 10 },
+          1024: { spaceBetween: 8 }
+        }}
+
+        className="select-none"
+      >
+        {categories.map((category) => (
+          <SwiperSlide key={category.id} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
+            <CategoryCard category={category} />
           </SwiperSlide>
         ))}
       </Swiper>

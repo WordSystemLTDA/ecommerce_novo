@@ -12,6 +12,9 @@ import { FaUserPlus } from 'react-icons/fa'
 // Vou reverter para o alias (~), pois é o mais provável de estar
 // correto no *seu* ambiente de projeto (baseado no seu tsconfig/vite.config).
 import { Header } from '~/components/header' // Você usará seu header aqui
+import CustomInput from '~/components/input'
+import Button from '~/components/button'
+import IconCircle from '~/components/icon_circle'
 // --- FIM DA CORREÇÃO ---
 
 // --- 1. Componente Principal (Página de Cadastro) ---
@@ -69,7 +72,7 @@ export default function RegisterPage() {
                 <main className="w-full max-w-3xl">
                     <div className="flex flex-col">
                         {/* Ícone e Título */}
-                        <IconCircle icon={FaUserPlus} color="red" />
+                        <IconCircle icon={FaUserPlus} color="primary" />
                         <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
                             Criar minha conta
                         </h2>
@@ -203,9 +206,9 @@ export default function RegisterPage() {
                                     type="checkbox"
                                     checked={aceitaMarketing}
                                     onChange={(e) => setAceitaMarketing(e.target.checked)}
-                                    className="h-4 w-4 rounded border-gray-400 bg-white text-red-600 focus:ring-red-500"
+                                    className="h-4 w-4 rounded border-gray-400 bg-white text-primary focus:ring-terciary"
                                 />
-                                <span className="text-red-600">Aceito receber comunicação de marketing da Word System</span>
+                                <span className="text-primary">Aceito receber comunicação de marketing da Word System</span>
                             </label>
 
                             <label className="flex cursor-pointer items-center gap-2 text-sm">
@@ -213,7 +216,7 @@ export default function RegisterPage() {
                                     type="checkbox"
                                     checked={aceitaTermos}
                                     onChange={(e) => setAceitaTermos(e.target.checked)}
-                                    className="h-4 w-4 rounded border-gray-400 bg-white text-red-600 focus:ring-red-500"
+                                    className="h-4 w-4 rounded border-gray-400 bg-white text-primary focus:ring-terciary"
                                     required
                                 />
                                 <span>
@@ -230,13 +233,13 @@ export default function RegisterPage() {
                             </label>
 
                             {/* Botão de Criar Conta */}
-                            <Button variant="red" type="submit" className="mt-4">
+                            <Button variant="primary" type="submit" className="mt-4">
                                 CRIAR CONTA
                             </Button>
 
                             {/* Link "Voltar" */}
                             <a
-                                href="/login" // Idealmente, isso seria um <Link> do seu roteador
+                                href="/entrar" // Idealmente, isso seria um <Link> do seu roteador
                                 className="mt-2 text-center text-sm text-gray-600 hover:text-gray-900 hover:underline"
                             >
                                 Voltar para o login
@@ -249,38 +252,7 @@ export default function RegisterPage() {
     )
 }
 
-// --- 2. Componentes Auxiliares Reutilizáveis ---
-// (Copiei os componentes da página de login para este arquivo)
 
-// --- Círculo do Ícone ---
-interface IconCircleProps {
-    icon: IconType
-    color: 'red' | 'green'
-}
-
-function IconCircle({ icon: Icon, color }: IconCircleProps) {
-    const colorClasses = {
-        red: 'bg-red-600',
-        green: 'bg-green-500', // Você pode não usar o verde aqui, mas mantive
-    }
-    return (
-        <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${colorClasses[color]}`}>
-            <Icon className="text-3xl text-white" />
-        </div>
-    )
-}
-
-// --- Input Padrão ---
-interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> { }
-
-function CustomInput(props: CustomInputProps) {
-    return (
-        <input
-            {...props}
-            className={`w-full rounded-md border border-gray-400 bg-white p-3 text-gray-900 placeholder-gray-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 ${props.className} ${props.disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-        />
-    )
-}
 
 // --- Select Customizado (NOVO) ---
 interface CustomSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> { }
@@ -347,25 +319,5 @@ function PasswordInput({ show, onToggle, ...props }: PasswordInputProps) {
                 {show ? <FiEyeOff /> : <FiEye />}
             </button>
         </div>
-    )
-}
-
-// --- Botão Customizado ---
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant: 'red' | 'green'
-}
-
-function Button({ variant, children, ...props }: ButtonProps) {
-    const colorClasses = {
-        red: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-        green: 'bg-green-500 hover:bg-green-600 focus:ring-green-500',
-    }
-    return (
-        <button
-            {...props}
-            className={`w-full rounded-md p-3 font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${props.className} ${colorClasses[variant]}`}
-        >
-            {children}
-        </button>
     )
 }

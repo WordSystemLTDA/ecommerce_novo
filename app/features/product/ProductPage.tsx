@@ -9,6 +9,7 @@ import { Header } from '~/components/header' // Você usará seu header aqui
 // --- SWIPER (PARA A GALERIA DE IMAGENS) ---
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Thumbs, FreeMode } from 'swiper/modules'
+
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/free-mode'
@@ -18,19 +19,18 @@ import 'swiper/css/thumbs'
 // Tentando caminhos específicos para 'fa' e 'io5'
 import {
     FaApple,
-    FaStar,
-    FaStarHalfAlt,
-    FaRegStar,
     FaTruck,
-    FaPlus,
-    FaMinus,
 } from 'react-icons/fa' // Caminho específico para Font Awesome
+
 import {
     IoShareOutline,
     IoHeartOutline,
     IoCartOutline,
     IoShieldCheckmarkOutline,
 } from 'react-icons/io5' // Caminho específico para Ionicons 5
+
+import Button from '~/components/button'
+import RatingStars from '~/components/rating_stars'
 
 // --- DADOS MOCKADOS (EXEMPLO) ---
 // Você substituirá isso por dados da sua API
@@ -41,14 +41,18 @@ const mockProduct = {
     rating: 4.5,
     reviewCount: 722,
     gallery: [
-        'https://placehold.co/600x600/F5F5F5/333?text=Imagem+1',
-        'https://placehold.co/600x600/F5F5F5/333?text=Imagem+2',
-        'https://placehold.co/600x600/F5F5F5/333?text=Imagem+3',
-        'https://placehold.co/600x600/F5F5F5/333?text=Imagem+4',
-        'https://placehold.co/600x600/F5F5F5/333?text=Imagem+5',
-        'https://placehold.co/600x600/F5F5F5/333?text=Imagem+6',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860075_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860073_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860074_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860077_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860076_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860078_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860079_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860081_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860080_gg.jpg',
+        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860082_gg.jpg',
     ],
-    soldBy: 'KaBuM!',
+    soldBy: 'Word System!',
     specs: [
         {
             title: 'Sistema e Performance',
@@ -83,10 +87,10 @@ export default function ProductPage() {
             <Header />
 
             {/* Container principal - fundo cinza claro, padding vertical */}
-            <div className="flex flex-col items-center bg-gray-100 p-4 py-8 text-gray-900">
+            <div className="flex flex-col items-center bg-white p-4 py-8 text-gray-900">
 
                 {/* Box de conteúdo centralizado */}
-                <main className="w-full max-w-7xl">
+                <main className="w-full max-w-387">
                     {/* Breadcrumbs (exemplo) */}
                     <div className="mb-4 text-sm text-gray-600">
                         Home &gt; Apple &gt; Apple Watch
@@ -94,6 +98,9 @@ export default function ProductPage() {
 
                     {/* Grid principal da página */}
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                        <div className='lg:hidden flex flex-col gap-4'>
+                            <ProductNameInfo product={mockProduct} />
+                        </div>
 
                         {/* Coluna 1: Galeria de Imagens (5/12) */}
                         <div className="lg:col-span-5">
@@ -197,6 +204,40 @@ function ProductInfo({ product }: ProductInfoProps) {
 
     return (
         <div className="flex flex-col gap-4">
+            <div className='max-lg:hidden flex flex-col gap-4'>
+                <ProductNameInfo product={product} />
+            </div>
+
+            {/* Divisória */}
+            <hr className="my-2 border-gray-200" />
+
+            {/* Sobre o Produto */}
+            <div className="flex flex-col gap-3">
+                <h2 className="text-lg font-semibold">Sobre o produto</h2>
+                <div className="flex items-center gap-2 text-sm text-terciary">
+                    <IoShieldCheckmarkOutline size={18} />
+                    <span>Resumo gerado por IA</span>
+                </div>
+                <ul className="list-disc space-y-2 pl-5 text-sm">
+                    {product.specs.map((spec) => (
+                        <li key={spec.title}>
+                            <span className="font-semibold">{spec.title}:</span>{" "}
+                            {spec.description}
+                        </li>
+                    ))}
+                </ul>
+                <a href="#" className="text-sm font-semibold text-terciary hover:underline">
+                    Ver mais
+                </a>
+            </div>
+        </div>
+    )
+}
+function ProductNameInfo({ product }: ProductInfoProps) {
+    const BrandIcon = product.brandIcon
+
+    return (
+        <>
             {/* Ícone e Botões */}
             <div className="flex items-center justify-between">
                 <BrandIcon size={24} className="text-gray-800" />
@@ -215,7 +256,7 @@ function ProductInfo({ product }: ProductInfoProps) {
 
             {/* Avaliações */}
             <div className="flex items-center gap-2">
-                <RatingStars rating={product.rating} />
+                <RatingStars rating={product.rating} variant='normal' />
                 <span className="text-sm text-gray-600">
                     ({product.reviewCount} avaliações)
                 </span>
@@ -224,33 +265,10 @@ function ProductInfo({ product }: ProductInfoProps) {
             {/* Vendido por */}
             <div className="text-sm text-gray-600">
                 Vendido e entregue por:{" "}
-                <span className="font-semibold text-blue-600">{product.soldBy}</span>
+                <span className="font-semibold text-terciary">{product.soldBy}</span>
             </div>
-
-            {/* Divisória */}
-            <hr className="my-2 border-gray-200" />
-
-            {/* Sobre o Produto */}
-            <div className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold">Sobre o produto</h2>
-                <div className="flex items-center gap-2 text-sm text-blue-600">
-                    <IoShieldCheckmarkOutline size={18} />
-                    <span>Resumo gerado por IA</span>
-                </div>
-                <ul className="list-disc space-y-2 pl-5 text-sm">
-                    {product.specs.map((spec) => (
-                        <li key={spec.title}>
-                            <span className="font-semibold">{spec.title}:</span>{" "}
-                            {spec.description}
-                        </li>
-                    ))}
-                </ul>
-                <a href="#" className="text-sm font-semibold text-blue-600 hover:underline">
-                    Ver mais
-                </a>
-            </div>
-        </div>
-    )
+        </>
+    );
 }
 
 // --- SIDEBAR DE COMPRA (Coluna Direita) ---
@@ -268,40 +286,42 @@ function PurchaseSidebar({ product }: PurchaseSidebarProps) {
     return (
         <div className="flex flex-col gap-4">
             {/* Banner Promocional (Exemplo) */}
-            <div className="h-28 w-full rounded-lg bg-gray-900 text-white flex items-center justify-center font-bold">
+            {/* <div className="h-28 w-full rounded-lg bg-gray-900 text-white flex items-center justify-center font-bold">
                 [Banner]
-            </div>
+            </div> */}
 
             {/* Box de Preço */}
-            <div className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                 {product.price.old && (
-                    <span className="text-sm text-gray-500 line-through">
+                    <span className="text-xs text-gray-500 line-through">
                         {currencyFormatter.format(product.price.old)}
                     </span>
                 )}
-                <span className="text-3xl font-bold text-red-600">
+                <span className="text-3xl font-bold text-primary">
                     {currencyFormatter.format(product.price.current)}
                 </span>
-                <span className="text-sm font-semibold text-gray-800">
-                    À vista no PIX com 15% de desconto
+                <span className="text-xs text-gray-700 mt-1">
+                    À vista no PIX com <span className='font-semibold'>15% de desconto</span>
                 </span>
-                <span className="text-sm text-gray-600">
-                    {product.price.installments}
+                <div className='my-2'></div>
+                <span className="text-tiny text-gray-600">
+                    {/* {product.price.installments} */}
+                    <span className='font-bold'>R$ 2.699,90</span> em até 10x de <span className='font-bold'>R$ 269,99</span> sem juros ou 1x com <span className='font-bold'>10% de desconto</span> no cartão
                 </span>
-                <a href="#" className="text-xs text-blue-600 hover:underline">
+                <a href="#" className="text-tiny font-semibold text-black underline mt-2">
                     Ver mais opções de pagamento e parcelamento
                 </a>
 
-                <div className="my-2 text-sm font-semibold text-green-600">
+                <div className="my-2 text-xs font-semibold text-green-600">
                     Em estoque
                 </div>
 
                 {/* Quantidade */}
-                <QuantitySelector />
+                {/* <QuantitySelector /> */}
 
                 {/* Botões */}
-                <div className="mt-2 flex flex-col gap-3">
-                    <Button variant="blue">Comprar agora</Button>
+                <div className="flex flex-col gap-3">
+                    <Button variant="primary">Comprar agora</Button>
                     <Button variant="greenOutline">
                         <IoCartOutline size={20} />
                         Adicionado ao carrinho
@@ -318,40 +338,40 @@ function PurchaseSidebar({ product }: PurchaseSidebarProps) {
 // --- COMPONENTES MENORES (Helpers) ---
 
 // --- Seletor de Quantidade ---
-function QuantitySelector() {
-    const [quantity, setQuantity] = useState(1)
+// function QuantitySelector() {
+//     const [quantity, setQuantity] = useState(1)
 
-    const decrement = () => setQuantity(q => Math.max(1, q - 1))
-    const increment = () => setQuantity(q => q + 1)
+//     const decrement = () => setQuantity(q => Math.max(1, q - 1))
+//     const increment = () => setQuantity(q => q + 1)
 
-    return (
-        <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold">Quantidade:</span>
-            <div className="flex items-center rounded-md border border-gray-300">
-                <button onClick={decrement} className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50" disabled={quantity === 1}>
-                    <FaMinus size={12} />
-                </button>
-                <span className="w-10 select-none px-3 py-1 text-center font-semibold">
-                    {quantity}
-                </span>
-                <button onClick={increment} className="px-3 py-2 text-gray-600 hover:bg-gray-100">
-                    <FaPlus size={12} />
-                </button>
-            </div>
-        </div>
-    )
-}
+//     return (
+//         <div className="flex items-center gap-2">
+//             <span className="text-sm font-semibold">Quantidade:</span>
+//             <div className="flex items-center rounded-md border border-gray-300">
+//                 <button onClick={decrement} className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50" disabled={quantity === 1}>
+//                     <FaMinus size={12} />
+//                 </button>
+//                 <span className="w-10 select-none px-3 py-1 text-center font-semibold">
+//                     {quantity}
+//                 </span>
+//                 <button onClick={increment} className="px-3 py-2 text-gray-600 hover:bg-gray-100">
+//                     <FaPlus size={12} />
+//                 </button>
+//             </div>
+//         </div>
+//     )
+// }
 
 
 // --- Calculadora de Frete ---
 function FreightCalculator() {
-    const [cep, setCep] = useState('')
+    const [cep, setCep] = useState('');
 
     return (
         <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-2 font-semibold">
-                <FaTruck size={18} className="text-gray-700" />
-                <span>Consulte o frete</span>
+            <div className="flex items-center gap-2 font-semibold text-primary text-xs">
+                <FaTruck size={18} />
+                <span>CONSULTE FRETE</span>
             </div>
             <div className="flex gap-2">
                 <input
@@ -359,13 +379,13 @@ function FreightCalculator() {
                     placeholder="Digite seu CEP"
                     value={cep}
                     onChange={(e) => setCep(e.target.value)}
-                    className="w-full rounded-md border border-gray-400 bg-white p-2 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-md border border-gray-400 bg-white p-2 text-xs text-gray-900 placeholder-gray-500 focus:border-terciary focus:outline-none focus:ring-1 focus:ring-terciary"
                 />
-                <Button variant="grayOutline" className="w-auto! px-4!">
+                <Button variant="primaryOutline" className="w-auto! px-4!">
                     OK
                 </Button>
             </div>
-            <a href="#" className="text-xs text-blue-600 hover:underline">
+            <a href="#" className="text-tiny text-primary underline">
                 Não sei meu CEP
             </a>
             {/* Aqui você pode renderizar os resultados do frete */}
@@ -373,48 +393,3 @@ function FreightCalculator() {
     )
 }
 
-// --- Estrelas de Avaliação ---
-function RatingStars({ rating }: { rating: number }) {
-    const fullStars = Math.floor(rating)
-    const halfStar = rating % 1 >= 0.5 ? 1 : 0
-    const emptyStars = 5 - fullStars - halfStar
-
-    return (
-        <div className="flex text-yellow-500">
-            {Array(fullStars)
-                .fill(0)
-                .map((_, i) => (
-                    <FaStar key={`full-${i}`} />
-                ))}
-            {halfStar === 1 && <FaStarHalfAlt />}
-            {Array(emptyStars)
-                .fill(0)
-                .map((_, i) => (
-                    <FaRegStar key={`empty-${i}`} />
-                ))}
-        </div>
-    )
-}
-
-// --- Botão Customizado (Versão desta página) ---
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant: 'blue' | 'greenOutline' | 'grayOutline'
-}
-
-function Button({ variant, children, ...props }: ButtonProps) {
-    const variants = {
-        blue: 'bg-blue-600 hover:bg-blue-700 text-white',
-        greenOutline:
-            'bg-green-100 hover:bg-green-200 text-green-700 border border-green-300',
-        grayOutline: 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-400',
-    }
-
-    return (
-        <button
-            {...props}
-            className={`flex w-full items-center justify-center gap-2 rounded-md p-3 text-sm font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${variants[variant]} ${props.className}`}
-        >
-            {children}
-        </button>
-    )
-}

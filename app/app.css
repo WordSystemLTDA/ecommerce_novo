@@ -14,8 +14,9 @@
   --color-header-light: #0E1116;
   --color-header-dark: white;
 
-  --color-primary: #FF6500;
-  --color-secondary: #FF6500;
+  --color-primary: #333b57;
+  --color-secondary: #f9f6f6;
+  --color-terciary: #19bef7;
 }
 
 @layer utilities {

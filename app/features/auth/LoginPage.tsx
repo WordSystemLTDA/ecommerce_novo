@@ -8,9 +8,11 @@ import { FiEye } from 'react-icons/fi'
 import { FiEyeOff } from 'react-icons/fi'
 // --- FIM DA CORREÇÃO ---
 
-import type { IconType } from 'react-icons'
 import { Header } from '~/components/header'
-import { NavLink, redirect, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
+import Button from '~/components/button'
+import CustomInput from '~/components/input'
+import IconCircle from '~/components/icon_circle'
 // --- 1. Componente Principal (A Página) ---
 
 /**
@@ -41,7 +43,7 @@ export default function LoginPage() {
 
             {/* Coluna 1: Login */}
             <div className="flex flex-col">
-              <IconCircle icon={FaLock} color="red" />
+              <IconCircle icon={FaLock} color='primary'  />
               <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
                 Já tem uma conta?
               </h2>
@@ -75,20 +77,20 @@ export default function LoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-400 bg-white text-red-600 focus:ring-red-500"
+                    className="h-4 w-4 rounded border-gray-400 bg-white text-primary focus:ring-terciary"
                   />
                   Lembrar meus dados
                 </label>
 
                 {/* Botão de Acessar */}
-                <Button variant="red" type="submit">
+                <Button variant="primary" type="submit">
                   ACESSAR CONTA
                 </Button>
 
                 {/* Link "Esqueci a senha" */}
                 <a
                   href="#"
-                  className="mt-2 text-center text-sm text-red-600 hover:text-red-700 hover:underline"
+                  className="mt-2 text-center text-sm text-primary hover:text-terciary hover:underline"
                 >
                   Esqueci minha senha
                 </a>
@@ -107,7 +109,7 @@ export default function LoginPage() {
               </p>
 
               {/* Botão de Cadastrar */}
-              <Button variant="green" type="button" onClick={() => navigate("/register/")}>
+              <Button variant="primary" type="button" onClick={() => navigate("/registrar/")}>
                 CADASTRE-SE
               </Button>
             </div>
@@ -122,41 +124,8 @@ export default function LoginPage() {
 
 // --- 2. Componentes Auxiliares Reutilizáveis ---
 
-// --- Círculo do Ícone ---
-interface IconCircleProps {
-  icon: IconType
-  color: 'red' | 'green'
-}
 
-/**
- * Círculo customizado para exibir o ícone no topo de cada coluna.
- */
-function IconCircle({ icon: Icon, color }: IconCircleProps) {
-  const colorClasses = {
-    red: 'bg-red-600',
-    green: 'bg-green-500',
-  }
-  return (
-    <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${colorClasses[color]}`}>
-      <Icon className="text-3xl text-white" />
-    </div>
-  )
-}
 
-// --- Input Padrão (para E-mail) ---
-interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> { }
-
-/**
- * Componente de input customizado com o estilo da página.
- */
-function CustomInput(props: CustomInputProps) {
-  return (
-    <input
-      {...props}
-      className="w-full rounded-md border border-gray-400 bg-white p-3 text-gray-900 placeholder-gray-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-    />
-  )
-}
 
 // --- Input de Senha (com ícone de olho) ---
 interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -184,28 +153,5 @@ function PasswordInput({ show, onToggle, ...props }: PasswordInputProps) {
         {show ? <FiEyeOff /> : <FiEye />}
       </button>
     </div>
-  )
-}
-
-// --- Botão Customizado (Vermelho ou Verde) ---
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant: 'red' | 'green'
-}
-
-/**
- * Botão customizado com variantes de cor (vermelho ou verde).
- */
-function Button({ variant, children, ...props }: ButtonProps) {
-  const colorClasses = {
-    red: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-    green: 'bg-green-500 hover:bg-green-600 focus:ring-green-500',
-  }
-  return (
-    <button
-      {...props}
-      className={`w-full rounded-md p-3 font-bold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ${colorClasses[variant]}`}
-    >
-      {children}
-    </button>
   )
 }

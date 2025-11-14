@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { MdKeyboardArrowDown, MdOutlineSearch, MdOutlineFavorite, MdPerson, MdKeyboardArrowRight } from "react-icons/md";
-import { HiOutlineLocationMarker } from "react-icons/hi";
+import { MdKeyboardArrowDown, MdOutlineSearch, MdOutlineFavorite, MdPerson, MdMenu } from "react-icons/md";
+
 import { FaShoppingCart } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import DepartmentMenu from "./departament";
@@ -10,32 +10,49 @@ export function Header() {
     let navigate = useNavigate();
 
     return (
-        <header className="w-full mx-auto py-5 px-8 flex gap-5 items-start bg-header-light h-32 p-4 sticky top-0 z-50">
-            <img onClick={() => navigate('/')} src="/logo_wordsystem.png" alt="" className="w-32 self-center cursor-pointer" />
+        <header className="w-full mx-auto lg:py-5 lg:px-8 flex gap-5 items-start bg-primary h-32 p-4 sticky top-0 z-50">
+            <div className="max-lg:hidden lg:flex lg:gap-5 lg:items-start lg:mx-auto lg:w-full">
+                <img onClick={() => navigate('/')} src="/logo_wordsystem.png" alt="" className="w-32 self-center cursor-pointer" />
 
-            <div className="flex flex-col gap-5 w-full">
-                <SearchBar />
+                <div className="flex flex-col gap-5 ">
+                    <SearchBar />
 
-                <div className="flex gap-2">
-                    <DepartmentMenu />
-                    <ButtonCupons />
-                    <ButtonMaisVendidos />
-                    <ButtonOthers titulo="Novidades" />
-                    <ButtonOthers titulo="Ofertas do Dia" />
-                    <ButtonOthers titulo="Lançamentos" />
-                    <ButtonOthers titulo="PC Gamer" />
-                    <ButtonOthers titulo="Computadores" />
-                    <ButtonOthers titulo="Periféricos" />
-                    <ButtonOthers titulo="Escritório" />
-                    <ButtonMore />
+                    <div className="flex gap-2">
+                        <DepartmentMenu />
+                        <ButtonCupons />
+                        <ButtonMaisVendidos />
+                        <ButtonOthers titulo="Novidades" />
+                        <ButtonOthers titulo="Ofertas do Dia" />
+                        <ButtonOthers titulo="Lançamentos" />
+                        <ButtonOthers titulo="PC Gamer" />
+                        <ButtonOthers titulo="Computadores" />
+                        <ButtonOthers titulo="Periféricos" />
+                        <ButtonOthers titulo="Escritório" />
+                        <ButtonMore />
+                    </div>
+                </div>
+
+                <ButtonEntreOuCadastrese />
+
+                <div className="flex gap-4 justify-start items-center py-1 h-9">
+                    <ButtonFavoritos />
+                    <ButtonCarrinho />
                 </div>
             </div>
 
-            <ButtonEntreOuCadastrese />
+            <div className="max-lg:flex max-lg:flex-col lg:hidden max-lg:w-full gap-3">
+                <div className="flex flex-row justify-between items-center w-full">
+                    <MdMenu size={28} className="text-white" />
 
-            <div className="flex gap-4 justify-start items-center py-1 h-9">
-                <ButtonFavoritos />
-                <ButtonCarrinho />
+                    <img onClick={() => navigate('/')} src="/logo_wordsystem.png" alt="" className="w-32 self-center cursor-pointer" />
+
+                    <div className="flex gap-4 justify-start items-center py-1 h-9">
+                        <ButtonFavoritos />
+                        <ButtonCarrinho />
+                    </div>
+                </div>
+
+                <SearchBar />
             </div>
         </header>
     );
@@ -65,8 +82,8 @@ export function ButtonEntreOuCadastrese() {
 
     return (
         <div
-            className="pl-4 pr-3 py-1 flex gap-2 cursor-pointer justify-start items-center w-42"
-            onClick={() => navigate('/login')}
+            className="pl-4 pr-3 py-1 flex gap-2 cursor-pointer justify-start items-center w-52"
+            onClick={() => navigate('/entrar')}
         >
             <MdPerson size={24} color="white" className="border border-white rounded-xl" />
 
@@ -94,52 +111,12 @@ export function ButtonCarrinho() {
     );
 }
 
-export function ButtonDepartamentos() {
-    const [isHovered, setIsHovered] = useState(false);
-
-    return (
-        <div
-            className="relative"
-            // O onMouseEnter no pai define o estado inicial
-            onMouseEnter={() => setIsHovered(true)}
-            // O onMouseLeave no pai é o que fecha o menu
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            {/* O Botão de Trigger */}
-            <div
-                className="border-solid border-white border rounded-sm pl-4 pr-3 py-1 flex gap-2 cursor-pointer justify-center items-center z-20"
-            >
-                <p className="text-white text-xs font-bold">Departamentos</p>
-                <MdKeyboardArrowDown
-                    color="white"
-                    size={20}
-                    className={`transition-transform duration-300 ${isHovered ? '-rotate-180' : 'rotate-0'}`}
-                />
-            </div>
-
-            {/* O Menu Dropdown (COM A CORREÇÃO) */}
-            <div
-                // 1. Trocamos 'mt-2' por 'pt-2' (padding-top)
-                // 2. Movemos os estilos visuais (bg, shadow, rounded) para a <ul>
-                className={`absolute left-0 top-full pt-2 w-52 text-black z-60 transition-opacity duration-200 ${isHovered ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
-                role="menu"
-                // 3. O onMouseEnter aqui "cancela" o onMouseLeave do pai, impedindo o menu de fechar
-                onMouseEnter={() => setIsHovered(true)}
-            >
-                {/* <ul className="text-xs bg-white rounded-xs shadow-lg h-98 overflow-y-auto no-scrollbar"> */}
-                    <DepartmentMenu />
-                {/* </ul> */}
-            </div>
-        </div>
-    );
-}
-
 export function ButtonCupons() {
     return (
         <div
-            className="bg-orange-600 hover:bg-gray-700 border rounded-sm px-4 py-1 flex gap-2 cursor-pointer justify-center items-center"
+            className="border border-terciary hover:bg-gray-700 rounded-sm px-4 py-1 flex gap-2 cursor-pointer justify-center items-center"
         >
-            <p className="text-white text-xs font-bold">Cupons</p>
+            <p className="text-secondary text-xs font-bold">Cupons</p>
         </div>
     );
 }
@@ -147,9 +124,9 @@ export function ButtonCupons() {
 export function ButtonMaisVendidos() {
     return (
         <div
-            className="bg-blue-900 hover:bg-gray-700 border rounded-sm px-4 py-1 flex gap-2 cursor-pointer justify-center items-center"
+            className="border border-terciary hover:bg-gray-700 rounded-sm px-4 py-1 flex gap-2 cursor-pointer justify-center items-center"
         >
-            <p className="text-white text-xs font-bold">Mais Vendidos</p>
+            <p className="text-secondary text-xs font-bold">Mais Vendidos</p>
         </div>
     );
 }
@@ -157,9 +134,9 @@ export function ButtonMaisVendidos() {
 export function ButtonOthers({ titulo }: { titulo: string }) {
     return (
         <div
-            className="hover:bg-gray-700 border rounded-sm px-4 py-1 flex gap-2 cursor-pointer justify-center items-center"
+            className="border border-secondary hover:bg-gray-700 rounded-sm px-4 py-1 flex gap-2 cursor-pointer justify-center items-center"
         >
-            <p className="text-white text-xs font-bold">{titulo}</p>
+            <p className="text-secondary text-xs font-bold">{titulo}</p>
         </div>
     );
 }
@@ -173,11 +150,10 @@ export function ButtonMore() {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <p className="text-white text-xs font-bold">Mais</p>
+            <p className="text-secondary text-xs font-bold">Mais</p>
             <MdKeyboardArrowDown
-                color="white"
                 size={20}
-                className={`transition-transform duration-300 ${isHovered ? '-rotate-180' : 'rotate-0'}`}
+                className={`text-secondary transition-transform duration-300 ${isHovered ? '-rotate-180' : 'rotate-0'}`}
             />
         </div>
     );

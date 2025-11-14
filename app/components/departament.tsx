@@ -186,9 +186,9 @@ export default function DepartmentMenu() {
     <div className="relative group">
       
       {/* O Botão "Departamentos" */}
-      <button className="flex h-full items-center gap-2 bg-red-600 px-6 py-3 text-sm font-bold uppercase text-white transition-colors hover:bg-red-700">
+      <button className="flex h-full items-center gap-2 border border-secondary rounded-sm px-6 py-2 text-xs font-bold text-secondary transition-colors cursor-pointer">
         <FaBars />
-        Departamentos
+        <p>Departamentos</p>
       </button>
 
       {/* O Container do Mega Menu (escondido por padrão) */}
@@ -196,17 +196,7 @@ export default function DepartmentMenu() {
         className="absolute left-0 top-full z-50 hidden bg-white shadow-lg group-hover:flex"
         onMouseLeave={handleMouseLeave}
       >
-        {/* Container centralizado para o conteúdo do menu 
-            --- CORREÇÃO ---
-            Removi o "mx-auto w-full max-w-7xl" daqui.
-            O 'flex' já é o suficiente.
-        */}
         <div className="flex">
-          
-          {/* Nível 1: Coluna de Departamentos 
-              --- CORREÇÃO ---
-              Troquei "w-1/3 max-w-xs" por "w-64" (16rem, ou 256px)
-          */}
           <div className="w-64 border-r border-gray-200">
             {/* ... (conteúdo da coluna 1) ... */}
             <ul className="max-h-[600px] overflow-y-auto">
@@ -215,8 +205,8 @@ export default function DepartmentMenu() {
                   <a
                     href={dept.href}
                     onMouseEnter={() => handleDeptMouseEnter(dept)}
-                    className={`flex items-center justify-between p-4 text-sm hover:bg-gray-100 hover:text-red-600 ${
-                      activeDept?.id === dept.id ? 'bg-gray-100 text-red-600' : ''
+                    className={`flex items-center justify-between p-2 text-xs hover:bg-gray-100 hover:text-secondary ${
+                      activeDept?.id === dept.id ? 'bg-gray-100 text-secondary' : ''
                     }`}
                   >
                     {dept.name}
@@ -236,8 +226,8 @@ export default function DepartmentMenu() {
             {/* ... (conteúdo da coluna 2) ... */}
             {activeDept && activeDept.categories.length > 0 && (
               <ul className="max-h-[600px] overflow-y-auto">
-                <li className="p-4">
-                  <a href={activeDept.href} className="text-sm font-bold text-red-600 hover:underline">
+                <li className="px-2 py-1">
+                  <a href={activeDept.href} className="text-xs font-bold text-secondary hover:underline">
                     Ver tudo de {activeDept.name}
                   </a>
                 </li>
@@ -246,7 +236,7 @@ export default function DepartmentMenu() {
                     <a
                       href={cat.href}
                       onMouseEnter={() => handleCatMouseEnter(cat)}
-                      className={`flex items-center justify-between p-4 text-sm hover:bg-gray-100 ${
+                      className={`flex items-center justify-between p-2 text-xs hover:bg-gray-100 ${
                         activeCat?.id === cat.id
                           ? 'bg-gray-200 font-semibold' // Destaque diferente
                           : ''
@@ -269,8 +259,8 @@ export default function DepartmentMenu() {
             {/* ... (conteúdo da coluna 3) ... */}
             {activeCat && activeCat.subCategories.length > 0 && (
               <ul className="max-h-[600px] overflow-y-auto">
-                <li className="p-4">
-                  <a href={activeCat.href} className="text-sm font-bold text-red-600 hover:underline">
+                <li className="px-2 py-1">
+                  <a href={activeCat.href} className="text-xs font-bold text-secondary hover:underline">
                     Ver tudo de {activeCat.name}
                   </a>
                 </li>
@@ -278,7 +268,7 @@ export default function DepartmentMenu() {
                   <li key={subCat.id}>
                     <a
                       href={subCat.href}
-                      className="block p-4 text-sm hover:bg-gray-100"
+                      className="block p-2 text-xs hover:bg-gray-100"
                     >
                       {subCat.name}
                     </a>
