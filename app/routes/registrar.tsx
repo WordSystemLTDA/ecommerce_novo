@@ -2,7 +2,6 @@ import { HomePage } from "~/features/home/HomePage";
 import type { Route } from "./+types/home";
 import RegisterPage from "~/features/auth/RegisterPage";
 
-
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Registrar Conta" },
@@ -10,6 +9,6 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Register() {
+export default function Registrar() {
   return <RegisterPage />;
 }

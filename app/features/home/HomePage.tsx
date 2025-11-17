@@ -50,87 +50,83 @@ const mockCategories: Category[] = [
     title: 'Acessórios',
   },
   {
-    id: '1',
+    id: '2',
     title: 'Roupas',
   },
   {
-    id: '1',
+    id: '3',
     title: 'Bolsas',
   },
   {
-    id: '1',
+    id: '4',
     title: 'Bijuterias & Bujigangas',
   },
   {
-    id: '1',
+    id: '5',
     title: 'Brincos',
   },
   {
-    id: '1',
+    id: '6',
     title: 'Sapatos',
   },
   {
-    id: '1',
+    id: '7',
     title: 'Calças',
   },
   {
-    id: '1',
+    id: '8',
     title: 'Shorts',
   },
   {
-    id: '1',
+    id: '9',
     title: 'Tênis',
   },
   {
-    id: '1',
+    id: '10',
     title: 'Bonés',
   },
   {
-    id: '1',
+    id: '11',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '12',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '13',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '14',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '15',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '16',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '17',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '18',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '19',
     title: 'Camisas',
   },
   {
-    id: '1',
+    id: '20',
     title: 'Camisas',
   },
   {
-    id: '1',
-    title: 'Camisas',
-  },
-  {
-    id: '1',
+    id: '21',
     title: 'Camisas',
   },
 ];
@@ -138,7 +134,7 @@ const mockCategories: Category[] = [
 // ===================================================================
 // 2. MOCK DATA (DADOS DE EXEMPLO)
 // ===================================================================
-const mockProducts: Product[] = [
+export const mockProducts: Product[] = [
   {
     id: 1,
     imageUrl: "https://images.kabum.com.br/produtos/fotos/723235/placa-de-video-amd-radeon-rx-7600-gaming-graphics-card-8gb-gddr6-rx-76pmbabfy_1740593267_m.jpg",
@@ -262,7 +258,7 @@ export function HomePage() {
                 <p className="text-sm">VER TODOS</p>
               </div>
 
-              <CarouselCategory categories={mockCategories} onChange={() => { }} />
+              <CarouselCategory name="MORE" categories={mockCategories} onChange={() => { }} />
 
               <section className="my-4">
                 <CarouselBannersSecundarios products={mockProducts} />
@@ -277,7 +273,7 @@ export function HomePage() {
                 <p className="text-sm">VER TODOS</p>
               </div>
 
-              <CarouselCategory categories={mockCategories} onChange={() => { }} />
+              <CarouselCategory name="NEW" categories={mockCategories} onChange={() => { }} />
 
               <section className="my-4">
                 <CarouselBannersSecundarios products={mockProducts} />
@@ -369,13 +365,19 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
     </div>
   );
 };
+
 interface CategoryCardProps {
   category: Category;
 }
 
 export function CategoryCard({ category }: CategoryCardProps) {
+  let navigate = useNavigate();
+
   return (
-    <div className="border border-primary px-4 py-2 rounded-sm text-center w-auto">
+    <div 
+    className="border border-primary px-4 py-2 rounded-sm text-center w-auto cursor-pointer"
+    onClick={() => navigate('/categorias')}
+    >
       <p>{category.title}</p>
     </div>
   );
@@ -465,10 +467,6 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
         </div>
-        {/* <button className="mt-4 w-full bg-primary text-white font-bold text-sm py-2 rounded-lg flex items-center justify-center gap-1 hover:bg-secondary transition-colors">
-          <IoIosFlash size={18} />
-          TERMINA EM:
-        </button> */}
         <button className="mt-4 w-full bg-primary text-white font-bold text-xs py-2 rounded-sm flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer z-11">
           <span className="flex items-center">
             <span className="inline-block w-0 overflow-hidden opacity-0 group-hover:opacity-100 group-hover:w-5 group-hover:mr-2 transition-all">
@@ -540,13 +538,14 @@ interface Category {
 }
 
 interface CarouselCategoryProps {
+  name: string;
   categories: Category[];
   onChange: (category: Category) => void;
 }
 
-export function CarouselCategory({ categories, onChange }: CarouselCategoryProps) {
-  const prevButtonId = `category-carousel-prev`;
-  const nextButtonId = `category-carousel-next`;
+export function CarouselCategory({ name, categories, onChange }: CarouselCategoryProps) {
+  const prevButtonId = `${name}-category-carousel-prev`;
+  const nextButtonId = `${name}-category-carousel-next`;
 
   return (
     <div className="relative w-full mx-auto px-12">
@@ -569,7 +568,7 @@ export function CarouselCategory({ categories, onChange }: CarouselCategoryProps
         className="select-none"
       >
         {categories.map((category) => (
-          <SwiperSlide key={category.id} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
+          <SwiperSlide key={`${name}-${category.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
             <CategoryCard category={category} />
           </SwiperSlide>
         ))}

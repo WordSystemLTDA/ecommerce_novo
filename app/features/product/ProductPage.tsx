@@ -29,8 +29,14 @@ import {
     IoShieldCheckmarkOutline,
 } from 'react-icons/io5' // Caminho específico para Ionicons 5
 
+import { AiFillInfoCircle } from "react-icons/ai";
+import { MdOutlineDescription } from "react-icons/md";
+
+
 import Button from '~/components/button'
 import RatingStars from '~/components/rating_stars'
+import Breadcrumb from '~/components/breadcrumb'
+import Footer from '~/components/footer'
 
 // --- DADOS MOCKADOS (EXEMPLO) ---
 // Você substituirá isso por dados da sua API
@@ -80,48 +86,59 @@ const mockProduct = {
 // --- 1. COMPONENTE PRINCIPAL (A PÁGINA) ---
 
 export default function ProductPage() {
-
-
     return (
         <div>
             <Header />
 
             {/* Container principal - fundo cinza claro, padding vertical */}
-            <div className="flex flex-col items-center bg-white p-4 py-8 text-gray-900">
-
-                {/* Box de conteúdo centralizado */}
-                <main className="w-full max-w-387">
-                    {/* Breadcrumbs (exemplo) */}
-                    <div className="mb-4 text-sm text-gray-600">
-                        Home &gt; Apple &gt; Apple Watch
-                    </div>
+            <div className="flex flex-col items-center bg-white text-gray-900 pb-8">
+                {/* MODIFICATION: Changed max-w-387 to w-full and added px/py */}
+                <div className="w-full px-10 py-0">
+                    <Breadcrumb />
 
                     {/* Grid principal da página */}
-                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 relative">
                         <div className='lg:hidden flex flex-col gap-4'>
+                            {/* This is the mobile-only title */}
                             <ProductNameInfo product={mockProduct} />
                         </div>
 
                         {/* Coluna 1: Galeria de Imagens (5/12) */}
-                        <div className="lg:col-span-5">
+                        <div className='lg:col-span-5'>
                             <ProductGallery images={mockProduct.gallery} />
                         </div>
 
                         {/* Coluna 2: Informações do Produto (4/12) */}
-                        <div className="lg:col-span-4">
+                        <div className='lg:col-span-4'>
                             <ProductInfo product={mockProduct} />
                         </div>
 
-                        {/* Coluna 3: Box de Compra (3/12) */}
-                        <div className="lg:col-span-3">
+                        {/* MODIFICATION #1:
+                          This description block is told to start on column 1 
+                          and row 2 on large screens (lg:).
+                        */}
+                        <div className="flex flex-col max-w-full relative lg:col-span-9 lg:col-start-1 lg:row-start-2">
+                            <div className='mt-8'>
+                                <div className='flex gap-2 items-center'>
+                                    <MdOutlineDescription className='text-terciary' size={24} />
+                                    <h2 className="text-xl font-semibold">DESCRIÇÃO O PRODUTO</h2>
+                                </div>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed repudiandae, atque labore illo incidunt eveniet hic iusto esse voluptate, impedit blanditiis culpa necessitatibus omnis cumque soluta ut modi temporibus vel. <br /><br /> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Iste velit sequi quae vel quod animi expedita eos architecto, magni, iusto quo id. Fuga, cupiditate. Autem tenetur praesentium neque voluptatem fuga.</p>
+                            </div>
+                        </div>
+
+                        {/* MODIFICATION #2:
+                          The sidebar is told to start on column 10
+                          and row 1 on large screens (lg:).
+                        */}
+                        <div className="lg:col-span-3 lg:col-start-10 lg:row-start-1 lg:row-span-2">
                             <PurchaseSidebar product={mockProduct} />
                         </div>
                     </div>
-                </main>
-
-                {/* Outras seções (ex: "Produtos Relacionados") viriam aqui */}
-
+                </div>
             </div>
+
+            <Footer />
         </div>
     )
 }
@@ -139,7 +156,7 @@ function ProductGallery({ images }: ProductGalleryProps) {
         useState<SwiperInstance | null>(null)
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 max-w-full">
             {/* Galeria Principal (Imagem Grande) */}
             <div className="overflow-hidden rounded-lg border border-gray-200">
                 <Swiper
@@ -174,6 +191,7 @@ function ProductGallery({ images }: ProductGalleryProps) {
                     slidesPerView={4} // Mostra 4 miniaturas por vez
                     freeMode={true}
                     watchSlidesProgress={true}
+
                     className="h-full w-full"
                 >
                     {images.map((img, index) => (
@@ -213,11 +231,11 @@ function ProductInfo({ product }: ProductInfoProps) {
 
             {/* Sobre o Produto */}
             <div className="flex flex-col gap-3">
-                <h2 className="text-lg font-semibold">Sobre o produto</h2>
-                <div className="flex items-center gap-2 text-sm text-terciary">
-                    <IoShieldCheckmarkOutline size={18} />
-                    <span>Resumo gerado por IA</span>
+                <div className='flex gap-2 items-center text-terciary'>
+                    <AiFillInfoCircle />
+                    <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
                 </div>
+
                 <ul className="list-disc space-y-2 pl-5 text-sm">
                     {product.specs.map((spec) => (
                         <li key={spec.title}>
@@ -284,12 +302,7 @@ function PurchaseSidebar({ product }: PurchaseSidebarProps) {
     });
 
     return (
-        <div className="flex flex-col gap-4">
-            {/* Banner Promocional (Exemplo) */}
-            {/* <div className="h-28 w-full rounded-lg bg-gray-900 text-white flex items-center justify-center font-bold">
-                [Banner]
-            </div> */}
-
+        <div className="flex flex-col gap-4 lg:sticky top-42">
             {/* Box de Preço */}
             <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                 {product.price.old && (
@@ -316,9 +329,6 @@ function PurchaseSidebar({ product }: PurchaseSidebarProps) {
                     Em estoque
                 </div>
 
-                {/* Quantidade */}
-                {/* <QuantitySelector /> */}
-
                 {/* Botões */}
                 <div className="flex flex-col gap-3">
                     <Button variant="primary">Comprar agora</Button>
@@ -334,35 +344,6 @@ function PurchaseSidebar({ product }: PurchaseSidebarProps) {
         </div>
     )
 }
-
-// --- COMPONENTES MENORES (Helpers) ---
-
-// --- Seletor de Quantidade ---
-// function QuantitySelector() {
-//     const [quantity, setQuantity] = useState(1)
-
-//     const decrement = () => setQuantity(q => Math.max(1, q - 1))
-//     const increment = () => setQuantity(q => q + 1)
-
-//     return (
-//         <div className="flex items-center gap-2">
-//             <span className="text-sm font-semibold">Quantidade:</span>
-//             <div className="flex items-center rounded-md border border-gray-300">
-//                 <button onClick={decrement} className="px-3 py-2 text-gray-600 hover:bg-gray-100 disabled:opacity-50" disabled={quantity === 1}>
-//                     <FaMinus size={12} />
-//                 </button>
-//                 <span className="w-10 select-none px-3 py-1 text-center font-semibold">
-//                     {quantity}
-//                 </span>
-//                 <button onClick={increment} className="px-3 py-2 text-gray-600 hover:bg-gray-100">
-//                     <FaPlus size={12} />
-//                 </button>
-//             </div>
-//         </div>
-//     )
-// }
-
-
 // --- Calculadora de Frete ---
 function FreightCalculator() {
     const [cep, setCep] = useState('');

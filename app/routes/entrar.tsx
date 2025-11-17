@@ -9,6 +9,6 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Login() {
+export default function Entrar() {
   return <LoginPage />;
 }

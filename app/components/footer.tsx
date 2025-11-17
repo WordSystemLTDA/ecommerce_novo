@@ -36,7 +36,7 @@ export function Footer() {
 
             {/* SEÇÃO 1: BARRA DE INFORMAÇÕES SUPERIOR */}
             <div className="bg-gray-800">
-                <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col lg:flex-row justify-between items-center text-xs text-gray-300">
+                <div className="max-w-387 mx-auto px-4 py-3 flex flex-col lg:flex-row justify-between items-center text-xs text-gray-300">
                     <div className="flex flex-col md:flex-row gap-4 lg:gap-8 items-center">
                         <div className="flex items-center gap-2">
                             <FaClock className="text-white text-lg" />
@@ -66,7 +66,7 @@ export function Footer() {
             </div>
 
             {/* SEÇÃO 3: CORPO PRINCIPAL (LINKS) */}
-            <div className="max-w-7xl mx-auto px-4 py-12">
+            <div className="max-w-387 mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
                     {/* Coluna 1 e 2: Departamentos */}
@@ -199,7 +199,7 @@ export function Footer() {
 
             {/* SEÇÃO 4: RODAPÉ INFERIOR (LEGAL E CERTIFICADOS) */}
             <div className="bg-black text-gray-500 py-8">
-                <div className="max-w-7xl mx-auto px-4 text-xs">
+                <div className="max-w-387 mx-auto px-4 text-xs">
 
                     <div className="flex flex-col md:flex-row justify-between gap-8">
                         {/* Coluna da Esquerda: Textos Legais */}

@@ -1,0 +1,14 @@
+import AddressPage from "~/features/cart/AdressPage";
+import type { Route } from "./+types/home";
+import CartPage from "~/features/cart/CartPage";
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Carrinho de Compras - Word System" },
+    { name: "description", content: "Seja bem-vindo ao nosso e-commerce!" },
+  ];
+}
+
+export default function CheckoutAddress() {
+  return <AddressPage />;
+}

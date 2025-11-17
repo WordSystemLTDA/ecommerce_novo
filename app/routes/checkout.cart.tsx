@@ -1,13 +1,13 @@
 import type { Route } from "./+types/home";
-import ProductPage from "~/features/product/ProductPage";
+import CartPage from "~/features/cart/CartPage";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Produto" },
+    { title: "Carrinho de Compras - Word System" },
     { name: "description", content: "Seja bem-vindo ao nosso e-commerce!" },
   ];
 }
 
-export default function Product() {
-  return <ProductPage />;
+export default function CheckoutCart() {
+  return <CartPage />;
 }

@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router'
 import Button from '~/components/button'
 import CustomInput from '~/components/input'
 import IconCircle from '~/components/icon_circle'
+import Footer from '~/components/footer'
 // --- 1. Componente Principal (A Página) ---
 
 /**
@@ -38,7 +39,7 @@ export default function LoginPage() {
       <Header />
       <div className="relative flex flex-col items-center bg-white p-4 py-16 text-gray-700">
 
-        <main className="w-full max-w-5xl">
+        <main className="w-full max-w-387">
           <div className="grid grid-cols-1 gap-16 md:grid-cols-2">
 
             {/* Coluna 1: Login */}
@@ -118,15 +119,13 @@ export default function LoginPage() {
         </main>
 
       </div>
+
+      <Footer />
     </div>
   )
 }
 
 // --- 2. Componentes Auxiliares Reutilizáveis ---
-
-
-
-
 // --- Input de Senha (com ícone de olho) ---
 interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   show: boolean

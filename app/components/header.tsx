@@ -104,8 +104,13 @@ export function ButtonFavoritos() {
 }
 
 export function ButtonCarrinho() {
+    let navigate = useNavigate();
+
     return (
-        <div>
+        <div 
+            className="cursor-pointer"
+            onClick={() => navigate('/carrinho')}
+        >
             <FaShoppingCart size={20} color="white" />
         </div>
     );

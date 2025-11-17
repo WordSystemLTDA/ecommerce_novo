@@ -15,6 +15,7 @@ import { Header } from '~/components/header' // Você usará seu header aqui
 import CustomInput from '~/components/input'
 import Button from '~/components/button'
 import IconCircle from '~/components/icon_circle'
+import Footer from '~/components/footer'
 // --- FIM DA CORREÇÃO ---
 
 // --- 1. Componente Principal (Página de Cadastro) ---
@@ -69,7 +70,7 @@ export default function RegisterPage() {
             <div className="relative flex flex-col items-center bg-white p-4 py-4 text-gray-700">
 
                 {/* Box de conteúdo central - usei max-w-3xl para um formulário mais estreito */}
-                <main className="w-full max-w-3xl">
+                <main className="w-full max-w-387">
                     <div className="flex flex-col">
                         {/* Ícone e Título */}
                         <IconCircle icon={FaUserPlus} color="primary" />
@@ -248,11 +249,11 @@ export default function RegisterPage() {
                     </div>
                 </main>
             </div>
+
+            <Footer />
         </div>
     )
 }
-
-
 
 // --- Select Customizado (NOVO) ---
 interface CustomSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> { }
