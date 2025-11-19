@@ -24,7 +24,7 @@ export default function RegisterPage() {
     // --- Estados do Formulário ---
     // Comuns
     const [nome, setNome] = useState('')
-    const [sobrenome, setSobrenome] = useState('')
+    // const [sobrenome, setSobrenome] = useState('')
     const [tipoPessoa, setTipoPessoa] = useState('fisica') // 'fisica' ou 'juridica'
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -37,7 +37,7 @@ export default function RegisterPage() {
     const [rg, setRg] = useState('')
 
     // Pessoa Jurídica (NOVOS ESTADOS)
-    const [nomeFantasia, setNomeFantasia] = useState('')
+    // const [nomeFantasia, setNomeFantasia] = useState('')
     const [razaoSocial, setRazaoSocial] = useState('')
     const [cnpj, setCnpj] = useState('')
     const [ie, setIe] = useState('')
@@ -48,7 +48,6 @@ export default function RegisterPage() {
         // Lógica de cadastro aqui
         const data = {
             nome,
-            sobrenome,
             tipoPessoa,
             email,
             password,
@@ -57,7 +56,7 @@ export default function RegisterPage() {
             // Dados condicionais
             ...(tipoPessoa === 'fisica'
                 ? { cpf, rg }
-                : { nomeFantasia, razaoSocial, cnpj, ie, isentoIE }),
+                : { nome, razaoSocial, cnpj, ie, isentoIE }),
         }
         console.log('Register attempt:', data)
     }
@@ -84,24 +83,7 @@ export default function RegisterPage() {
                         {/* Formulário de Cadastro */}
                         <form onSubmit={handleRegister} className="flex flex-col gap-4">
                             {/* Grid para campos lado a lado */}
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <CustomInput
-                                    type="text"
-                                    placeholder="Nome *"
-                                    value={nome}
-                                    onChange={(e) => setNome(e.target.value)}
-                                    required
-                                />
-                                <CustomInput
-                                    type="text"
-                                    placeholder="Sobrenome *"
-                                    value={sobrenome}
-                                    onChange={(e) => setSobrenome(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
                                 {/* Campo "Quero me cadastrar como" */}
                                 <CustomSelect
                                     value={tipoPessoa}
@@ -113,25 +95,41 @@ export default function RegisterPage() {
                                 </CustomSelect>
                             </div>
 
+
+
+
+
                             {/* --- ALTERAÇÃO: CAMPOS CONDICIONAIS --- */}
 
                             {/* Campos de Pessoa Física */}
                             {tipoPessoa === 'fisica' && (
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <CustomInput
-                                        type="text"
-                                        placeholder="CPF *"
-                                        value={cpf}
-                                        onChange={(e) => setCpf(e.target.value)}
-                                        required
-                                    />
-                                    <CustomInput
-                                        type="text"
-                                        placeholder="RG"
-                                        value={rg}
-                                        onChange={(e) => setRg(e.target.value)}
-                                    />
-                                </div>
+                                <>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
+                                        <CustomInput
+                                            type="text"
+                                            placeholder="Nome *"
+                                            value={nome}
+                                            onChange={(e) => setNome(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                        <CustomInput
+                                            type="text"
+                                            placeholder="CPF *"
+                                            value={cpf}
+                                            onChange={(e) => setCpf(e.target.value)}
+                                            required
+                                        />
+                                        <CustomInput
+                                            type="text"
+                                            placeholder="RG"
+                                            value={rg}
+                                            onChange={(e) => setRg(e.target.value)}
+                                        />
+                                    </div>
+                                </>
                             )}
 
                             {/* Campos de Pessoa Jurídica (NOVOS) */}
@@ -141,8 +139,8 @@ export default function RegisterPage() {
                                         <CustomInput
                                             type="text"
                                             placeholder="Nome Fantasia *"
-                                            value={nomeFantasia}
-                                            onChange={(e) => setNomeFantasia(e.target.value)}
+                                            value={nome}
+                                            onChange={(e) => setNome(e.target.value)}
                                             required
                                         />
                                         <CustomInput
