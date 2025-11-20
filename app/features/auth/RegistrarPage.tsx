@@ -4,7 +4,7 @@ import type { IconType } from 'react-icons'
 // Os caminhos 'react-icons/fa' e 'react-icons/fi' não estão resolvendo.
 // Vamos tentar importar tudo de um único ponto, o que é mais provável de funcionar
 // se a biblioteca estiver instalada.
-import { FiEye, FiEyeOff } from 'react-icons/fi'
+
 import { FaUserPlus } from 'react-icons/fa'
 
 // O erro "~/components/header" indica que o alias (~) não está funcionando
@@ -16,11 +16,14 @@ import CustomInput from '~/components/input'
 import Button from '~/components/button'
 import IconCircle from '~/components/icon_circle'
 import Footer from '~/components/footer'
+import CustomSelect from '~/components/select'
+import InputIE from '~/components/input_ie'
+import PasswordInput from '~/components/password_input'
 // --- FIM DA CORREÇÃO ---
 
 // --- 1. Componente Principal (Página de Cadastro) ---
 
-export default function RegisterPage() {
+export default function RegistrarPage() {
     // --- Estados do Formulário ---
     // Comuns
     const [nome, setNome] = useState('')
@@ -94,12 +97,6 @@ export default function RegisterPage() {
                                     <option value="juridica">Pessoa Jurídica</option>
                                 </CustomSelect>
                             </div>
-
-
-
-
-
-                            {/* --- ALTERAÇÃO: CAMPOS CONDICIONAIS --- */}
 
                             {/* Campos de Pessoa Física */}
                             {tipoPessoa === 'fisica' && (
@@ -253,70 +250,9 @@ export default function RegisterPage() {
     )
 }
 
-// --- Select Customizado (NOVO) ---
-interface CustomSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> { }
-
-function CustomSelect(props: CustomSelectProps) {
-    return (
-        <select
-            {...props}
-            className="w-full rounded-md border border-gray-400 bg-white p-3 text-gray-900 placeholder-gray-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-        >
-            {props.children}
-        </select>
-    )
-}
-
-// --- Input de IE (NOVO - Componente específico) ---
-interface InputIEProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    isento: boolean
-    onIsentoChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-}
-
-function InputIE({ isento, onIsentoChange, ...props }: InputIEProps) {
-    return (
-        <div className="relative">
-            <CustomInput
-                {...props}
-                type="text"
-                placeholder="IE"
-                disabled={isento} // Desabilita o input se 'ISENTO' estiver marcado
-            />
-            <label className="absolute right-3 top-1/3 -translate-y-1-2 flex cursor-pointer items-center gap-2 text-sm text-gray-600">
-                <input
-                    type="checkbox"
-                    checked={isento}
-                    onChange={onIsentoChange}
-                    className="h-4 w-4 rounded border-gray-400 text-red-600 focus:ring-red-500"
-                />
-                ISENTO
-            </label>
-        </div>
-    )
-}
 
 
-// --- Input de Senha ---
-interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-    show: boolean
-    onToggle: () => void
-}
 
-function PasswordInput({ show, onToggle, ...props }: PasswordInputProps) {
-    return (
-        <div className="relative">
-            <CustomInput
-                {...props}
-                type={show ? 'text' : 'password'}
-            />
-            <button
-                type="button"
-                onClick={onToggle}
-                className="absolute right-3 top-1-2 -translate-y-1-2 text-gray-500 hover:text-gray-900"
-                aria-label={show ? 'Esconder senha' : 'Mostrar senha'}
-            >
-                {show ? <FiEyeOff /> : <FiEye />}
-            </button>
-        </div>
-    )
-}
+
+
+

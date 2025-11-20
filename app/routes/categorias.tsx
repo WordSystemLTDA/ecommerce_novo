@@ -1,4 +1,4 @@
-import CategoryPage from "~/features/category/CategoryPage";
+import CategoryPage from "~/features/categoria/CategoriaPage";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {

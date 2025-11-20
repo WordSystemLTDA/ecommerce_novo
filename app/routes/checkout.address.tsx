@@ -1,6 +1,5 @@
-import AddressPage from "~/features/cart/AdressPage";
+import AddressPage from "~/features/carrinho/AdressPage";
 import type { Route } from "./+types/home";
-import CartPage from "~/features/cart/CartPage";
 
 export function meta({}: Route.MetaArgs) {
   return [

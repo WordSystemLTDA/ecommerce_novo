@@ -1,13 +1,13 @@
 import type { Route } from "./+types/home";
-import ProductPage from "~/features/product/ProductPage";
+import RegisterPage from "~/features/auth/RegistrarPage";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Produto" },
+    { title: "Registrar Conta" },
     { name: "description", content: "Seja bem-vindo ao nosso e-commerce!" },
   ];
 }
 
-export default function Produto() {
-  return <ProductPage />;
+export default function Registrar() {
+  return <RegisterPage />;
 }

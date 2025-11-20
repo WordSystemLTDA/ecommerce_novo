@@ -21,199 +21,25 @@ import 'swiper/css/effect-fade'; // para o efeito de banner
 import { useNavigate } from "react-router";
 import RatingStars from "~/components/rating_stars";
 import Footer from "~/components/footer";
-
-// ===================================================================
-// 1. DEFINIÇÃO DE TIPO PARA OS PRODUTOS
-// ===================================================================
-export interface Product {
-  id: number | string;
-  imageUrl: string;
-  title: string;
-  rating?: number;
-  oldPrice?: number;
-  price: number;
-  unitsInStock: number;
-  installmentsNumber?: number;
-  installmentsPlaceholder?: string;
-  isHighlight?: boolean;
-}
-
-export interface Banner {
-  id: number | string;
-  imageUrl: string;
-  colorHex: string;
-}
-
-const mockCategories: Category[] = [
-  {
-    id: '1',
-    title: 'Acessórios',
-  },
-  {
-    id: '2',
-    title: 'Roupas',
-  },
-  {
-    id: '3',
-    title: 'Bolsas',
-  },
-  {
-    id: '4',
-    title: 'Bijuterias & Bujigangas',
-  },
-  {
-    id: '5',
-    title: 'Brincos',
-  },
-  {
-    id: '6',
-    title: 'Sapatos',
-  },
-  {
-    id: '7',
-    title: 'Calças',
-  },
-  {
-    id: '8',
-    title: 'Shorts',
-  },
-  {
-    id: '9',
-    title: 'Tênis',
-  },
-  {
-    id: '10',
-    title: 'Bonés',
-  },
-  {
-    id: '11',
-    title: 'Camisas',
-  },
-  {
-    id: '12',
-    title: 'Camisas',
-  },
-  {
-    id: '13',
-    title: 'Camisas',
-  },
-  {
-    id: '14',
-    title: 'Camisas',
-  },
-  {
-    id: '15',
-    title: 'Camisas',
-  },
-  {
-    id: '16',
-    title: 'Camisas',
-  },
-  {
-    id: '17',
-    title: 'Camisas',
-  },
-  {
-    id: '18',
-    title: 'Camisas',
-  },
-  {
-    id: '19',
-    title: 'Camisas',
-  },
-  {
-    id: '20',
-    title: 'Camisas',
-  },
-  {
-    id: '21',
-    title: 'Camisas',
-  },
-];
-
-// ===================================================================
-// 2. MOCK DATA (DADOS DE EXEMPLO)
-// ===================================================================
-export const mockProducts: Product[] = [
-  {
-    id: 1,
-    imageUrl: "https://images.kabum.com.br/produtos/fotos/723235/placa-de-video-amd-radeon-rx-7600-gaming-graphics-card-8gb-gddr6-rx-76pmbabfy_1740593267_m.jpg",
-    title: "Placa de Vídeo XFX AMD RADEON RX 7600",
-    oldPrice: 2070.56,
-    price: 1599.99,
-    rating: 4.5,
-    unitsInStock: 10,
-    installmentsNumber: 10,
-    installmentsPlaceholder: "10x de R$ 159,99"
-  },
-  {
-    id: 2,
-    imageUrl: "https://images.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860075_m.jpg",
-    title: "iPhone 16 Pro Max Apple 256GB",
-    price: 8499.90,
-    rating: 1.5,
-    unitsInStock: 10,
-    installmentsNumber: 10,
-    installmentsPlaceholder: "10x de R$ 944,43"
-  },
-  {
-    id: 3,
-    imageUrl: "https://images.kabum.com.br/produtos/fotos/634554/apple-watch-se-gps-case-meia-noite-de-aluminio-44-mm-pulseira-esportiva-meia-noite-m-g-mxek3be-a_1726518516_m.jpg",
-    title: "Apple Watch SE GPS, 44 mm",
-    price: 2399.90,
-    rating: 5,
-    unitsInStock: 10,
-    installmentsNumber: 10,
-    installmentsPlaceholder: "10x de R$ 282,34"
-  },
-  {
-    id: 4,
-    imageUrl: "https://images.kabum.com.br/produtos/fotos/371586/teclado-mecanico-gamer-hyperx-alloy-mkw100-rgb-switch-red-full-size-us-preto-4p5e1aa-aba_1722882381_m.jpg",
-    title: "Teclado Mecânico Gamer HyperX Alloy",
-    oldPrice: 759.00,
-    price: 209.99,
-    rating: 4,
-    unitsInStock: 10,
-    isHighlight: true,
-    installmentsNumber: 10,
-    installmentsPlaceholder: "8x de R$ 25,36",
-  },
-  {
-    id: 5,
-    imageUrl: "https://images.kabum.com.br/produtos/fotos/883637/notebook-gamer-gigabyte-a16-intel-core-i7-13620h-16gb-ram-ddr5-rtx-5060-ssd-1tb-gen4-16-wuxga-165hz-w11-home-9rga6i76vhfhjk5us000_1753185331_m.jpg",
-    title: "Notebook Gamer Gigabyte A16",
-    price: 7999.99,
-    rating: 1,
-    unitsInStock: 10,
-    installmentsNumber: 10,
-    installmentsPlaceholder: "10x de R$ 888,88"
-  },
-  {
-    id: 6,
-    imageUrl: "https://images.kabum.com.br/produtos/fotos/149989/mouse-sem-fio-gamer-logitech-g-pro-x-superlight-lightspeed-25000-dpi-5-botoes-preto-910-005879_1727272012_m.jpg",
-    title: "Mouse Sem Fio Gamer Logitech G PRO X",
-    price: 699.90,
-    unitsInStock: 10,
-    installmentsNumber: 10,
-    installmentsPlaceholder: "10x de R$ 77,76"
-  }
-];
+import type { Banner } from "./types";
+import type { Produto } from "../produto/types";
+import type { Categoria } from "../categoria/types";
 
 const mockBanners: Banner[] = [
   {
     id: 1,
-    imageUrl: "/1762447412.webp",
-    colorHex: "#f05802"
+    imagemUrl: "/1762447412.webp",
+    corHex: "#f05802"
   }, // Azul escuro
   {
     id: 2,
-    imageUrl: "/1762949636.gif",
-    colorHex: "#060709"
+    imagemUrl: "/1762949636.gif",
+    corHex: "#060709"
   }, // Vermelho
   {
     id: 3,
-    imageUrl: "/1762948553.webp",
-    colorHex: "#000000"
+    imagemUrl: "/1762948553.webp",
+    corHex: "#000000"
   }  // Verde
 ];
 
@@ -247,7 +73,7 @@ export function HomePage() {
             </div>
 
             <section className="my-8">
-              <CarouselBannersSecundarios products={mockProducts} />
+              <CarouselBannersSecundarios produtos={mockProducts} />
             </section>
 
             <hr className="my-2 border-gray-200" />
@@ -258,14 +84,14 @@ export function HomePage() {
                 <p className="text-sm">VER TODOS</p>
               </div>
 
-              <CarouselCategory name="MORE" categories={mockCategories} onChange={() => { }} />
+              <CarouselCategoria name="MORE" categorias={mockCategories} onChange={() => { }} />
 
               <section className="my-4">
-                <CarouselBannersSecundarios products={mockProducts} />
+                <CarouselBannersSecundarios produtos={mockProducts} />
               </section>
             </section>
 
-             <hr className="my-2 border-gray-200" />
+            <hr className="my-2 border-gray-200" />
 
             <section className="my-8">
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
@@ -273,14 +99,14 @@ export function HomePage() {
                 <p className="text-sm">VER TODOS</p>
               </div>
 
-              <CarouselCategory name="NEW" categories={mockCategories} onChange={() => { }} />
+              <CarouselCategoria name="NEW" categorias={mockCategories} onChange={() => { }} />
 
               <section className="my-4">
-                <CarouselBannersSecundarios products={mockProducts} />
+                <CarouselBannersSecundarios produtos={mockProducts} />
               </section>
             </section>
 
-             <hr className="my-2 border-gray-200" />
+            <hr className="my-2 border-gray-200" />
 
             <section className="my-8">
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
@@ -288,7 +114,7 @@ export function HomePage() {
               </div>
 
               <section className="my-4">
-                <CarouselBannersSecundarios products={mockProducts} />
+                <CarouselBannersSecundarios produtos={mockProducts} />
               </section>
             </section>
           </main>
@@ -330,7 +156,7 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
           disableOnInteraction: false,
         }}
         onSlideChange={(swiper) => {
-          onColorChange(images[swiper.realIndex].colorHex);
+          onColorChange(images[swiper.realIndex].corHex);
         }}
 
         // --- Navegação (Setas) ---
@@ -346,7 +172,7 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
       >
         {images?.map((image, index) => (
           <SwiperSlide key={index}>
-            <img src={image.imageUrl} className="w-full object-cover h-[200px] md:h-[300px] lg:h-[450px]" />
+            <img src={image.imagemUrl} className="w-full object-cover h-[200px] md:h-[300px] lg:h-[450px]" />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -366,19 +192,19 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
   );
 };
 
-interface CategoryCardProps {
-  category: Category;
+interface CategoriaCardProps {
+  categoria: Categoria;
 }
 
-export function CategoryCard({ category }: CategoryCardProps) {
+export function CategoriaCard({ categoria }: CategoriaCardProps) {
   let navigate = useNavigate();
 
   return (
-    <div 
-    className="border border-primary px-4 py-2 rounded-sm text-center w-auto cursor-pointer"
-    onClick={() => navigate('/categorias')}
+    <div
+      className="border border-primary px-4 py-2 rounded-sm text-center w-auto cursor-pointer"
+      onClick={() => navigate('/categorias')}
     >
-      <p>{category.title}</p>
+      <p>{categoria.nome}</p>
     </div>
   );
 }
@@ -388,10 +214,10 @@ export function CategoryCard({ category }: CategoryCardProps) {
 // ===================================================================
 
 interface ProductCardProps {
-  product: Product;
+  produto: Produto;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ produto }: ProductCardProps) {
   let navigate = useNavigate();
 
   const currencyFormatter = Intl.NumberFormat("pt-BR", {
@@ -402,20 +228,20 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group" onClick={() => {
-      navigate(`/produto/${product.id}`);
+      navigate(`/produto/${produto.id}`);
     }}>
       <div className="relative">
-        {product.isHighlight && (
+        {/* {produto.estaDestacado && (
           <span className="absolute top-2 left-2 bg-primary text-white text-medium-tiny font-bold px-2 py-1 rounded-xl">
             MELHOR PREÇO
           </span>
-        )}
+        )} */}
 
         <div className="absolute top-2 right-2 group-hover:opacity-0 opacity-100 transition-opacity p-1">
-          {product.rating !== undefined && (
+          {produto.atributos.avaliacao !== undefined && (
             <div className="flex items-center gap-0.5">
-              <RatingStars rating={product.rating} variant="tiny" />
-              <span className="text-tiny text-gray-400">({product.rating.toFixed(0)})</span>
+              <RatingStars rating={produto.atributos.avaliacao} variant="tiny" />
+              <span className="text-tiny text-gray-400">({produto.atributos.avaliacao.toFixed(0)})</span>
             </div>
           )}
         </div>
@@ -425,35 +251,35 @@ export function ProductCard({ product }: ProductCardProps) {
           <MdOutlineAddShoppingCart size={20} color="gray" className="cursor-pointer" />
         </div>
 
-        <img src={product.imageUrl} alt={product.title} className="w-full h-48 object-contain p-4" />
+        <img src={produto.atributos.fotos.m[0]} alt={produto.atributos.nome} className="w-full h-48 object-contain p-4" />
       </div>
 
       <div className="flex-1 p-4 flex flex-col justify-between">
         <div className="flex-1">
           <h3 className="text-sm text-gray-600 font-bold mb-2 h-10 overflow-hidden text-ellipsis">
-            {product.title}
+            {produto.atributos.nome}
           </h3>
 
           <div className="flex justify-between">
-            {product.oldPrice && (
+            {produto.atributos.precoAntigo && (
               <span className="text-xs text-gray-500 line-through">
-                {currencyFormatter.format(product.oldPrice)}
+                {currencyFormatter.format(produto.atributos.precoAntigo)}
               </span>
             )}
-            {product.unitsInStock <= 100 && (
+            {produto.atributos.estoque <= 100 && (
               <span className="text-tiny text-gray-600">
-                Restam {product.unitsInStock} unid.
+                Restam {produto.atributos.estoque} unid.
               </span>
             )}
           </div>
 
           <div className="flex items-baseline gap-2 mb-1">
             <span className="text-xl font-bold text-primary">
-              {currencyFormatter.format(product.price)}
+              {currencyFormatter.format(produto.atributos.preco)}
             </span>
-            {product.oldPrice && (
+            {produto.atributos.precoAntigo && (
               <span className="text-xs font-bold text-terciary bg-green-100 px-1 py-0.5 rounded">
-                {Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}% OFF
+                {Math.round(((produto.atributos.precoAntigo - produto.atributos.preco) / produto.atributos.precoAntigo) * 100)}% OFF
               </span>
             )}
           </div>
@@ -461,9 +287,9 @@ export function ProductCard({ product }: ProductCardProps) {
           <span className="text-xs text-gray-600 block">
             À vista no PIX
           </span>
-          {product.installmentsPlaceholder && (
+          {produto.atributos.parcelaMaxima && (
             <span className="text-xs text-gray-600 mt-1 block">
-              ou até <span className="font-bold">{product.installmentsPlaceholder}</span>
+              ou até <span className="font-bold">{produto.atributos.parcelaMaxima}</span>
             </span>
           )}
         </div>
@@ -485,12 +311,12 @@ export function ProductCard({ product }: ProductCardProps) {
 // ===================================================================
 
 interface CarouselBannersSecundariosProps {
-  products: Product[];
+  produtos: Produto[];
 }
 
-export function CarouselBannersSecundarios({ products }: CarouselBannersSecundariosProps) {
-  const prevButtonId = `product-carousel-prev`;
-  const nextButtonId = `product-carousel-next`;
+export function CarouselBannersSecundarios({ produtos }: CarouselBannersSecundariosProps) {
+  const prevButtonId = `produto-carousel-prev`;
+  const nextButtonId = `produto-carousel-next`;
 
   return (
     <div className="relative w-full mx-auto px-12">
@@ -510,9 +336,9 @@ export function CarouselBannersSecundarios({ products }: CarouselBannersSecundar
         }}
         className="select-none"
       >
-        {products.map((product) => (
-          <SwiperSlide key={product.id} style={{ height: 'auto' }}>
-            <ProductCard product={product} />
+        {produtos.map((produto) => (
+          <SwiperSlide key={produto.id} style={{ height: 'auto' }}>
+            <ProductCard produto={produto} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -532,18 +358,14 @@ export function CarouselBannersSecundarios({ products }: CarouselBannersSecundar
   );
 };
 
-interface Category {
-  id: string,
-  title: string,
-}
 
-interface CarouselCategoryProps {
+interface CarouselCategoriaProps {
   name: string;
-  categories: Category[];
-  onChange: (category: Category) => void;
+  categorias: Categoria[];
+  onChange: (category: Categoria) => void;
 }
 
-export function CarouselCategory({ name, categories, onChange }: CarouselCategoryProps) {
+export function CarouselCategoria({ name, categorias, onChange }: CarouselCategoriaProps) {
   const prevButtonId = `${name}-category-carousel-prev`;
   const nextButtonId = `${name}-category-carousel-next`;
 
@@ -567,9 +389,9 @@ export function CarouselCategory({ name, categories, onChange }: CarouselCategor
 
         className="select-none"
       >
-        {categories.map((category) => (
-          <SwiperSlide key={`${name}-${category.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
-            <CategoryCard category={category} />
+        {categorias.map((categoria) => (
+          <SwiperSlide key={`${name}-${categoria.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
+            <CategoriaCard categoria={categoria} />
           </SwiperSlide>
         ))}
       </Swiper>

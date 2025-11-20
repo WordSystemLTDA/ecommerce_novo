@@ -1,7 +1,6 @@
 
-import PaymentPage from "~/features/cart/PaymentPage";
+import PaymentPage from "~/features/carrinho/PaymentPage";
 import type { Route } from "./+types/home";
-import CheckoutLayout from "~/features/cart/CheckoutLayout";
 
 export function meta({}: Route.MetaArgs) {
   return [

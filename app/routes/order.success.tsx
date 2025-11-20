@@ -1,6 +1,5 @@
-
 import type { Route } from "./+types/home";
-import OrderSuccessPage from "~/features/cart/OrderSuccess";
+import OrderSuccessPage from "~/features/carrinho/OrderSuccess";
 
 export function meta({}: Route.MetaArgs) {
   return [

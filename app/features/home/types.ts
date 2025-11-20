@@ -1,20 +1,33 @@
-import type { Links, Product } from "../product/types";
+import type { Produto } from "../produto/types";
 
-export interface Products {
-    meta: Meta,
-    links: Links,
-    data: Product[],
+export interface Produtos {
+    produtos: Produto[],
+    paginacao: Paginacao,
+    filtros: Filtros,
 }
 
-export interface Meta {
-    total_items_count: number,
-    total_pages_count: number,
-    page: Page,
+export interface Paginacao {
+	pagina: number,
+    por_pagina: number,
+    total: number,
+    total_paginas: number
 }
 
-export interface Page {
-    cursor: string,
-    number: number,
-    size: number,
-    is_current_page: boolean,
+export interface Filtros {
+    categoria?: string,
+	sub_categoria?: string,
+	marca_do_produto?: string,
+	min_valor_venda?: string,
+	max_valor_venda?: string,
+	pesquisa?: string,
+	order_by?: string,
+	pagina: number,
+	por_pagina: number,
 }
+
+export interface Banner {
+    id: number | string;
+    imagemUrl: string;
+    corHex: string;
+}
+

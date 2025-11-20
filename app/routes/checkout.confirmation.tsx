@@ -1,8 +1,6 @@
 
-import OrderSuccessPage from "~/features/cart/OrderSuccess";
 import type { Route } from "./+types/home";
-import CheckoutLayout from "~/features/cart/CheckoutLayout";
-import ConfirmationPage from "~/features/cart/ConfirmationPage";
+import ConfirmationPage from "~/features/carrinho/ConfirmationPage";
 
 export function meta({}: Route.MetaArgs) {
   return [

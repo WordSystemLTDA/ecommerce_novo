@@ -1,12 +1,8 @@
 import React, { useState } from 'react'
 import type { Swiper as SwiperInstance } from 'swiper'
 
-// --- SEU HEADER ---
-// O alias '~/' não foi resolvido. Trocando para um caminho relativo.
-// Ajuste este caminho se 'product-page.tsx' não estiver um nível abaixo de 'app/'
-import { Header } from '~/components/header' // Você usará seu header aqui
+import { Header } from '~/components/header'
 
-// --- SWIPER (PARA A GALERIA DE IMAGENS) ---
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Thumbs, FreeMode } from 'swiper/modules'
 
@@ -15,77 +11,31 @@ import 'swiper/css/navigation'
 import 'swiper/css/free-mode'
 import 'swiper/css/thumbs'
 
-// --- ÍCONES (TENTANDO IMPORTAÇÕES ESPECÍFICAS) ---
-// Tentando caminhos específicos para 'fa' e 'io5'
 import {
-    FaApple,
     FaTruck,
-} from 'react-icons/fa' // Caminho específico para Font Awesome
+} from 'react-icons/fa'
 
 import {
     IoShareOutline,
     IoHeartOutline,
     IoCartOutline,
-    IoShieldCheckmarkOutline,
-} from 'react-icons/io5' // Caminho específico para Ionicons 5
+} from 'react-icons/io5'
 
 import { AiFillInfoCircle } from "react-icons/ai";
 import { MdOutlineDescription } from "react-icons/md";
-
 
 import Button from '~/components/button'
 import RatingStars from '~/components/rating_stars'
 import Breadcrumb from '~/components/breadcrumb'
 import Footer from '~/components/footer'
+import type { Produto } from './types'
 
-// --- DADOS MOCKADOS (EXEMPLO) ---
-// Você substituirá isso por dados da sua API
-const mockProduct = {
-    title:
-        'Apple Watch SE GPS, Caixa Meia-Noite de Alumínio de 44 mm, Pulseira Esportiva Meia-Noite, Tamanho M/G - MXEK3BE/A',
-    brandIcon: FaApple,
-    rating: 4.5,
-    reviewCount: 722,
-    gallery: [
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860075_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860073_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860074_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860077_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860076_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860078_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860079_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860081_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860080_gg.jpg',
-        'https://images6.kabum.com.br/produtos/fotos/634676/iphone-16-pro-max-256gb-titanio-branco_1726860082_gg.jpg',
-    ],
-    soldBy: 'Word System!',
-    specs: [
-        {
-            title: 'Sistema e Performance',
-            description: 'Chip S8 SiP para processamento ágil e eficiente.',
-        },
-        {
-            title: 'Display e Visualização',
-            description:
-                'Tela de 44mm com alta resolução e excelente área de visualização.',
-        },
-        {
-            title: 'Conectividade e Recursos',
-            description:
-                'Monitoramento cardíaco, detecção de quedas, SOS de emergência e resistência à água até 50 metros.',
-        },
-    ],
-    price: {
-        old: 2599.0,
-        current: 2399.9,
-        pix: 2203.41,
-        installments: 'em até 10x R$ 250,24 sem juros',
-    },
+interface ProdutoProps {
+    produto: Produto,
 }
 
 // --- 1. COMPONENTE PRINCIPAL (A PÁGINA) ---
-
-export default function ProductPage() {
+export default async function ProdutoPage({ produto }: ProdutoProps) {
     return (
         <div>
             <Header />
@@ -100,17 +50,19 @@ export default function ProductPage() {
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 relative">
                         <div className='lg:hidden flex flex-col gap-4'>
                             {/* This is the mobile-only title */}
-                            <ProductNameInfo product={mockProduct} />
+                            <ProdutoNameInfo produto={produto} />
                         </div>
 
                         {/* Coluna 1: Galeria de Imagens (5/12) */}
-                        <div className='lg:col-span-5'>
-                            <ProductGallery images={mockProduct.gallery} />
-                        </div>
+                        {produto.atributos.imagens != null &&
+                            <div className='lg:col-span-5'>
+                                <ProdutoGallery images={produto.atributos.imagens} />
+                            </div>
+                        }
 
                         {/* Coluna 2: Informações do Produto (4/12) */}
                         <div className='lg:col-span-4'>
-                            <ProductInfo product={mockProduct} />
+                            <ProdutoInfo produto={produto} />
                         </div>
 
                         {/* MODIFICATION #1:
@@ -132,7 +84,7 @@ export default function ProductPage() {
                           and row 1 on large screens (lg:).
                         */}
                         <div className="lg:col-span-3 lg:col-start-10 lg:row-start-1 lg:row-span-2">
-                            <PurchaseSidebar product={mockProduct} />
+                            <PurchaseSidebar produto={produto} />
                         </div>
                     </div>
                 </div>
@@ -146,11 +98,11 @@ export default function ProductPage() {
 // --- 2. COMPONENTES FILHOS (Auxiliares da Página) ---
 
 // --- GALERIA DE IMAGENS (COM SWIPER) ---
-interface ProductGalleryProps {
+interface ProdutoGalleryProps {
     images: string[]
 }
 
-function ProductGallery({ images }: ProductGalleryProps) {
+function ProdutoGallery({ images }: ProdutoGalleryProps) {
     // Estado para linkar os dois Swipers (galeria principal e miniaturas)
     const [thumbsSwiper, setThumbsSwiper] =
         useState<SwiperInstance | null>(null)
@@ -213,17 +165,11 @@ function ProductGallery({ images }: ProductGalleryProps) {
 }
 
 // --- INFORMAÇÕES DO PRODUTO (Coluna Central) ---
-interface ProductInfoProps {
-    product: typeof mockProduct
-}
-
-function ProductInfo({ product }: ProductInfoProps) {
-    const BrandIcon = product.brandIcon
-
+function ProdutoInfo({ produto }: ProdutoProps) {
     return (
         <div className="flex flex-col gap-4">
             <div className='max-lg:hidden flex flex-col gap-4'>
-                <ProductNameInfo product={product} />
+                <ProdutoNameInfo produto={produto} />
             </div>
 
             {/* Divisória */}
@@ -237,12 +183,12 @@ function ProductInfo({ product }: ProductInfoProps) {
                 </div>
 
                 <ul className="list-disc space-y-2 pl-5 text-sm">
-                    {product.specs.map((spec) => (
+                    {/* {produto.specs.map((spec) => (
                         <li key={spec.title}>
                             <span className="font-semibold">{spec.title}:</span>{" "}
                             {spec.description}
                         </li>
-                    ))}
+                    ))} */}
                 </ul>
                 <a href="#" className="text-sm font-semibold text-terciary hover:underline">
                     Ver mais
@@ -251,14 +197,15 @@ function ProductInfo({ product }: ProductInfoProps) {
         </div>
     )
 }
-function ProductNameInfo({ product }: ProductInfoProps) {
-    const BrandIcon = product.brandIcon
 
+function ProdutoNameInfo({ produto }: ProdutoProps) {
     return (
         <>
             {/* Ícone e Botões */}
             <div className="flex items-center justify-between">
-                <BrandIcon size={24} className="text-gray-800" />
+                {produto.atributos.marca != null &&
+                    <img src={produto.atributos.marca.img} className="text-gray-800" />
+                }
                 <div className="flex gap-4">
                     <button className="text-gray-600 hover:text-red-600">
                         <IoShareOutline size={22} />
@@ -270,31 +217,26 @@ function ProductNameInfo({ product }: ProductInfoProps) {
             </div>
 
             {/* Título */}
-            <h1 className="text-2xl font-semibold leading-tight">{product.title}</h1>
+            <h1 className="text-2xl font-semibold leading-tight">{produto.atributos.nome}</h1>
 
             {/* Avaliações */}
             <div className="flex items-center gap-2">
-                <RatingStars rating={product.rating} variant='normal' />
+                <RatingStars rating={produto.atributos.avaliacao} variant='normal' />
                 <span className="text-sm text-gray-600">
-                    ({product.reviewCount} avaliações)
+                    ({produto.atributos.quantidadeAvaliacoes} avaliações)
                 </span>
             </div>
 
             {/* Vendido por */}
             <div className="text-sm text-gray-600">
                 Vendido e entregue por:{" "}
-                <span className="font-semibold text-terciary">{product.soldBy}</span>
+                <span className="font-semibold text-terciary">{produto.atributos.vendidoPor}</span>
             </div>
         </>
     );
 }
 
-// --- SIDEBAR DE COMPRA (Coluna Direita) ---
-interface PurchaseSidebarProps {
-    product: typeof mockProduct
-}
-
-function PurchaseSidebar({ product }: PurchaseSidebarProps) {
+function PurchaseSidebar({ produto }: ProdutoProps) {
     const currencyFormatter = Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
@@ -305,20 +247,20 @@ function PurchaseSidebar({ product }: PurchaseSidebarProps) {
         <div className="flex flex-col gap-4 lg:sticky top-42">
             {/* Box de Preço */}
             <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                {product.price.old && (
+                {produto.atributos.precoAntigo && (
                     <span className="text-xs text-gray-500 line-through">
-                        {currencyFormatter.format(product.price.old)}
+                        {currencyFormatter.format(produto.atributos.precoAntigo)}
                     </span>
                 )}
                 <span className="text-3xl font-bold text-primary">
-                    {currencyFormatter.format(product.price.current)}
+                    {currencyFormatter.format(produto.atributos.preco)}
                 </span>
                 <span className="text-xs text-gray-700 mt-1">
                     À vista no PIX com <span className='font-semibold'>15% de desconto</span>
                 </span>
                 <div className='my-2'></div>
                 <span className="text-tiny text-gray-600">
-                    {/* {product.price.installments} */}
+                    {/* {produto.price.installments} */}
                     <span className='font-bold'>R$ 2.699,90</span> em até 10x de <span className='font-bold'>R$ 269,99</span> sem juros ou 1x com <span className='font-bold'>10% de desconto</span> no cartão
                 </span>
                 <a href="#" className="text-tiny font-semibold text-black underline mt-2">

@@ -1,5 +1,5 @@
 import type { Route } from "./+types/home";
-import CartPage from "~/features/cart/CartPage";
+import CartPage from "~/features/carrinho/CartPage";
 
 export function meta({}: Route.MetaArgs) {
   return [

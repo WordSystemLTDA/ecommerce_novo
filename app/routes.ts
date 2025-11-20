@@ -2,10 +2,10 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
     index("routes/home.tsx"),
-    route("entrar", "routes/login.tsx"),
-    route("registrar", "routes/register.tsx"),
-    route("produto/:codigo", "routes/product.tsx"),
-    route("/:categoria", "routes/categories.tsx"),
+    route("entrar", "routes/entrar.tsx"),
+    route("registrar", "routes/registrar.tsx"),
+    route("produto/:id", "routes/produto.tsx"),
+    route("/:categoria", "routes/categorias.tsx"),
 
     route("carrinho", "routes/checkout.layout.tsx", [
         // A página /carrinho (Etapa 1)

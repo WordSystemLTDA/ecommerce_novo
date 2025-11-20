@@ -1,6 +1,6 @@
 
 import type { Route } from "./+types/home";
-import CheckoutLayout from "~/features/cart/CheckoutLayout";
+import CheckoutLayout from "~/features/carrinho/CheckoutLayout";
 
 export function meta({}: Route.MetaArgs) {
   return [

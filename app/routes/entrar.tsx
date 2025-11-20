@@ -1,6 +1,5 @@
-import { HomePage } from "~/features/home/HomePage";
 import type { Route } from "./+types/home";
-import LoginPage from "~/features/auth/LoginPage";
+import LoginPage from "~/features/auth/EntrarPage";
 
 export function meta({}: Route.MetaArgs) {
   return [
