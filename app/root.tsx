@@ -44,6 +44,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function HydrateFallback() {
+  return (
+    <div className="fixed inset-0 z-9999 flex min-h-screen w-full flex-col items-center justify-center bg-white">
+      {/* Container do Spinner */}
+      <div className="relative flex items-center justify-center">
+        {/* Anel externo (fundo) */}
+        <div className="h-16 w-16 rounded-full border-4 border-gray-100"></div>
+        
+        {/* Anel interno (girando) - Usa a cor primary definida no seu tema */}
+        <div className="absolute h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+
+      {/* Texto de carregamento com pulsação */}
+      <div className="mt-4 flex flex-col items-center gap-1">
+        <h2 className="text-lg font-bold text-gray-800">Carregando</h2>
+        <p className="animate-pulse text-xs text-gray-500">Aguarde um momento...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
 
   // Este efeito roda assim que o app abre
@@ -55,7 +76,7 @@ export default function App() {
     root.style.setProperty('--dynamic-primary', config.CORES.PRIMARIA);
     root.style.setProperty('--dynamic-secondary', config.CORES.SECUNDARIA);
     root.style.setProperty('--dynamic-terciary', config.CORES.TERCIARIA);
-    
+
   }, []); // O array vazio garante que roda apenas uma vez
 
   return (
@@ -67,14 +88,14 @@ export default function App() {
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let details = "Ocorreu um erro inesperado.";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";
     details =
       error.status === 404
-        ? error.data || "The requested page could not be found."
+        ? error.data || "A página solicitada não foi encontrada."
         : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;

@@ -9,7 +9,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 // Módulos que vamos usar:
 import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react'; // Adicionado useRef
 
 import { FaShoppingCart } from "react-icons/fa";
 
@@ -21,9 +21,11 @@ import 'swiper/css/effect-fade'; // para o efeito de banner
 import { useNavigate } from "react-router";
 import RatingStars from "~/components/rating_stars";
 import Footer from "~/components/footer";
-import type { Banner } from "./types";
+import type { Banner, Produtos } from "./types";
 import type { Produto } from "../produto/types";
 import type { Categoria } from "../categoria/types";
+import { homeService } from "./services/homeService";
+import LazySection from "~/components/lazy_section";
 
 const mockBanners: Banner[] = [
   {
@@ -44,7 +46,13 @@ const mockBanners: Banner[] = [
 ];
 
 // ===================================================================
-// 3. COMPONENTE WELCOME
+// 0. COMPONENTE UTILITÁRIO: LAZY SECTION
+// Este componente só renderiza o conteúdo quando ele entra na tela.
+// ===================================================================
+
+
+// ===================================================================
+// 3. COMPONENTE WELCOME (HOME PAGE)
 // ===================================================================
 export function HomePage() {
   const [dominantColor, setDominantColor] = useState('#000');
@@ -63,6 +71,7 @@ export function HomePage() {
         <div className={`flex-1 flex flex-col items-center gap-0 min-h-0`} style={backgroundStyle}>
 
           <main className="max-w-387 mx-auto w-full bg-background-dark">
+            {/* O Banner principal NÃO usa LazySection pois é "Above the Fold" (primeira dobra) */}
             <CarouselBannersPrincipais
               onColorChange={setDominantColor}
               images={mockBanners}
@@ -73,7 +82,10 @@ export function HomePage() {
             </div>
 
             <section className="my-8">
-              <CarouselBannersSecundarios produtos={mockProducts} />
+              {/* Lazy Loading aplicado nos componentes abaixo da dobra */}
+              <LazySection>
+                <CarouselBannersSecundarios />
+              </LazySection>
             </section>
 
             <hr className="my-2 border-gray-200" />
@@ -84,10 +96,14 @@ export function HomePage() {
                 <p className="text-sm">VER TODOS</p>
               </div>
 
-              <CarouselCategoria name="MORE" categorias={mockCategories} onChange={() => { }} />
+              <LazySection>
+                <CarouselCategoria nome="MORE" onChange={() => { }} />
+              </LazySection>
 
               <section className="my-4">
-                <CarouselBannersSecundarios produtos={mockProducts} />
+                <LazySection>
+                  <CarouselBannersSecundarios />
+                </LazySection>
               </section>
             </section>
 
@@ -99,10 +115,14 @@ export function HomePage() {
                 <p className="text-sm">VER TODOS</p>
               </div>
 
-              <CarouselCategoria name="NEW" categorias={mockCategories} onChange={() => { }} />
+              <LazySection>
+                <CarouselCategoria nome="NEW" onChange={() => { }} />
+              </LazySection>
 
               <section className="my-4">
-                <CarouselBannersSecundarios produtos={mockProducts} />
+                <LazySection>
+                  <CarouselBannersSecundarios />
+                </LazySection>
               </section>
             </section>
 
@@ -114,7 +134,9 @@ export function HomePage() {
               </div>
 
               <section className="my-4">
-                <CarouselBannersSecundarios produtos={mockProducts} />
+                <LazySection>
+                  <CarouselBannersSecundarios />
+                </LazySection>
               </section>
             </section>
           </main>
@@ -172,7 +194,16 @@ export function CarouselBannersPrincipais({ images, onColorChange }: CarouselBan
       >
         {images?.map((image, index) => (
           <SwiperSlide key={index}>
-            <img src={image.imagemUrl} className="w-full object-cover h-[200px] md:h-[300px] lg:h-[450px]" />
+            {/* IMPLEMENTAÇÃO DE LAZY LOADING NA IMAGEM */}
+            {/* A primeira imagem (index 0) carrega 'eager' (rápido) para o LCP. */}
+            {/* As outras carregam 'lazy' para economizar banda. */}
+            <img
+              src={image.imagemUrl}
+              className="w-full object-cover h-[200px] md:h-[300px] lg:h-[450px]"
+              loading={index === 0 ? "eager" : "lazy"}
+              decoding="async"
+              alt={`Banner principal ${index + 1}`}
+            />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -251,7 +282,8 @@ export function ProductCard({ produto }: ProductCardProps) {
           <MdOutlineAddShoppingCart size={20} color="gray" className="cursor-pointer" />
         </div>
 
-        <img src={produto.atributos.fotos.m[0]} alt={produto.atributos.nome} className="w-full h-48 object-contain p-4" />
+        {/* Mantive comentado conforme o original, mas adicionei loading="lazy" caso descomente */}
+        <img src={produto.atributos.fotos.m[0]} alt={produto.atributos.nome} className="w-full h-48 object-contain p-4" loading="lazy" />
       </div>
 
       <div className="flex-1 p-4 flex flex-col justify-between">
@@ -310,13 +342,35 @@ export function ProductCard({ produto }: ProductCardProps) {
 // 6. CARROSSEL SECUNDÁRIO (Swiper - Nenhuma mudança)
 // ===================================================================
 
-interface CarouselBannersSecundariosProps {
-  produtos: Produto[];
-}
 
-export function CarouselBannersSecundarios({ produtos }: CarouselBannersSecundariosProps) {
+export function CarouselBannersSecundarios() {
   const prevButtonId = `produto-carousel-prev`;
   const nextButtonId = `produto-carousel-next`;
+
+  const [produtos, setProdutos] = useState<Produtos>();
+
+  useEffect(() => {
+    const listarCategoriasComSubCategorias = async () => {
+      try {
+        const data = await homeService.listarProdutos();
+        setProdutos(data);
+        console.log('Categorias carregadas');
+      } catch (error) {
+        console.error("Erro ao buscar categorias", error);
+      }
+    };
+
+    listarCategoriasComSubCategorias();
+  }, []);
+
+
+  if (produtos == undefined) {
+    return (
+      <div>
+        <p>Não foi encontrado nenhum produto dispónivel</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full mx-auto px-12">
@@ -336,7 +390,7 @@ export function CarouselBannersSecundarios({ produtos }: CarouselBannersSecundar
         }}
         className="select-none"
       >
-        {produtos.map((produto) => (
+        {produtos.produtos.map((produto) => (
           <SwiperSlide key={produto.id} style={{ height: 'auto' }}>
             <ProductCard produto={produto} />
           </SwiperSlide>
@@ -360,14 +414,38 @@ export function CarouselBannersSecundarios({ produtos }: CarouselBannersSecundar
 
 
 interface CarouselCategoriaProps {
-  name: string;
-  categorias: Categoria[];
+  nome: string;
   onChange: (category: Categoria) => void;
 }
 
-export function CarouselCategoria({ name, categorias, onChange }: CarouselCategoriaProps) {
-  const prevButtonId = `${name}-category-carousel-prev`;
-  const nextButtonId = `${name}-category-carousel-next`;
+export function CarouselCategoria({ nome, onChange }: CarouselCategoriaProps) {
+  const prevButtonId = `${nome}-category-carousel-prev`;
+  const nextButtonId = `${nome}-category-carousel-next`;
+
+  const [categorias, setCategorias] = useState<Categoria[]>();
+
+  useEffect(() => {
+    const listarCategoriasComSubCategorias = async () => {
+      try {
+        const data = await homeService.listarCategorias();
+        setCategorias(data);
+        console.log('Categorias carregadas');
+      } catch (error) {
+        console.error("Erro ao buscar categorias", error);
+      }
+    };
+
+    listarCategoriasComSubCategorias();
+  }, []);
+
+
+  if (categorias == undefined) {
+    return (
+      <div>
+        <p>Não foi encontrado nenhuma categoria dispónivel</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full mx-auto px-12">

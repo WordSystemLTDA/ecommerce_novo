@@ -1,11 +1,8 @@
-import { useLoaderData } from "react-router"; // ou @remix-run/react
 import type { Route } from "./+types/produto";
 import ProductPage from "~/features/produto/ProdutoPage";
 import { produtoService } from "~/features/produto/services/produtoService";
 
-// 1. O Loader roda no servidor (ou antes da rota carregar)
-// Ele prepara os dados antes do componente existir
-export async function loader({ params }: Route.LoaderArgs) {
+export async function clientLoader({ params }: Route.LoaderArgs) {
   const id = params.id;
 
   if (!id) {

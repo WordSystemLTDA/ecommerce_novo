@@ -35,7 +35,7 @@ interface ProdutoProps {
 }
 
 // --- 1. COMPONENTE PRINCIPAL (A PÁGINA) ---
-export default async function ProdutoPage({ produto }: ProdutoProps) {
+export default function ProdutoPage({ produto }: ProdutoProps) {
     return (
         <div>
             <Header />
@@ -182,14 +182,14 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                     <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
                 </div>
 
-                <ul className="list-disc space-y-2 pl-5 text-sm">
-                    {/* {produto.specs.map((spec) => (
+                {/* <ul className="list-disc space-y-2 pl-5 text-sm">
+                    {produto.specs.map((spec) => (
                         <li key={spec.title}>
                             <span className="font-semibold">{spec.title}:</span>{" "}
                             {spec.description}
                         </li>
-                    ))} */}
-                </ul>
+                    ))}
+                </ul> */}
                 <a href="#" className="text-sm font-semibold text-terciary hover:underline">
                     Ver mais
                 </a>

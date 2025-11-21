@@ -1,13 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdKeyboardArrowDown, MdOutlineSearch, MdOutlineFavorite, MdPerson, MdMenu } from "react-icons/md";
 
 import { FaShoppingCart } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import DepartmentMenu from "./departament";
-
+import { homeService } from "~/features/home/services/homeService";
+import type { Categoria } from "~/features/categoria/types";
 
 export function Header() {
     let navigate = useNavigate();
+
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
+
+    useEffect(() => {
+        const listarCategoriasComSubCategorias = async () => {
+            try {
+                const data = await homeService.listarCategoriasComSubCategorias();
+                setCategorias(data);
+                console.log('Categorias carregadas');
+            } catch (error) {
+                console.error("Erro ao buscar categorias", error);
+            }
+        };
+
+        listarCategoriasComSubCategorias();
+    }, []);
 
     return (
         <header className="w-full mx-auto lg:py-5 lg:px-8 flex gap-5 items-start bg-primary h-32 p-4 sticky top-0 z-50">
@@ -18,7 +35,7 @@ export function Header() {
                     <SearchBar />
 
                     <div className="flex gap-2">
-                        <DepartmentMenu />
+                        <DepartmentMenu categorias={categorias} />
                         <ButtonCupons />
                         <ButtonMaisVendidos />
                         <ButtonOthers titulo="Novidades" />
@@ -107,7 +124,7 @@ export function ButtonCarrinho() {
     let navigate = useNavigate();
 
     return (
-        <div 
+        <div
             className="cursor-pointer"
             onClick={() => navigate('/carrinho')}
         >

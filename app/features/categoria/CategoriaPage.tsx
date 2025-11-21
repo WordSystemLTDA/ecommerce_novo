@@ -12,7 +12,6 @@ import {
 import Footer from '~/components/footer';
 import { Header } from '~/components/header';
 import { PriceRangeSlider } from '~/components/price_range_slider';
-import { mockProducts, ProductCard } from '../home/HomePage';
 import Breadcrumb from '~/components/breadcrumb';
 
 // ===================================================================
@@ -185,9 +184,9 @@ const Sidebar = () => (
 // ===================================================================
 const ProductGrid = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {mockProducts.map((product) => (
+        {/* {mockProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
-        ))}
+        ))} */}
     </div>
 );
 

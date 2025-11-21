@@ -1,295 +1,199 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 // Importando os ícones que vamos usar
-import { FaBars, FaChevronRight } from 'react-icons/fa' // <-- CORREÇÃO: Adicionando /index.js
+import { FaBars, FaChevronRight } from 'react-icons/fa';
+import type { Categoria } from '~/features/categoria/types';
 
-// --- 1. Definição de Tipos e Dados Falsos (Mock Data) ---
-// ... (interfaces e dados permanecem os mesmos) ...
-// [Immersive content redacted for brevity.]
-interface SubCategory {
-  id: string
-  name: string
-  href: string
-}
+// --- 1. Definição de Tipos (Interfaces) ---
 
-interface Category {
-  id: string
-  name: string
-  href: string
-  subCategories: SubCategory[]
-}
+// interface SubCategoria {
+//     id: string;
+//     nome: string;
+//     link: string;
+// }
 
-interface Department {
-  id: string
-  name: string
-  href: string
-  categories: Category[]
-}
+// interface Categoria {
+//     id: string;
+//     nome: string;
+//     link: string;
+//     subCategorias: SubCategoria[];
+// }
 
-// Dados de exemplo baseados na sua screenshot
-const departmentsData: Department[] = [
-  {
-    id: '1',
-    name: 'Hardware',
-    href: '/hardware',
-    categories: [
-      {
-        id: 'cat-1-1',
-        name: 'Coolers',
-        href: '/hardware/coolers',
-        subCategories: [
-          { id: 'sub-1-1-1', name: 'Acessórios para Cooler', href: '#' },
-          { id: 'sub-1-1-2', name: 'Air Cooler', href: '#' },
-          { id: 'sub-1-1-3', name: 'Almofada Térmica', href: '#' },
-          { id: 'sub-1-1-4', name: 'FAN', href: '#' },
-          { id: 'sub-1-1-5', name: 'Pasta Térmica', href: '#' },
-          { id: 'sub-1-1-6', name: 'Water Cooler', href: '#' },
-        ],
-      },
-      {
-        id: 'cat-1-2',
-        name: 'Disco Rígido (HD)',
-        href: '/hardware/hd',
-        subCategories: [
-          { id: 'sub-1-2-1', name: 'HD Externo', href: '#' },
-          { id: 'sub-1-2-2', name: 'HD Interno', href: '#' },
-          { id: 'sub-1-2-3', name: 'HD para Servidor', href: '#' },
-        ],
-      },
-      {
-        id: 'cat-1-3',
-        name: 'Drives',
-        href: '/hardware/drives',
-        subCategories: [],
-      },
-      {
-        id: 'cat-1-4',
-        name: 'Fontes',
-        href: '/hardware/fontes',
-        subCategories: [
-          { id: 'sub-1-4-1', name: 'Fonte ATX', href: '#' },
-          { id: 'sub-1-4-2', name: 'Fonte SFX', href: '#' },
-        ],
-      },
-      {
-        id: 'cat-1-5',
-        name: 'Kit Hardware',
-        href: '/hardware/kit',
-        subCategories: [],
-      },
-      {
-        id: 'cat-1-6',
-        name: 'Memória RAM',
-        href: '/hardware/ram',
-        subCategories: [
-          { id: 'sub-1-6-1', name: 'DDR4', href: '#' },
-          { id: 'sub-1-6-2', name: 'DDR5', href: '#' },
-        ],
-      },
-      {
-        id: 'cat-1-7',
-        name: 'Placa de Vídeo (VGA)',
-        href: '/hardware/vga',
-        subCategories: [],
-      },
-      {
-        id: 'cat-1-8',
-        name: 'Placas-mãe',
-        href: '/hardware/mobo',
-        subCategories: [],
-      },
-      {
-        id: 'cat-1-9',
-        name: 'Processadores',
-        href: '/hardware/cpu',
-        subCategories: [],
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Periféricos',
-    href: '/perifericos',
-    categories: [
-      {
-        id: 'cat-2-1',
-        name: 'Mouse',
-        href: '/perifericos/mouse',
-        subCategories: [
-          { id: 'sub-2-1-1', name: 'Mouse Gamer', href: '#' },
-          { id: 'sub-2-1-2', name: 'Mouse Sem Fio', href: '#' },
-        ],
-      },
-      {
-        id: 'cat-2-2',
-        name: 'Teclado',
-        href: '/perifericos/teclado',
-        subCategories: [
-          { id: 'sub-2-2-1', name: 'Teclado Mecânico', href: '#' },
-          { id: 'sub-2-2-2', name: 'Kit Teclado e Mouse', href: '#' },
-        ],
-      },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Computadores',
-    href: '/computadores',
-    categories: [],
-  },
-  {
-    id: '4',
-    name: 'Games',
-    href: '/games',
-    categories: [],
-  },
-  {
-    id: '5',
-    name: 'Celular & Smartphone',
-    href: '/celular',
-    categories: [],
-  },
-  {
-    id: '6',
-    name: 'TV',
-    href: '/tv',
-    categories: [],
-  },
-  // ... Adicione os outros departamentos aqui
-]
+// --- 2. Dados (Mock Data) ---
+// Agora a estrutura é apenas Categoria -> Subcategorias
 
-// --- 2. O Componente do Menu ---
+// const dadosCategorias: Categoria[] = [
+//     {
+//         id: '1',
+//         nome: 'Hardware',
+//         link: '/hardware',
+//         subCategorias: [
+//             { id: 'sub-1-1', nome: 'Coolers e Refrigeração', link: '/hardware/coolers' },
+//             { id: 'sub-1-2', nome: 'Discos Rígidos (HD)', link: '/hardware/hd' },
+//             { id: 'sub-1-3', nome: 'SSDs', link: '/hardware/ssd' },
+//             { id: 'sub-1-4', nome: 'Fontes de Alimentação', link: '/hardware/fontes' },
+//             { id: 'sub-1-5', nome: 'Memória RAM', link: '/hardware/ram' },
+//             { id: 'sub-1-6', nome: 'Placas de Vídeo (VGA)', link: '/hardware/vga' },
+//             { id: 'sub-1-7', nome: 'Placas-mãe', link: '/hardware/placa-mae' },
+//             { id: 'sub-1-8', nome: 'Processadores', link: '/hardware/processadores' },
+//             { id: 'sub-1-9', nome: 'Gabinetes', link: '/hardware/gabinetes' },
+//         ],
+//     },
+//     {
+//         id: '2',
+//         nome: 'Periféricos',
+//         link: '/perifericos',
+//         subCategorias: [
+//             { id: 'sub-2-1', nome: 'Mouses', link: '/perifericos/mouses' },
+//             { id: 'sub-2-2', nome: 'Teclados', link: '/perifericos/teclados' },
+//             { id: 'sub-2-3', nome: 'Headsets e Fones', link: '/perifericos/headsets' },
+//             { id: 'sub-2-4', nome: 'Microfones', link: '/perifericos/microfones' },
+//             { id: 'sub-2-5', nome: 'Mousepads', link: '/perifericos/mousepads' },
+//             { id: 'sub-2-6', nome: 'Webcams', link: '/perifericos/webcams' },
+//         ],
+//     },
+//     {
+//         id: '3',
+//         nome: 'Computadores',
+//         link: '/computadores',
+//         subCategorias: [
+//             { id: 'sub-3-1', nome: 'PC Gamer', link: '/computadores/pc-gamer' },
+//             { id: 'sub-3-2', nome: 'PC Home/Office', link: '/computadores/home-office' },
+//             { id: 'sub-3-3', nome: 'Notebooks', link: '/computadores/notebooks' },
+//             { id: 'sub-3-4', nome: 'Servidores', link: '/computadores/servidores' },
+//         ],
+//     },
+//     {
+//         id: '4',
+//         nome: 'Games',
+//         link: '/games',
+//         subCategorias: [
+//             { id: 'sub-4-1', nome: 'PlayStation 5', link: '/games/ps5' },
+//             { id: 'sub-4-2', nome: 'Xbox Series', link: '/games/xbox' },
+//             { id: 'sub-4-3', nome: 'Nintendo Switch', link: '/games/nintendo' },
+//             { id: 'sub-4-4', nome: 'Jogos', link: '/games/jogos' },
+//             { id: 'sub-4-5', nome: 'Controles', link: '/games/controles' },
+//         ],
+//     },
+//     {
+//         id: '5',
+//         nome: 'Monitores',
+//         link: '/monitores',
+//         subCategorias: [
+//             { id: 'sub-5-1', nome: 'Monitor Gamer', link: '/monitores/gamer' },
+//             { id: 'sub-5-2', nome: 'Monitor Profissional', link: '/monitores/profissional' },
+//             { id: 'sub-5-3', nome: 'Suportes', link: '/monitores/suportes' },
+//         ],
+//     },
+//     {
+//         id: '6',
+//         nome: 'Cadeiras e Mesas',
+//         link: '/moveis',
+//         subCategorias: [
+//             { id: 'sub-6-1', nome: 'Cadeira Gamer', link: '/moveis/cadeira-gamer' },
+//             { id: 'sub-6-2', nome: 'Cadeira de Escritório', link: '/moveis/cadeira-escritorio' },
+//             { id: 'sub-6-3', nome: 'Mesa Gamer', link: '/moveis/mesa-gamer' },
+//         ],
+//     },
+// ];
 
-export default function DepartmentMenu() {
-  // ... (estados permanecem os mesmos) ...
-// [Immersive content redacted for brevity.]
-  const [activeDept, setActiveDept] = useState<Department | null>(null)
-  const [activeCat, setActiveCat] = useState<Category | null>(null)
+// --- 3. O Componente do Menu ---
 
-  const handleDeptMouseEnter = (dept: Department) => {
-    setActiveDept(dept)
-    setActiveCat(null) // Reseta a subcategoria ao trocar de departamento
-  }
+export default function DepartmentMenu(props: { categorias: Categoria[] }) {
+  // Estado para controlar qual Categoria está sendo "hoverada" (mouse em cima)
+  const [categoriaAtiva, setCategoriaAtiva] = useState<Categoria | null>(null);
 
-  const handleCatMouseEnter = (cat: Category) => {
-    setActiveCat(cat)
-  }
+  // Função chamada ao passar o mouse sobre uma categoria da lista principal
+  const lidarComEntradaMouseCategoria = (categoria: Categoria) => {
+    setCategoriaAtiva(categoria);
+  };
 
-  const handleMouseLeave = () => {
-    // Ao sair do menu, reseta tudo
-    setActiveDept(null)
-    setActiveCat(null)
-  }
-
+  // Função chamada quando o mouse sai da área do menu completo
+  const lidarComSaidaMouse = () => {
+    setCategoriaAtiva(null);
+  };
 
   return (
-    // `group` é a mágica do Tailwind
-    <div className="relative group">
-      
-      {/* O Botão "Departamentos" */}
-      <button className="flex h-full items-center gap-2 border border-secondary rounded-sm px-6 py-2 text-xs font-bold text-secondary transition-colors cursor-pointer">
+    // `group` permite que o submenu apareça quando fazemos hover neste container pai
+    <div className="relative group" onMouseLeave={lidarComSaidaMouse}>
+
+      {/* O Botão Principal "Todas as Categorias" */}
+      <button className="flex h-full items-center gap-2 border border-secondary rounded-sm px-6 py-2 text-xs font-bold text-secondary transition-colors cursor-pointer hover:bg-gray-50">
         <FaBars />
-        <p>Departamentos</p>
+        <p>Todas as Categorias</p>
       </button>
 
-      {/* O Container do Mega Menu (escondido por padrão) */}
-      <div
-        className="absolute left-0 top-full z-50 hidden bg-white shadow-lg group-hover:flex"
-        onMouseLeave={handleMouseLeave}
-      >
-        <div className="flex">
-          <div className="w-64 border-r border-gray-200">
-            {/* ... (conteúdo da coluna 1) ... */}
-            <ul className="max-h-[600px] overflow-y-auto">
-              {departmentsData.map((dept) => (
-                <li key={dept.id}>
-                  <a
-                    href={dept.href}
-                    onMouseEnter={() => handleDeptMouseEnter(dept)}
-                    className={`flex items-center justify-between p-2 text-xs hover:bg-gray-100 hover:text-secondary ${
-                      activeDept?.id === dept.id ? 'bg-gray-100 text-secondary' : ''
+      {/* O Container do Mega Menu (escondido por padrão, aparece no hover do grupo) */}
+      <div className="absolute left-0 top-full z-50 hidden bg-white shadow-xl border border-gray-100 group-hover:flex">
+
+        {/* COLUNA 1: Lista das Categorias Principais */}
+        <div className="w-64 border-r border-gray-200 bg-white py-2">
+          <ul className="max-h-[500px] overflow-y-auto">
+            {props.categorias.map((categoria) => (
+              <li key={categoria.id}>
+                <a
+                  href={categoria.link}
+                  onMouseEnter={() => lidarComEntradaMouseCategoria(categoria)}
+                  className={`flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-primary hover:text-white transition-colors ${categoriaAtiva?.id === categoria.id ? 'bg-primary text-white' : ''
                     }`}
-                  >
-                    {dept.name}
-                    {/* Mostra a seta apenas se houver categorias */}
-                    {dept.categories.length > 0 && <FaChevronRight size={10} />}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+                >
+                  <span className="font-medium">{categoria.nome}</span>
+                  {/* Mostra a seta apenas se houver subcategorias */}
+                  {categoria.subCategorias.length > 0 && <FaChevronRight size={10} />}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-          {/* Nível 2: Coluna de Categorias 
-              --- CORREÇÃO ---
-              Troquei "w-1/3 max-w-xs" por "w-64" (16rem, ou 256px)
-          */}
-          <div className="w-64 border-r border-gray-200">
-            {/* ... (conteúdo da coluna 2) ... */}
-            {activeDept && activeDept.categories.length > 0 && (
-              <ul className="max-h-[600px] overflow-y-auto">
-                <li className="px-2 py-1">
-                  <a href={activeDept.href} className="text-xs font-bold text-secondary hover:underline">
-                    Ver tudo de {activeDept.name}
-                  </a>
-                </li>
-                {activeDept.categories.map((cat) => (
-                  <li key={cat.id}>
+        {/* COLUNA 2: Subcategorias ou Banner */}
+        {/* Esta área tem largura fixa ou flexível dependendo do design, coloquei w-72 */}
+        <div className="w-72 bg-gray-50 min-h-full">
+
+          {/* CASO 1: Usuário está com o mouse em cima de uma categoria */}
+          {categoriaAtiva ? (
+            <div className="p-4">
+              <div className="mb-3 pb-2 border-b border-gray-200">
+                <a href={categoriaAtiva.link} className="text-sm font-bold text-primary hover:underline">
+                  Ver tudo em {categoriaAtiva.nome}
+                </a>
+              </div>
+
+              <ul className="space-y-2">
+                {categoriaAtiva.subCategorias.map((sub) => (
+                  <li key={sub.id}>
                     <a
-                      href={cat.href}
-                      onMouseEnter={() => handleCatMouseEnter(cat)}
-                      className={`flex items-center justify-between p-2 text-xs hover:bg-gray-100 ${
-                        activeCat?.id === cat.id
-                          ? 'bg-gray-200 font-semibold' // Destaque diferente
-                          : ''
-                      }`}
+                      href={sub.link}
+                      className="block text-sm text-gray-600 hover:text-secondary hover:translate-x-1 transition-all"
                     >
-                      {cat.name}
-                      {cat.subCategories.length > 0 && <FaChevronRight size={10} />}
+                      {sub.nome}
                     </a>
                   </li>
                 ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Nível 3: Coluna de Subcategorias 
-              --- CORREÇÃO ---
-              Troquei "w-1/3 max-w-xs" por "w-64" (16rem, ou 256px)
-          */}
-          <div className="w-64">
-            {/* ... (conteúdo da coluna 3) ... */}
-            {activeCat && activeCat.subCategories.length > 0 && (
-              <ul className="max-h-[600px] overflow-y-auto">
-                <li className="px-2 py-1">
-                  <a href={activeCat.href} className="text-xs font-bold text-secondary hover:underline">
-                    Ver tudo de {activeCat.name}
-                  </a>
-                </li>
-                {activeCat.subCategories.map((subCat) => (
-                  <li key={subCat.id}>
-                    <a
-                      href={subCat.href}
-                      className="block p-2 text-xs hover:bg-gray-100"
-                    >
-                      {subCat.name}
-                    </a>
+                {categoriaAtiva.subCategorias.length === 0 && (
+                  <li className="text-xs text-gray-400 italic">
+                    Nenhuma subcategoria encontrada.
                   </li>
-                ))}
+                )}
               </ul>
-            )}
-            
-            {/* Bônus: Banner (como na foto) */}
-            {!activeCat && (
-              <div className="p-4">
-                <img 
-                  src="https://placehold.co/400x500/333/FFF?text=Banner+Promocional" 
-                  alt="Promoção" 
-                  className="h-auto w-full"
+            </div>
+          ) : (
+            /* CASO 2: Nenhum hover ativo (Estado Inicial) - Mostra um Banner ou Destaques */
+            <div className="p-4 flex flex-col items-center justify-center h-full text-center opacity-70">
+              {/* Placeholder para uma imagem ou ícone de destaque */}
+              <div className="mb-4">
+                <img
+                  src="https://placehold.co/200x150/EEE/31343C?text=Ofertas"
+                  alt="Destaque"
+                  className="rounded-md"
                 />
               </div>
-            )}
-          </div>
+              <p className="text-sm font-medium text-gray-500">
+                Selecione uma categoria para ver mais opções.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }
