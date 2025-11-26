@@ -19,6 +19,8 @@ import Footer from '~/components/footer'
 import CustomSelect from '~/components/select'
 import InputIE from '~/components/input_ie'
 import PasswordInput from '~/components/password_input'
+import { authService } from './services/authService'
+import { normalizeCnpj, normalizeCpf, normalizeRg } from '~/utils/masks'
 // --- FIM DA CORREÇÃO ---
 
 // --- 1. Componente Principal (Página de Cadastro) ---
@@ -26,42 +28,37 @@ import PasswordInput from '~/components/password_input'
 export default function RegistrarPage() {
     // --- Estados do Formulário ---
     // Comuns
-    const [nome, setNome] = useState('')
-    // const [sobrenome, setSobrenome] = useState('')
-    const [tipoPessoa, setTipoPessoa] = useState('fisica') // 'fisica' ou 'juridica'
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [showPassword, setShowPassword] = useState(false)
-    const [aceitaMarketing, setAceitaMarketing] = useState(true)
-    const [aceitaTermos, setAceitaTermos] = useState(false)
+    const [nome, setNome] = useState('');
+    const [tipoPessoa, setTipoPessoa] = useState('Física'); // 'Física' ou 'Jurídica'
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [aceitaMarketing, setAceitaMarketing] = useState(true);
+    const [aceitaTermos, setAceitaTermos] = useState(false);
 
     // Pessoa Física
-    const [cpf, setCpf] = useState('')
-    const [rg, setRg] = useState('')
+    const [cpf, setCpf] = useState('');
+    const [rg, setRg] = useState('');
 
-    // Pessoa Jurídica (NOVOS ESTADOS)
-    // const [nomeFantasia, setNomeFantasia] = useState('')
-    const [razaoSocial, setRazaoSocial] = useState('')
-    const [cnpj, setCnpj] = useState('')
-    const [ie, setIe] = useState('')
-    const [isentoIE, setIsentoIE] = useState(false) // Para o checkbox 'ISENTO'
+    // Pessoa Jurídica
+    const [razaoSocial, setRazaoSocial] = useState('');
+    const [cnpj, setCnpj] = useState('');
+    const [ie, setIe] = useState('');
+    const [isentoIE, setIsentoIE] = useState(false); // Para o checkbox 'ISENTO'
 
-    const handleRegister = (e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault()
-        // Lógica de cadastro aqui
-        const data = {
-            nome,
-            tipoPessoa,
+
+        await authService.registrar({
+            doc: tipoPessoa === 'Física' ? cpf : cnpj,
             email,
-            password,
-            aceitaMarketing,
-            aceitaTermos,
-            // Dados condicionais
-            ...(tipoPessoa === 'fisica'
-                ? { cpf, rg }
-                : { nome, razaoSocial, cnpj, ie, isentoIE }),
-        }
-        console.log('Register attempt:', data)
+            ie,
+            nome,
+            razao_social: razaoSocial,
+            rg,
+            senha: password,
+            tipo_pessoa: tipoPessoa
+        });
     }
 
     return (
@@ -93,13 +90,13 @@ export default function RegistrarPage() {
                                     onChange={(e) => setTipoPessoa(e.target.value)}
                                     required
                                 >
-                                    <option value="fisica">Pessoa Física</option>
-                                    <option value="juridica">Pessoa Jurídica</option>
+                                    <option value="Física">Pessoa Física</option>
+                                    <option value="Jurídica">Pessoa Jurídica</option>
                                 </CustomSelect>
                             </div>
 
                             {/* Campos de Pessoa Física */}
-                            {tipoPessoa === 'fisica' && (
+                            {tipoPessoa === 'Física' && (
                                 <>
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
                                         <CustomInput
@@ -116,21 +113,21 @@ export default function RegistrarPage() {
                                             type="text"
                                             placeholder="CPF *"
                                             value={cpf}
-                                            onChange={(e) => setCpf(e.target.value)}
+                                            onChange={(e) => setCpf(normalizeCpf(e.target.value))}
                                             required
                                         />
                                         <CustomInput
                                             type="text"
                                             placeholder="RG"
                                             value={rg}
-                                            onChange={(e) => setRg(e.target.value)}
+                                            onChange={(e) => setRg(normalizeRg(e.target.value))}
                                         />
                                     </div>
                                 </>
                             )}
 
                             {/* Campos de Pessoa Jurídica (NOVOS) */}
-                            {tipoPessoa === 'juridica' && (
+                            {tipoPessoa === 'Jurídica' && (
                                 <>
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <CustomInput
@@ -153,7 +150,7 @@ export default function RegistrarPage() {
                                             type="text"
                                             placeholder="CNPJ *"
                                             value={cnpj}
-                                            onChange={(e) => setCnpj(e.target.value)}
+                                            onChange={(e) => setCnpj(normalizeCnpj(e.target.value))}
                                             required
                                         />
                                         {/* Campo de IE com Checkbox "ISENTO" */}

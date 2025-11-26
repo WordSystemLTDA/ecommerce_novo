@@ -14,6 +14,8 @@ import Button from '~/components/button'
 import CustomInput from '~/components/input'
 import IconCircle from '~/components/icon_circle'
 import Footer from '~/components/footer'
+import { authService } from './services/authService'
+import { toast } from 'react-toastify'
 // --- 1. Componente Principal (A Página) ---
 
 /**
@@ -27,11 +29,10 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
 
   let navigate = useNavigate();
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Lógica de login aqui
-    console.log('Login attempt:', { email, password, rememberMe })
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await authService.entrar({email, senha: password});
   }
 
   return (
@@ -44,7 +45,7 @@ export default function LoginPage() {
 
             {/* Coluna 1: Login */}
             <div className="flex flex-col">
-              <IconCircle icon={FaLock} color='primary'  />
+              <IconCircle icon={FaLock} color='primary' />
               <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
                 Já tem uma conta?
               </h2>
@@ -84,7 +85,10 @@ export default function LoginPage() {
                 </label>
 
                 {/* Botão de Acessar */}
-                <Button variant="primary" type="submit">
+                <Button
+                  variant="primary"
+                  type="submit"
+                >
                   ACESSAR CONTA
                 </Button>
 

@@ -75,7 +75,7 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                                     <MdOutlineDescription className='text-terciary' size={24} />
                                     <h2 className="text-xl font-semibold">DESCRIÇÃO O PRODUTO</h2>
                                 </div>
-                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed repudiandae, atque labore illo incidunt eveniet hic iusto esse voluptate, impedit blanditiis culpa necessitatibus omnis cumque soluta ut modi temporibus vel. <br /><br /> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Iste velit sequi quae vel quod animi expedita eos architecto, magni, iusto quo id. Fuga, cupiditate. Autem tenetur praesentium neque voluptatem fuga.</p>
+                                <p>{produto.atributos.descricaolonga1}<br /><br /> {produto.atributos.descricaolonga2}</p>
                             </div>
                         </div>
 
@@ -286,6 +286,7 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
         </div>
     )
 }
+
 // --- Calculadora de Frete ---
 function FreightCalculator() {
     const [cep, setCep] = useState('');

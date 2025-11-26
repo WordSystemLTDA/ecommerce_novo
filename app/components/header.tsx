@@ -4,8 +4,8 @@ import { MdKeyboardArrowDown, MdOutlineSearch, MdOutlineFavorite, MdPerson, MdMe
 import { FaShoppingCart } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import DepartmentMenu from "./departament";
-import { homeService } from "~/features/home/services/homeService";
 import type { Categoria } from "~/features/categoria/types";
+import { categoriaService } from "~/features/categoria/services/categoriaService";
 
 export function Header() {
     let navigate = useNavigate();
@@ -15,7 +15,7 @@ export function Header() {
     useEffect(() => {
         const listarCategoriasComSubCategorias = async () => {
             try {
-                const data = await homeService.listarCategoriasComSubCategorias();
+                const { data } = await categoriaService.listarCategoriasComSubCategorias();
                 setCategorias(data);
                 console.log('Categorias carregadas');
             } catch (error) {
@@ -41,11 +41,7 @@ export function Header() {
                         <ButtonOthers titulo="Novidades" />
                         <ButtonOthers titulo="Ofertas do Dia" />
                         <ButtonOthers titulo="Lançamentos" />
-                        <ButtonOthers titulo="PC Gamer" />
-                        <ButtonOthers titulo="Computadores" />
-                        <ButtonOthers titulo="Periféricos" />
-                        <ButtonOthers titulo="Escritório" />
-                        <ButtonMore />
+                        {/* <ButtonMore /> */}
                     </div>
                 </div>
 

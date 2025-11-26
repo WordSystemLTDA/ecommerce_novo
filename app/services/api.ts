@@ -1,8 +1,10 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 import config from '~/config/config';
 
 const apiClient = axios.create({
     baseURL: config.API,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
         'X-Empresas-IDs': config.EMPRESAS.join(','),
@@ -12,13 +14,14 @@ const apiClient = axios.create({
 // Interceptor de resposta
 apiClient.interceptors.response.use(
     (response) => {
-        // keep the AxiosResponse shape but normalize the payload
-        response.data = response.data['data'];
         return response;
     },
     (error) => {
-        // normalize error payload and reject so callers receive a rejected promise
         const payload = error.response?.data || error.message;
+        var error = payload['error'];
+        toast.error(error, {
+            position: 'top-center',
+        });
 
         return Promise.reject({
             sucesso: false,

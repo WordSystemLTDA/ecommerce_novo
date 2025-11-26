@@ -12,6 +12,9 @@ import "./app.css";
 import { Suspense, useEffect } from "react";
 import Loader from "./components/loader";
 import config from "./config/config";
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import { AuthProvider } from "./context/AuthContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -51,7 +54,7 @@ export function HydrateFallback() {
       <div className="relative flex items-center justify-center">
         {/* Anel externo (fundo) */}
         <div className="h-16 w-16 rounded-full border-4 border-gray-100"></div>
-        
+
         {/* Anel interno (girando) - Usa a cor primary definida no seu tema */}
         <div className="absolute h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
       </div>
@@ -81,7 +84,10 @@ export default function App() {
 
   return (
     <Suspense fallback={<Loader />}>
-      <Outlet />
+      <AuthProvider>
+        <Outlet />
+        <ToastContainer />
+      </AuthProvider>
     </Suspense>
   );
 }

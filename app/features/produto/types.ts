@@ -1,4 +1,6 @@
-export interface Produto {
+import type { DefaultResponse } from "~/types/DefaultResponse";
+
+export interface Produto extends DefaultResponse {
     tipo: string,
     id: number,
     links: Links,
@@ -16,6 +18,8 @@ export interface Links {
 export interface Atributos {
     menu: string,
     nome: string,
+    descricaolonga1: string,
+    descricaolonga2: string,
     descricao: string,
     peso: number,
     preco: number,
@@ -80,3 +84,43 @@ export interface Selo {
     font_color: string,
     tipo: string,
 }
+
+export interface Produtos {
+    produtos: Produto[],
+    paginacao: Paginacao,
+    filtros: Filtros,
+}
+
+export interface Paginacao {
+	pagina: number,
+    por_pagina: number,
+    total: number,
+    total_paginas: number
+}
+
+export interface Filtros {
+    categoria?: string,
+	sub_categoria?: string,
+	marca_do_produto?: string,
+	min_valor_venda?: string,
+	max_valor_venda?: string,
+	pesquisa?: string,
+	order_by?: string,
+	pagina: number,
+	por_pagina: number,
+}
+
+export interface Banner {
+    id: number | string;
+    imagemUrl: string;
+    corHex: string;
+}
+
+export interface ProdutoResponse extends DefaultResponse {
+    data: Produto,
+}
+
+export interface ProdutosResponse extends DefaultResponse {
+    data: Produtos,
+}
+

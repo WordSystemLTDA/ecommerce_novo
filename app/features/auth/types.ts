@@ -1,16 +1,32 @@
-// Define o que você envia para a API (Request/Payload)
-export interface LoginRequest {
+import type { DefaultResponse } from "~/types/DefaultResponse";
+
+export interface Cliente {
+    id: number;
+    nome: string;
     email: string;
-    password: string; // ou password, dependendo da API
 }
 
-// Define o que a API te devolve (Response)
-export interface LoginResponse {
+export interface EntrarRequest {
+    email: string;
+    senha: string;
+}
+
+export interface EntrarResponse extends DefaultResponse {
     token: string;
-    expires_in: number;
-    user: {
-        id: number;
-        name: string;
-        avatar_url: string;
-    };
+    cliente: Cliente;
+}
+
+export interface RegistrarRequest {
+    email: string,
+    senha: string,
+    tipo_pessoa: string,
+    nome: string,
+    rg: string,
+    doc: string,
+    razao_social: string,
+    ie: string,
+}
+
+export interface RegistrarResponse extends DefaultResponse {
+
 }

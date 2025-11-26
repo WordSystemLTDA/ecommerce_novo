@@ -21,11 +21,12 @@ import 'swiper/css/effect-fade'; // para o efeito de banner
 import { useNavigate } from "react-router";
 import RatingStars from "~/components/rating_stars";
 import Footer from "~/components/footer";
-import type { Banner, Produtos } from "./types";
-import type { Produto } from "../produto/types";
+import type { Banner, Produto, Produtos } from "../produto/types";
 import type { Categoria } from "../categoria/types";
 import { homeService } from "./services/homeService";
 import LazySection from "~/components/lazy_section";
+import { categoriaService } from "../categoria/services/categoriaService";
+import { produtoService } from "../produto/services/produtoService";
 
 const mockBanners: Banner[] = [
   {
@@ -352,7 +353,7 @@ export function CarouselBannersSecundarios() {
   useEffect(() => {
     const listarCategoriasComSubCategorias = async () => {
       try {
-        const data = await homeService.listarProdutos();
+        const { data } = await produtoService.listarProdutos();
         setProdutos(data);
         console.log('Categorias carregadas');
       } catch (error) {
@@ -427,7 +428,7 @@ export function CarouselCategoria({ nome, onChange }: CarouselCategoriaProps) {
   useEffect(() => {
     const listarCategoriasComSubCategorias = async () => {
       try {
-        const data = await homeService.listarCategorias();
+        const { data } = await categoriaService.listarCategorias();
         setCategorias(data);
         console.log('Categorias carregadas');
       } catch (error) {
