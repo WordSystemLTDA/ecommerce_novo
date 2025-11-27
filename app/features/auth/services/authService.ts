@@ -1,18 +1,12 @@
 // app/components/features/auth/services/authService.ts
 
+import { toast } from "react-toastify";
 import apiClient from "~/services/api";
 import type { EntrarRequest, EntrarResponse, RegistrarRequest } from "../types";
-import { toast } from "react-toastify";
 
 export const authService = {
     eu: async () => {
         const { data } = await apiClient.get<EntrarResponse>('/auth/eu');
-
-        if (data.sucesso) {
-            toast.success(data.mensagem, {
-                position: 'top-center',
-            });
-        }
 
         return data;
     },

@@ -1,49 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  FaInfoCircle,
-  FaTrash,
-  FaPlus,
-  FaMinus,
-  FaShieldAlt,
   FaExclamationCircle,
-  FaTag
+  FaMinus,
+  FaPlus,
+  FaShieldAlt,
+  FaTag,
+  FaTrash
 } from 'react-icons/fa';
 
 import { IoIosArrowDown } from "react-icons/io";
+import { useCarrinho } from '~/context/CarrinhoContext';
+import type { Produto } from '../produto/types';
 
-// --- DADOS DE EXEMPLO (MOCK DATA) ---
-const mockProducts = [
-  {
-    id: 1,
-    vendor: 'KaBuM!',
-    image: 'https://img.ibxk.com.br/2023/09/13/13101859188151.jpg?imgo=REDIM_CONTENT&size=500x281',
-    title: 'iPhone 16 Plus Apple 512GB, Câmera Dupla de 48MP, Tela 6,7", Preto',
-    price: 8299.90,
-    discountPrice: 8239.90,
-    installments: 'cartão sem juros R$ 9.222,11',
-    services: [
-      { id: 's1-none', name: 'Sem garantia', price: 0 },
-      { id: 's1-12m', name: '12 Meses de Garantia Estendida Kabum', price: 175.13, perMonth: 10 },
-    ],
-    subtotalServices: 1751.34,
-  },
-  {
-    id: 2,
-    vendor: 'KaBuM!',
-    image: 'https://images.kabum.com.br/produtos/fotos/114385/cadeira-gamer-husky-gaming-tempest-700-preto-hct-700_1594994640_m.jpg',
-    title: 'Cadeira Gamer Husky Tempest 700, Até 145kg, Almofadas, Reclinável 150°, Tecido, Descanso para Pés, Cinza - HCT-070C2T',
-    price: 779.90,
-    discountPrice: 779.90,
-    installments: 'cartão sem juros R$ 866.56',
-    services: [
-      { id: 's2-none', name: 'Sem garantia', price: 0 },
-      { id: 's2-12m', name: '12 Meses de Garantia Estendida Kabum', price: 25.62, perMonth: 10 },
-      { id: 's2-24m', name: '24 Meses de Garantia Estendida Kabum', price: 48.85, perMonth: 10 },
-    ],
-    subtotalServices: 0,
-  },
-];
 
 // --- COMPONENTE: Mensagem de Tempo ---
 const TimerMessage = () => (
@@ -65,70 +34,26 @@ const QuantityInput = ({ quantity, onDecrease, onIncrease }: { quantity: number,
   </div>
 );
 
-// --- COMPONENTE: Acordeão de Serviços ---
-const ServicesAccordion = ({ services, subtotal }: { services: any[], subtotal: number }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [selectedService, setSelectedService] = useState(services[0].id);
-
-  return (
-    <div className="bg-gray-50 rounded-md border border-gray-200 mt-4">
-      <button onClick={() => setIsOpen(!isOpen)} className="flex justify-between items-center w-full p-4">
-        <div className="flex items-center gap-2">
-          <FaShieldAlt className="text-gray-600" size={16} />
-          <span className="font-bold text-sm text-gray-800">SERVIÇOS</span>
-        </div>
-        <span className={`transform transition-transform ${isOpen ? 'rotate-180' : 'rotate-0'}`}>
-          <IoIosArrowDown />
-        </span>
-      </button>
-      {isOpen && (
-        <div className="px-4 pb-4">
-          <p className="font-bold text-xs uppercase text-gray-700 mb-3">GARANTIA ESTENDIDA ORIGINAL AMPLIADA</p>
-          <div className="space-y-3">
-            {services.map((service, index) => (
-              <label key={service.id} className="flex items-center justify-between cursor-pointer">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name={`service-${services[0].id}`}
-                    value={service.id}
-                    checked={selectedService === service.id}
-                    onChange={() => setSelectedService(service.id)}
-                    className="accent-orange-500 w-4 h-4"
-                  />
-                  <span className="text-sm text-gray-700">{service.name}</span>
-                  {index > 0 && <FaExclamationCircle className="text-orange-500" />}
-                </div>
-                {service.price > 0 && (
-                  <span className="text-sm text-gray-700">Até {service.perMonth}x sem juros de R$ {service.price.toFixed(2).replace('.', ',')}</span>
-                )}
-              </label>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-2">Ao adicionar a <span className="font-bold">Garantia Estendida Original Ampliada</span>, declaro que li e aceito as <a href="#" className="text-orange-500">Condições gerais</a>.</p>
-          <div className="flex justify-end items-center mt-4">
-            <span className="text-xs text-gray-500 mr-2">Subtotal serviços:</span>
-            <span className="text-sm font-bold text-gray-800">R$ {subtotal.toFixed(2).replace('.', ',')}</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // --- COMPONENTE: Item do Carrinho (Produto + Serviços) ---
-const CartItem = ({ product }: { product: any }) => {
+const CartItem = ({ produto }: { produto: Produto }) => {
   const [quantity, setQuantity] = useState(1);
+
+  const currencyFormatter = Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 3,
+  });
+
   return (
     <div className="bg-white p-4 border-b border-gray-200">
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="shrink-0"><img src={product.image} alt={product.title} className="w-24 h-24 object-contain rounded" /></div>
+        <div className="shrink-0"><img src={produto.atributos.fotos.m[0]} alt={produto.atributos.nome} className="w-24 h-24 object-contain rounded" /></div>
         <div className="grow">
-          <h3 className="text-sm text-gray-800 font-medium mb-1">{product.title}</h3>
-          <p className="text-xs text-gray-500">Vendido e entregue por: {product.vendor}</p>
-          <p className="text-xs text-gray-500">Com desconto no PIX: <span className="text-gray-700">R$ {product.discountPrice.toFixed(2).replace('.', ',')}</span></p>
-          <p className="text-xs text-gray-500">Parcelado no cartão sem juros: <span className="text-gray-700">R$ {product.installments}</span></p>
-          <div className="flex gap-2 mt-2"><span className="flex items-center gap-1 text-xs text-orange-500"><FaTag size={12} /> OFERTA NINJA</span></div>
+          <h3 className="text-sm text-gray-800 font-medium mb-1">{produto.atributos.nome}</h3>
+          <p className="text-xs text-gray-500">Vendido e entregue por: {produto.atributos.vendidoPor}</p>
+          <p className="text-xs text-gray-500">Com desconto no PIX: <span className="text-gray-700">{currencyFormatter.format(produto.atributos.precoComDesconto)}</span></p>
+          <p className="text-xs text-gray-500">Parcelado no cartão sem juros: <span className="text-gray-700">R$ {produto.atributos.parcelaMaxima}</span></p>
+          {/* <div className="flex gap-2 mt-2"><span className="flex items-center gap-1 text-xs text-orange-500"><FaTag size={12} /> OFERTA NINJA</span></div> */}
         </div>
         <div className="flex md:flex-col items-end md:items-end justify-between md:justify-start gap-2">
           <QuantityInput
@@ -138,29 +63,36 @@ const CartItem = ({ product }: { product: any }) => {
           />
           <div className="text-right">
             <span className="text-xs text-gray-500">Preço à vista no PIX:</span>
-            <p className="text-lg font-bold text-orange-500">R$ {product.price.toFixed(2).replace('.', ',')}</p>
+            <p className="text-lg font-bold text-orange-500">{currencyFormatter.format(produto.atributos.preco)}</p>
           </div>
         </div>
       </div>
-      <ServicesAccordion services={product.services} subtotal={product.subtotalServices} />
+      {/* <ServicesAccordion services={product.services} subtotal={product.subtotalServices} /> */}
     </div>
   );
 };
 
 // --- PÁGINA DA ETAPA 1 ---
 export default function CartPage() {
+  let { produtos, removerTodosProdutos } = useCarrinho();
+
   return (
     <div className="space-y-6">
       <TimerMessage />
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
           <h2 className="text-sm font-bold text-gray-800 uppercase">PRODUTO E SERVIÇO</h2>
-          <button className="flex items-center gap-2 text-xs text-red-500 hover:text-red-700 font-medium">
+          <button
+            className="flex items-center gap-2 text-xs text-red-500 hover:text-red-700 font-medium"
+            onClick={() => {
+              removerTodosProdutos();
+            }}
+          >
             <FaTrash /> REMOVER TODOS OS PRODUTOS
           </button>
         </div>
-        {mockProducts.map(product => (
-          <CartItem key={product.id} product={product} />
+        {produtos.map(produto => (
+          <CartItem key={produto.id} produto={produto} />
         ))}
       </div>
     </div>

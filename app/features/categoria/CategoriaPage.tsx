@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import {
-    FaStar,
-    FaChevronUp,
     FaChevronDown,
-    FaTh,
+    FaChevronUp,
     FaList,
-    FaClock,
-    FaHeart,
-    FaRegHeart
+    FaTh
 } from 'react-icons/fa';
-import Footer from '~/components/footer';
-import { Header } from '~/components/header';
-import { PriceRangeSlider } from '~/components/price_range_slider';
 import Breadcrumb from '~/components/breadcrumb';
+import Footer from '~/components/footer';
+import Header from '~/components/header';
+import { PriceRangeSlider } from '~/components/price_range_slider';
 
 // ===================================================================
 // DADOS DE EXEMPLO (MOCK DATA)

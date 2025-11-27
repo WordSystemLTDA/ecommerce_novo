@@ -1,7 +1,8 @@
 // app/context/AuthContext.tsx
 
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'react-toastify';
+import Loading from '~/components/loading';
 import { authService } from '~/features/auth/services/authService';
 import type { Cliente } from '~/features/auth/types';
 
@@ -28,8 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         async function checkUser() {
             try {
                 const response = await authService.eu(); // Chama o /auth/eu
+                console.log(response);
                 if (response.sucesso) {
-                    setCliente(response.cliente);
+                    setCliente(response.data.cliente);
                 }
             } catch (error) {
                 // Se der erro, apenas garante que user é null (não logado)
@@ -49,9 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const response = await authService.entrar(credentials);
 
             if (response.sucesso) {
-                // Após login com sucesso, buscamos os dados do usuário
-
-                setCliente(response.cliente);
+                setCliente(response.data.cliente);
                 toast.success('Bem-vindo de volta!');
             }
         } catch (error) {
@@ -77,11 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Se ainda estiver checando o cookie, mostra uma tela branca ou spinner
     // e NÃO renderiza os filhos (children) ainda.
     if (isLoading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
-                <h2>Carregando sessão...</h2>
-            </div>
-        );
+        return <Loading titulo='Carregando' subtitulo='Carregando sessão...' />
     }
 
     return (

@@ -12,6 +12,10 @@ export interface EntrarRequest {
 }
 
 export interface EntrarResponse extends DefaultResponse {
+    data: DataResponseEntrar,
+}
+
+export interface DataResponseEntrar {
     token: string;
     cliente: Cliente;
 }

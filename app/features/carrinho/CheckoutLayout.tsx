@@ -1,18 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 // Outlet é onde as páginas (cart, address, etc.) serão renderizadas
-import { Outlet, useLocation, useNavigate } from 'react-router';
 import {
-    FaShoppingCart,
-    FaMapMarkerAlt,
-    FaTruck,
-    FaCreditCard,
-    FaCheckCircle,
     FaCheck,
+    FaCheckCircle,
+    FaCreditCard,
+    FaMapMarkerAlt,
     FaRegFileAlt,
+    FaShoppingCart,
+    FaTruck,
 } from 'react-icons/fa';
+import { Outlet, useLocation, useNavigate } from 'react-router';
 import Footer from '~/components/footer';
-import { Header } from '~/components/header';
+import Header from '~/components/header';
+import { useCarrinho } from '~/context/CarrinhoContext';
 
 // --- COMPONENTE: Stepper do Checkout ---
 const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
@@ -78,6 +79,14 @@ const CartSummary = ({
     onContinue: () => void;
     onBack: () => void;
 }) => {
+    let { retornarValorTotal } = useCarrinho();
+
+    const currencyFormatter = Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        maximumFractionDigits: 3,
+    });
+
     const isConfirmationStep = step === 5;
     return (
         <div className="bg-white rounded-lg shadow-md p-6 sticky top-38">
@@ -88,7 +97,7 @@ const CartSummary = ({
             <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-gray-600">
                     <span>Valor dos Produtos:</span>
-                    <span className="font-medium text-gray-800">R$ 10.088,67</span>
+                    <span className="font-medium text-gray-800">{currencyFormatter.format(retornarValorTotal())}</span>
                 </div>
                 {isConfirmationStep && (
                     <div className="flex justify-between text-red-600">
@@ -96,10 +105,6 @@ const CartSummary = ({
                         <span className="font-medium">− R$ 1.008,87</span>
                     </div>
                 )}
-                <div className="flex justify-between text-gray-600">
-                    <span>Serviços Adicionais:</span>
-                    <span className="font-medium text-gray-800">R$ 1.751,34</span>
-                </div>
                 {(step > 2) && (
                     <div className="flex justify-between text-gray-600">
                         <span>Frete:</span>
@@ -118,7 +123,7 @@ const CartSummary = ({
                 <div className="flex justify-between items-center">
                     <span className="text-gray-600">Total a prazo:</span>
                     <div className="text-right">
-                        <span className="text-xl font-bold text-gray-800">R$ 11.927,40</span>
+                        <span className="text-xl font-bold text-gray-800">{currencyFormatter.format(retornarValorTotal())}</span>
                         <p className="text-xs text-gray-500">(em até 10x de R$ 1.192,74 sem juros)</p>
                     </div>
                 </div>
@@ -127,7 +132,7 @@ const CartSummary = ({
             {step < 5 ? (
                 <div className="bg-green-100 border border-green-200 text-green-800 p-3 rounded-md mt-4 text-center">
                     <span className="font-bold text-lg">Valor à vista no PIX:</span>
-                    <p className="text-2xl font-bold text-green-700">R$ 10.918,53</p>
+                    <p className="text-2xl font-bold text-green-700">{currencyFormatter.format(retornarValorTotal())}</p>
                     <p className="text-sm font-bold">(Economize R$ 1.008,87)</p>
                 </div>
             ) : (
@@ -135,7 +140,7 @@ const CartSummary = ({
                     <span className="font-bold text-sm">Forma de pagamento</span>
                     <p className="text-lg font-bold">PIX</p>
                     <div className="text-right">
-                        <p className="text-xl font-bold">R$ 10.918,53</p>
+                        <p className="text-xl font-bold">{currencyFormatter.format(retornarValorTotal())}</p>
                         <p className="text-sm font-bold">(Economizou R$ 1.008,87)</p>
                     </div>
                 </div>

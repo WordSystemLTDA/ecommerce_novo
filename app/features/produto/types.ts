@@ -1,10 +1,17 @@
 import type { DefaultResponse } from "~/types/DefaultResponse";
+import type { Categoria } from "../categoria/types";
 
 export interface Produto extends DefaultResponse {
     tipo: string,
     id: number,
     links: Links,
     atributos: Atributos,
+}
+
+export interface ProdutosBanners {
+    id: string,
+    categorias: Categoria[],
+    produtos: Produto[],
 }
 
 export interface Links {

@@ -2,20 +2,17 @@ import React, { useState } from 'react'
 // --- CORREÇÃO ---
 // Alterando o caminho de importação dos ícones para ser mais explícito
 // Isso deve resolver o erro "Could not resolve"
-import { FaLock } from 'react-icons/fa'
-import { FaUserPlus } from 'react-icons/fa'
-import { FiEye } from 'react-icons/fi'
-import { FiEyeOff } from 'react-icons/fi'
+import { FaLock, FaUserPlus } from 'react-icons/fa'
+import { FiEye, FiEyeOff } from 'react-icons/fi'
 // --- FIM DA CORREÇÃO ---
 
-import { Header } from '~/components/header'
 import { useNavigate } from 'react-router'
 import Button from '~/components/button'
-import CustomInput from '~/components/input'
-import IconCircle from '~/components/icon_circle'
 import Footer from '~/components/footer'
+import Header from '~/components/header'
+import IconCircle from '~/components/icon_circle'
+import CustomInput from '~/components/input'
 import { authService } from './services/authService'
-import { toast } from 'react-toastify'
 // --- 1. Componente Principal (A Página) ---
 
 /**

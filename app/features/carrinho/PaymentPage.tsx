@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FaCreditCard, FaQrcode } from 'react-icons/fa';
 import { SiNubank } from 'react-icons/si';
 

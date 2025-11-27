@@ -1,33 +1,31 @@
-import React, { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Swiper as SwiperInstance } from 'swiper'
 
-import { Header } from '~/components/header'
+import Header from '~/components/header'
 
+import { FreeMode, Navigation, Thumbs } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation, Thumbs, FreeMode } from 'swiper/modules'
-
-import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/free-mode'
-import 'swiper/css/thumbs'
 
 import {
     FaTruck,
 } from 'react-icons/fa'
 
 import {
-    IoShareOutline,
     IoHeartOutline,
-    IoCartOutline,
+    IoShareOutline
 } from 'react-icons/io5'
 
-import { AiFillInfoCircle } from "react-icons/ai";
-import { MdOutlineDescription } from "react-icons/md";
+import { AiFillInfoCircle } from "react-icons/ai"
+import { MdOutlineDescription } from "react-icons/md"
 
-import Button from '~/components/button'
-import RatingStars from '~/components/rating_stars'
+import { ShoppingBag } from 'lucide-react'
+import { useParams } from 'react-router'
 import Breadcrumb from '~/components/breadcrumb'
+import Button from '~/components/button'
 import Footer from '~/components/footer'
+import RatingStars from '~/components/rating_stars'
+import { useCarrinho } from '~/context/CarrinhoContext'
+import { gerarSlug } from '~/utils/formatters'
 import type { Produto } from './types'
 
 interface ProdutoProps {
@@ -36,6 +34,20 @@ interface ProdutoProps {
 
 // --- 1. COMPONENTE PRINCIPAL (A PÁGINA) ---
 export default function ProdutoPage({ produto }: ProdutoProps) {
+    const { id, slug } = useParams();
+
+    useEffect(() => {
+        if (produto && produto.id) {
+            const slugCorreto = gerarSlug(produto.atributos.nome);
+
+            // Se a URL atual não tem o slug ou o slug está errado
+            if (slug !== slugCorreto) {
+                // Atualiza a URL no navegador sem recarregar a página
+                window.history.replaceState(null, '', `/produto/${id}/${slugCorreto}`);
+            }
+        }
+    }, [produto, id, slug]);
+
     return (
         <div>
             <Header />
@@ -237,6 +249,8 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
 }
 
 function PurchaseSidebar({ produto }: ProdutoProps) {
+    let { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
+
     const currencyFormatter = Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL",
@@ -272,11 +286,16 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                 </div>
 
                 {/* Botões */}
-                <div className="flex flex-col gap-3">
+                <div
+                    className="flex flex-col gap-3"
+                    onClick={() => {
+                        adicionarNovoProduto(produto);
+                    }}
+                >
                     <Button variant="primary">Comprar agora</Button>
-                    <Button variant="greenOutline">
-                        <IoCartOutline size={20} />
-                        Adicionado ao carrinho
+                    <Button variant="grayOutline">
+                        <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+                        {verificarAdicionadoCarrinho(produto) ? 'Remover' : 'Adicionar'} ao Carrinho
                     </Button>
                 </div>
             </div>

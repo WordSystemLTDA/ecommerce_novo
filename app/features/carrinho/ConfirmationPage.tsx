@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
-import { FaRegUserCircle, FaBoxes, FaTag } from 'react-icons/fa';
+import { FaBoxes, FaRegUserCircle, FaTag } from 'react-icons/fa';
 
 // (Mock data e interfaces são necessários aqui para a lista de produtos)
 const mockProducts = [

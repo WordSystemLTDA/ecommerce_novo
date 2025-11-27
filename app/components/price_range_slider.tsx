@@ -2,11 +2,6 @@ import React, { useState } from 'react';
 // 1. Importe o componente da nova biblioteca
 import RangeSlider from 'react-range-slider-input';
 
-// 2. IMPORTANTE: Importe o CSS base da biblioteca
-// Sem isso, o slider ficará invisível
-import 'react-range-slider-input/dist/style.css';
-import '../app.css';
-
 // --- Constantes baseadas na sua imagem ---
 const MIN_PRICE = 2.87;
 const MAX_PRICE = 89093.72;
@@ -17,11 +12,6 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-/**
- * Componente de Slider de Intervalo de Preço
- * * Requer: `npm install react-range-slider-input --legacy-peer-deps`
- * * Requer: `import 'react-range-slider-input/dist/style.css';`
- */
 export function PriceRangeSlider() {
   
   // O estado 'values' guarda um array [min, max]

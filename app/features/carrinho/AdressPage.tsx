@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // --- PÁGINA DA ETAPA 2 ---
 export default function AddressPage() {

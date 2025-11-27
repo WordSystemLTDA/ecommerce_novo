@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import type { IconType } from 'react-icons'
 // --- CORREÇÃO ---
 // Os caminhos 'react-icons/fa' e 'react-icons/fi' não estão resolvendo.
 // Vamos tentar importar tudo de um único ponto, o que é mais provável de funcionar
@@ -11,16 +10,16 @@ import { FaUserPlus } from 'react-icons/fa'
 // e o caminho relativo ('../') também não.
 // Vou reverter para o alias (~), pois é o mais provável de estar
 // correto no *seu* ambiente de projeto (baseado no seu tsconfig/vite.config).
-import { Header } from '~/components/header' // Você usará seu header aqui
-import CustomInput from '~/components/input'
 import Button from '~/components/button'
-import IconCircle from '~/components/icon_circle'
 import Footer from '~/components/footer'
-import CustomSelect from '~/components/select'
+import Header from '~/components/header'; // Você usará seu header aqui
+import IconCircle from '~/components/icon_circle'
+import CustomInput from '~/components/input'
 import InputIE from '~/components/input_ie'
 import PasswordInput from '~/components/password_input'
-import { authService } from './services/authService'
+import CustomSelect from '~/components/select'
 import { normalizeCnpj, normalizeCpf, normalizeRg } from '~/utils/masks'
+import { authService } from './services/authService'
 // --- FIM DA CORREÇÃO ---
 
 // --- 1. Componente Principal (Página de Cadastro) ---
