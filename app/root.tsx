@@ -13,14 +13,14 @@ import type { Route } from "./+types/root";
 import Loader from "./components/loader";
 import Loading from "./components/loading";
 import config from "./config/config";
-import { AuthProvider } from "./context/AuthContext";
-import { ProdutoProvider } from "./context/ProdutoContext";
+import { AuthProvider } from "./features/auth/context/AuthContext";
+import { ProdutoProvider } from "./features/produto/context/ProdutoContext";
 
 import rangeSliderStyles from 'react-range-slider-input/dist/style.css?url';
 import toastStyles from "react-toastify/dist/ReactToastify.css?url";
 import swiperStyles from 'swiper/swiper-bundle.css?url';
 import appStyles from "./app.css?url";
-import { CarrinhoProvider } from "./context/CarrinhoContext";
+import { CarrinhoProvider } from "./features/carrinho/context/CarrinhoContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },

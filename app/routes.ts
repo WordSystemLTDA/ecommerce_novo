@@ -8,14 +8,22 @@ export default [
     route("/:categoria", "routes/categorias.tsx"),
 
     route("carrinho", "routes/checkout.layout.tsx", [
-        // A página /carrinho (Etapa 1)
         index("routes/checkout.cart.tsx"),
 
-        // As outras etapas
         route("endereco", "routes/checkout.address.tsx"),
         route("entrega", "routes/checkout.delivery.tsx"),
         route("pagamento", "routes/checkout.payment.tsx"),
         route("confirmacao", "routes/checkout.confirmation.tsx"),
+    ]),
+
+    route("/minhaconta", "routes/minhaconta.layout.tsx", [
+        index("routes/minhaconta.tsx"),
+
+        route("enderecos", "routes/minhaconta.endereco.layout.tsx", [
+            index("routes/minhaconta.endereco.tsx"),
+            route("novo", "routes/minhaconta.novo_endereco.tsx"),
+            route("editar/:id", "routes/minhaconta.editar_endereco.tsx"),
+        ]),
     ]),
 
     route("pedido/sucesso", "routes/order.success.tsx"),

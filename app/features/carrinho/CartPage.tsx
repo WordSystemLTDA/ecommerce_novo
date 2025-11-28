@@ -10,7 +10,7 @@ import {
 } from 'react-icons/fa';
 
 import { IoIosArrowDown } from "react-icons/io";
-import { useCarrinho } from '~/context/CarrinhoContext';
+import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 import type { Produto } from '../produto/types';
 
 
@@ -30,7 +30,7 @@ const QuantityInput = ({ quantity, onDecrease, onIncrease }: { quantity: number,
   <div className="flex items-center border border-gray-300 rounded overflow-hidden h-8">
     <button onClick={onDecrease} className="px-2 text-gray-500 hover:bg-gray-100 h-full"><FaMinus size={10} /></button>
     <span className="px-4 text-sm font-medium">{quantity}</span>
-    <button onClick={onIncrease} className="px-2 text-orange-500 hover:bg-gray-100 h-full"><FaPlus size={10} /></button>
+    <button onClick={onIncrease} className="px-2 text-primary hover:bg-gray-100 h-full"><FaPlus size={10} /></button>
   </div>
 );
 
@@ -53,7 +53,7 @@ const CartItem = ({ produto }: { produto: Produto }) => {
           <p className="text-xs text-gray-500">Vendido e entregue por: {produto.atributos.vendidoPor}</p>
           <p className="text-xs text-gray-500">Com desconto no PIX: <span className="text-gray-700">{currencyFormatter.format(produto.atributos.precoComDesconto)}</span></p>
           <p className="text-xs text-gray-500">Parcelado no cartão sem juros: <span className="text-gray-700">R$ {produto.atributos.parcelaMaxima}</span></p>
-          {/* <div className="flex gap-2 mt-2"><span className="flex items-center gap-1 text-xs text-orange-500"><FaTag size={12} /> OFERTA NINJA</span></div> */}
+          {/* <div className="flex gap-2 mt-2"><span className="flex items-center gap-1 text-xs text-primary"><FaTag size={12} /> OFERTA NINJA</span></div> */}
         </div>
         <div className="flex md:flex-col items-end md:items-end justify-between md:justify-start gap-2">
           <QuantityInput
@@ -63,7 +63,7 @@ const CartItem = ({ produto }: { produto: Produto }) => {
           />
           <div className="text-right">
             <span className="text-xs text-gray-500">Preço à vista no PIX:</span>
-            <p className="text-lg font-bold text-orange-500">{currencyFormatter.format(produto.atributos.preco)}</p>
+            <p className="text-lg font-bold text-primary">{currencyFormatter.format(produto.atributos.preco)}</p>
           </div>
         </div>
       </div>

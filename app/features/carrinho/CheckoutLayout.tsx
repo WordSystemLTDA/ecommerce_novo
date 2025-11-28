@@ -13,7 +13,7 @@ import {
 import { Outlet, useLocation, useNavigate } from 'react-router';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
-import { useCarrinho } from '~/context/CarrinhoContext';
+import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 
 // --- COMPONENTE: Stepper do Checkout ---
 const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
@@ -42,8 +42,8 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                                 <div
                                     className={`
                     w-10 h-10 rounded-full flex items-center justify-center border-2 
-                    ${isActive ? 'border-orange-500 bg-orange-500 text-white' : ''}
-                    ${isCompleted ? 'border-orange-500 bg-white text-orange-500' : ''}
+                    ${isActive ? 'border-primary bg-primary text-white' : ''}
+                    ${isCompleted ? 'border-primary bg-white text-primary' : ''}
                     ${!isActive && !isCompleted ? 'border-gray-300 text-gray-400' : ''}
                   `}
                                 >
@@ -52,14 +52,14 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                                 <span
                                     className={`
                     mt-2 text-xs font-medium 
-                    ${(isActive || isCompleted) ? 'text-orange-500' : 'text-gray-400'}
+                    ${(isActive || isCompleted) ? 'text-primary' : 'text-gray-400'}
                   `}
                                 >
                                     {step.name}
                                 </span>
                             </div>
                             {index < steps.length - 2 && ( // Ajustado para não ligar na confirmação
-                                <div className={`flex-auto h-0.5 mx-2 ${(isCompleted || isActive) ? 'bg-orange-500' : 'bg-gray-300'}`}></div>
+                                <div className={`flex-auto h-0.5 mx-2 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
                             )}
                         </React.Fragment>
                     );
@@ -152,7 +152,7 @@ const CartSummary = ({
                         <input
                             type="text"
                             placeholder="Cupom de desconto"
-                            className="w-full border border-gray-300 rounded-l-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            className="w-full border border-gray-300 rounded-l-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                         <button className="bg-blue-600 text-white font-bold px-4 rounded-r-md text-sm">OK</button>
                     </div>
@@ -180,14 +180,14 @@ const CartSummary = ({
             <div className="mt-6 space-y-3">
                 <button
                     onClick={onContinue}
-                    className="w-full bg-orange-500 text-white font-bold py-3 rounded-md hover:bg-orange-600 transition-colors"
+                    className="w-full bg-primary text-white font-bold py-3 rounded-md hover:bg-secondary transition-colors"
                 >
                     {isConfirmationStep ? 'FINALIZAR' : 'CONTINUAR'}
                 </button>
                 {step > 1 && (
                     <button
                         onClick={onBack}
-                        className="w-full bg-white text-orange-500 border border-orange-500 font-bold py-3 rounded-md hover:bg-orange-50 transition-colors"
+                        className="w-full bg-white text-primary border border-primary font-bold py-3 rounded-md hover:bg-secondary transition-colors"
                     >
                         VOLTAR
                     </button>
@@ -197,12 +197,12 @@ const CartSummary = ({
             {isConfirmationStep && (
                 <div className="mt-4 text-xs text-gray-500">
                     <label className="flex items-start gap-2">
-                        <input type="checkbox" className="w-4 h-4 accent-orange-500 mt-0.5" />
+                        <input type="checkbox" className="w-4 h-4 accent-primary mt-0.5" />
                         <span>
                             Ao efetuar o seu pedido, você concorda com os
-                            <a href="#" className="font-bold text-orange-500"> Termos e condições de Venda do KaBuM! </a>
+                            <a href="#" className="font-bold text-primary"> Termos e condições de Venda do KaBuM! </a>
                             e com nossa
-                            <a href="#" className="font-bold text-orange-500"> Política de Privacidade</a>.
+                            <a href="#" className="font-bold text-primary"> Política de Privacidade</a>.
                         </span>
                     </label>
                 </div>

@@ -24,7 +24,7 @@ import Breadcrumb from '~/components/breadcrumb'
 import Button from '~/components/button'
 import Footer from '~/components/footer'
 import RatingStars from '~/components/rating_stars'
-import { useCarrinho } from '~/context/CarrinhoContext'
+import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext'
 import { gerarSlug } from '~/utils/formatters'
 import type { Produto } from './types'
 

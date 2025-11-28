@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Heart, User, ShoppingBag, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { useCarrinho } from '~/context/CarrinhoContext';
+import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 
 // --- Tipos e Interfaces ---
 
@@ -94,7 +94,12 @@ export default function Header() {
                     </div>
                     <div className="flex items-center gap-5">
                         <Heart className="w-6 h-6 stroke-[1.5] cursor-pointer hover:text-gray-600" />
-                        <User className="w-6 h-6 stroke-[1.5] cursor-pointer hover:text-gray-600" />
+                        <User
+                            className="w-6 h-6 stroke-[1.5] cursor-pointer hover:text-gray-600"
+                            onClick={() => {
+                                navigate('/minhaconta');
+                            }}
+                        />
                         <div
                             className="relative cursor-pointer hover:text-gray-600"
                             onClick={() => {

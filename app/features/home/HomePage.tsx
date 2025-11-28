@@ -16,7 +16,7 @@ import { useNavigate } from "react-router";
 import Footer from "~/components/footer";
 import LazySection from "~/components/lazy_section";
 import RatingStars from "~/components/rating_stars";
-import { useProduto } from "~/context/ProdutoContext";
+import { useProduto } from "~/features/produto/context/ProdutoContext";
 import { gerarSlug } from "~/utils/formatters";
 import type { Categoria } from "../categoria/types";
 import type { Banner, Produto } from "../produto/types";
