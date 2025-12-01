@@ -12,6 +12,9 @@ import {
   FaCreditCard,
   FaCheck
 } from 'react-icons/fa';
+import QRCode from 'react-qr-code';
+import Footer from '~/components/footer';
+import Header from '~/components/header';
 
 // --- COMPONENTE: Stepper do Checkout ---
 const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
@@ -77,12 +80,23 @@ const Step6_Success = () => {
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* QR Code */}
-        <div className="flex-1 text-center">
-          <div className="w-64 h-64 border-4 border-gray-300 rounded-lg p-2 mx-auto">
-            {/* Placeholder para o QR Code */}
-            <FaQrcode className="w-full h-full text-gray-800" />
+        <div className="flex-1 flex flex-col items-center">
+          {/* Container do QR Code */}
+          <div className="w-64 h-64 border-4 border-gray-300 rounded-lg mx-auto flex items-center justify-center bg-white">
+            <QRCode
+              value="asdoskaodksakodsaoidoi1j23u12932199asdasijdjadojsadoijasdoi1oi23joi12j3i21o3i21io"
+              className="p-2 w-full h-full"
+            />
           </div>
-          <button className="mt-4 w-64 bg-orange-500 text-white font-bold py-3 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2">
+
+          {/* Botão */}
+          <button
+            className="mt-4 w-64 bg-orange-500 text-white font-bold py-3 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+            onClick={() => {
+              navigator.clipboard.writeText('asdoskaodksakodsaoidoi1j23u12932199asdasijdjadojsadoijasdoi1oi23joi12j3i21o3i21io')
+            }}
+
+          >
             <FaRegCopy /> COPIAR CÓDIGO PIX
           </button>
         </div>
@@ -101,22 +115,18 @@ const Step6_Success = () => {
             <p className="text-sm text-gray-600">O número do seu pedido é:</p>
             <p className="text-5xl font-bold text-gray-800 tracking-wider">46294872</p>
           </div>
-          
+
           <p className="text-sm text-gray-600 mb-4">Escaneie o <span className="font-bold">QR Code</span> ou copie o <span className="font-bold">código PIX</span>. Abra o app da instituição que você possui o PIX cadastrado e realize o pagamento.</p>
 
           <h3 className="font-bold text-lg text-gray-800 mb-3">Como pagar seu Pix</h3>
           <div className="space-y-3 text-sm text-gray-700">
             <p className="flex items-center gap-2"><FaQrcode className="text-xl text-orange-500" /> Utilize o aplicativo do seu banco copiando o código PIX ou escaneando o QR-Code.</p>
-            <p className="flex items-center gap-2"><FaCheckCircle className="text-xl text-orange-500" /> Confirme os dados de pagamento e o valor do seu pedido.</p>
+            <p className="flex items-center gap-2"><FaCheckCircle className="text-sm text-orange-500" /> Confirme os dados de pagamento e o valor do seu pedido.</p>
             <p className="flex items-center gap-2"><FaCheckCircle className="text-xl text-orange-500" /> Seu pagamento será processado e debitado do valor disponível em sua conta-corrente.</p>
           </div>
         </div>
       </div>
-      {/* Vídeo Placeholder */}
-      <div className="bg-gray-800 text-white p-4 rounded-md mt-8 h-48 flex items-center justify-center">
-        <FaVideo size={40} />
-        <span className="ml-4">Placeholder para o Vídeo do YouTube</span>
-      </div>
+
     </div>
   );
 };
@@ -124,18 +134,24 @@ const Step6_Success = () => {
 // --- PÁGINA DE SUCESSO ---
 export default function OrderSuccessPage() {
   return (
-    <div className="bg-gray-100 min-h-screen py-8">
-      <div className="max-w-387 mx-auto px-4">
-        
-        {/* Stepper de Sucesso (Etapa 6 ativa) */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <CheckoutStepper activeStep={6} />
+    <div>
+      <Header />
+
+      <div className="bg-gray-100 min-h-screen py-8">
+        <div className="max-w-387 mx-auto px-4">
+
+          {/* Stepper de Sucesso (Etapa 6 ativa) */}
+          <div className="bg-white rounded-lg shadow-sm mb-6">
+            <CheckoutStepper activeStep={6} />
+          </div>
+
+          {/* Conteúdo da página */}
+          <Step6_Success />
+
         </div>
-        
-        {/* Conteúdo da página */}
-        <Step6_Success />
-        
       </div>
+
+      <Footer />
     </div>
   );
 }

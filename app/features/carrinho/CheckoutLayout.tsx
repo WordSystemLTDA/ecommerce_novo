@@ -79,7 +79,7 @@ const CartSummary = ({
     onContinue: () => void;
     onBack: () => void;
 }) => {
-    let { retornarValorTotal } = useCarrinho();
+    let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, transportadoraSelecionada, pagamentoSelecionado } = useCarrinho();
 
     const currencyFormatter = Intl.NumberFormat("pt-BR", {
         style: "currency",
@@ -88,6 +88,19 @@ const CartSummary = ({
     });
 
     const isConfirmationStep = step === 5;
+    const isDisabled = () => {
+        switch (step) {
+            case 2:
+                return enderecoSelecionado == undefined;
+            case 3:
+                return transportadoraSelecionada == undefined;
+            case 4:
+                return pagamentoSelecionado == undefined;
+            default:
+                return false;
+        }
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-md p-6 sticky top-38">
             <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4 border-b pb-2">
@@ -97,24 +110,18 @@ const CartSummary = ({
             <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-gray-600">
                     <span>Valor dos Produtos:</span>
-                    <span className="font-medium text-gray-800">{currencyFormatter.format(retornarValorTotal())}</span>
+                    <span className="font-medium text-gray-800">{currencyFormatter.format(retornarValorProdutos())}</span>
                 </div>
                 {isConfirmationStep && (
                     <div className="flex justify-between text-red-600">
                         <span>Descontos:</span>
-                        <span className="font-medium">− R$ 1.008,87</span>
+                        <span className="font-medium">− {currencyFormatter.format(valorDesconto)}</span>
                     </div>
                 )}
                 {(step > 2) && (
                     <div className="flex justify-between text-gray-600">
                         <span>Frete:</span>
-                        <span className="font-medium text-gray-800">R$ 87,39</span>
-                    </div>
-                )}
-                {isConfirmationStep && (
-                    <div className="flex justify-between text-gray-600">
-                        <span>Doação Ninja:</span>
-                        <span className="font-medium text-gray-800">R$ 0,00</span>
+                        <span className="font-medium text-gray-800">{currencyFormatter.format(valorFrete)}</span>
                     </div>
                 )}
 
@@ -123,27 +130,29 @@ const CartSummary = ({
                 <div className="flex justify-between items-center">
                     <span className="text-gray-600">Total a prazo:</span>
                     <div className="text-right">
-                        <span className="text-xl font-bold text-gray-800">{currencyFormatter.format(retornarValorTotal())}</span>
-                        <p className="text-xs text-gray-500">(em até 10x de R$ 1.192,74 sem juros)</p>
+                        <span className="text-xl font-bold text-gray-800">{currencyFormatter.format(retornarValorFinal())}</span>
+                        {/* <p className="text-xs text-gray-500">(em até 10x de R$ 1.192,74 sem juros)</p> */}
                     </div>
                 </div>
             </div>
 
             {step < 5 ? (
-                <div className="bg-green-100 border border-green-200 text-green-800 p-3 rounded-md mt-4 text-center">
-                    <span className="font-bold text-lg">Valor à vista no PIX:</span>
-                    <p className="text-2xl font-bold text-green-700">{currencyFormatter.format(retornarValorTotal())}</p>
-                    <p className="text-sm font-bold">(Economize R$ 1.008,87)</p>
-                </div>
+                <></>
+                // <div className="bg-green-100 border border-green-200 text-green-800 p-3 rounded-md mt-4 text-center">
+                //     <span className="font-bold text-lg">Valor à vista no PIX:</span>
+                //     <p className="text-2xl font-bold text-green-700">{currencyFormatter.format(retornarValorProdutos())}</p>
+                //     <p className="text-sm font-bold">(Economize R$ 1.008,87)</p>
+                // </div>
             ) : (
-                <div className="bg-green-100 border border-green-200 text-green-800 p-3 rounded-md mt-4">
-                    <span className="font-bold text-sm">Forma de pagamento</span>
-                    <p className="text-lg font-bold">PIX</p>
-                    <div className="text-right">
-                        <p className="text-xl font-bold">{currencyFormatter.format(retornarValorTotal())}</p>
-                        <p className="text-sm font-bold">(Economizou R$ 1.008,87)</p>
-                    </div>
-                </div>
+                <></>
+                // <div className="bg-green-100 border border-green-200 text-green-800 p-3 rounded-md mt-4">
+                //     <span className="font-bold text-sm">Forma de pagamento</span>
+                //     <p className="text-lg font-bold">PIX</p>
+                //     <div className="text-right">
+                //         <p className="text-xl font-bold">{currencyFormatter.format(retornarValorProdutos())}</p>
+                //         <p className="text-sm font-bold">(Economizou R$ 1.008,87)</p>
+                //     </div>
+                // </div>
             )}
 
             {(step >= 2 && step <= 4) && (
@@ -154,7 +163,7 @@ const CartSummary = ({
                             placeholder="Cupom de desconto"
                             className="w-full border border-gray-300 rounded-l-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
-                        <button className="bg-blue-600 text-white font-bold px-4 rounded-r-md text-sm">OK</button>
+                        <button className="bg-terciary text-white font-bold px-4 rounded-r-md text-sm">OK</button>
                     </div>
                 </div>
             )}
@@ -165,12 +174,12 @@ const CartSummary = ({
                         <FaTruck /> ENTREGA
                     </h3>
                     <div className="text-sm text-gray-600 space-y-1">
-                        <p>Rua Jacarezinho</p>
-                        <p>Número 453, Casa, CEP 86770000 - Santa Fé, PR</p>
-                        <p className="font-bold">Vendido e entregue por: KaBuM!</p>
+                        <p>{enderecoSelecionado?.endereco}</p>
+                        <p>Número {enderecoSelecionado?.numero}, {enderecoSelecionado?.complemento}, CEP {enderecoSelecionado?.cep} - {enderecoSelecionado?.nome_cidade}, {enderecoSelecionado?.sigla_estado}</p>
+                        {/* <p className="font-bold">Vendido e entregue por: KaBuM!</p> */}
                         <div className="flex justify-between items-center border border-gray-300 rounded p-2">
-                            <span>Entrega Econômica</span>
-                            <span className="font-bold">R$ 87,39</span>
+                            <span>{transportadoraSelecionada?.name}</span>
+                            <span className="font-bold">{currencyFormatter.format(parseFloat(transportadoraSelecionada?.price ?? '0'))}</span>
                         </div>
                         <p className="text-xs text-gray-500">*Mediante a confirmação de pagamento até às 13 horas.</p>
                     </div>
@@ -178,9 +187,11 @@ const CartSummary = ({
             )}
 
             <div className="mt-6 space-y-3">
+                {/* {enderecoSelecionado?.id} */}
                 <button
                     onClick={onContinue}
-                    className="w-full bg-primary text-white font-bold py-3 rounded-md hover:bg-secondary transition-colors"
+                    disabled={isDisabled()}
+                    className={`w-full ${isDisabled() ? 'bg-gray-500' : 'bg-primary hover:bg-secondary'} text-white font-bold py-3 rounded-md transition-colors`}
                 >
                     {isConfirmationStep ? 'FINALIZAR' : 'CONTINUAR'}
                 </button>
@@ -279,7 +290,7 @@ export default function CheckoutLayout() {
                 </div>
 
                 {/* Footer com Selos (Opcional, baseado na sua imagem) */}
-                <div className="bg-white border-t border-gray-200 mt-12 py-8">
+                {/* <div className="bg-white border-t border-gray-200 mt-12 py-8">
                     <div className="max-w-387 mx-auto px-4 flex flex-wrap justify-center items-center gap-6">
                         <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">SITE BLINDADO</div>
                         <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">ReclameAqui</div>
@@ -289,7 +300,7 @@ export default function CheckoutLayout() {
                         <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">RA 1000</div>
                         <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">Empresa B</div>
                     </div>
-                </div>
+                </div> */}
             </div>
 
             <Footer />

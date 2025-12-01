@@ -1,5 +1,6 @@
 import type { DefaultResponse } from "~/types/DefaultResponse";
 import type { Categoria } from "../categoria/types";
+import type { Transportadora } from "~/types/Transportadora";
 
 export interface Produto extends DefaultResponse {
     tipo: string,
@@ -30,6 +31,7 @@ export interface Atributos {
     descricao: string,
     peso: number,
     preco: number,
+    quantidade: number,
     precoAntigo: number,
     descontoPorcentagem: number,
     precoComDesconto: number,
@@ -129,5 +131,9 @@ export interface ProdutoResponse extends DefaultResponse {
 
 export interface ProdutosResponse extends DefaultResponse {
     data: Produtos,
+}
+
+export interface CalculcarFreteResponse extends DefaultResponse {
+    data: Transportadora[],
 }
 

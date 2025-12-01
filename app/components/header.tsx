@@ -40,10 +40,10 @@ export default function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100 font-sans">
+        <header className="sticky top-0 z-50 w-full bg-primary font-sans">
 
             {/* BARRA SUPERIOR */}
-            <div className="max-w-[1600px] mx-auto px-8 py-4 flex items-center justify-between bg-white relative z-20">
+            <div className="max-w-[1600px] mx-auto px-8 py-4 flex items-center justify-between bg-primary relative z-20">
 
                 {/* Logo */}
                 <div
@@ -52,15 +52,16 @@ export default function Header() {
                         navigate('/');
                     }}
                 >
-                    <span className="font-bold text-black">WORD</span>
+                    {/* <span className="font-bold text-black">WORD</span> */}
                     {/* TypeScript pode reclamar do WebkitTextStroke se não estiver nas definições padrão, 
               mas geralmente funciona. Se der erro, use 'as React.CSSProperties' */}
-                    <span
+                    {/* <span
                         className="font-bold text-transparent"
                         style={{ WebkitTextStroke: '1px black' } as React.CSSProperties}
                     >
                         SYSTEM
-                    </span>
+                    </span> */}
+                    <img src='/logo_wordsystem.png' className='max-w-32' />
                 </div>
 
                 {/* Nav */}
@@ -93,9 +94,9 @@ export default function Header() {
                         <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 cursor-pointer" />
                     </div>
                     <div className="flex items-center gap-5">
-                        <Heart className="w-6 h-6 stroke-[1.5] cursor-pointer hover:text-gray-600" />
+                        <Heart className="w-6 h-6 stroke-[1.5] cursor-pointer text-white hover:text-gray-600" />
                         <User
-                            className="w-6 h-6 stroke-[1.5] cursor-pointer hover:text-gray-600"
+                            className="w-6 h-6 stroke-[1.5] cursor-pointer text-white hover:text-gray-600"
                             onClick={() => {
                                 navigate('/minhaconta');
                             }}
@@ -107,7 +108,7 @@ export default function Header() {
                             }}
 
                         >
-                            <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+                            <ShoppingBag className="text-white w-6 h-6 stroke-[1.5]" />
                             <span className="absolute -top-1 -right-1 bg-black text-white text-tiny font-bold h-4 w-4 flex items-center justify-center rounded-full">{produtos.length}</span>
                         </div>
                     </div>
@@ -174,7 +175,7 @@ function NavItem({ text, isRed, activeMenu, setActiveMenu, hasMegaMenu }: NavIte
         >
             <a
                 href="#"
-                className={`text-sm font-medium transition-colors hover:underline underline-offset-4 decoration-2 ${isRed ? 'text-red-600 hover:text-red-700' : 'text-gray-700 hover:text-black'
+                className={`text-sm font-medium transition-colors hover:underline underline-offset-4 decoration-2 ${isRed ? 'text-red-600 hover:text-red-700' : 'text-white hover:text-gray-500'
                     } ${activeMenu === text ? 'underline text-black' : ''}`}
             >
                 {text}

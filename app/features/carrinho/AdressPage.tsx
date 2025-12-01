@@ -1,48 +1,73 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useCarrinho } from './context/CarrinhoContext';
+import Loader from '~/components/loader'; 
+// Removi o import do Loading se não for usar em outro lugar
 
 // --- PÁGINA DA ETAPA 2 ---
 export default function AddressPage() {
-  const [selectedAddress, setSelectedAddress] = useState('addr1');
+  let { enderecos, enderecoSelecionado, setEnderecoSelecionado, listarEnderecos, carregandoEnderecos } = useCarrinho();
+
   let navigate = useNavigate();
+
+  useEffect(() => {
+    listarEnderecos();
+  }, []);
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
-      <h2 className="text-lg font-bold text-gray-800 mb-4">Selecione seu endereço:</h2>
-      <div className="space-y-3">
-        <label className={`block border rounded-md p-4 cursor-pointer ${selectedAddress === 'addr1' ? 'border-primary ring-2 ring-primary' : 'border-gray-300'}`}>
-          <div className="flex items-center">
-            <input type="radio" name="address" value="addr1" checked={selectedAddress === 'addr1'} onChange={() => setSelectedAddress('addr1')} className="w-4 h-4 accent-primary" />
-            <div className="ml-3 text-sm">
-              <span className="font-bold">Rua Jacarezinho, 453</span> - Santa Fé, PR, CEP 86770000
+
+      {carregandoEnderecos ? (
+        <div className="flex items-center justify-center w-full">
+           <Loader />
+        </div>
+      )
+        :
+        (
+          <div>
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Selecione seu endereço:</h2>
+            <div className="space-y-3">
+              {enderecos.map((endereco) => {
+                return (
+                  <label key={endereco.id} className={`block border rounded-md p-4 cursor-pointer ${enderecoSelecionado?.id == endereco.id ? 'border-primary ring-2 ring-primary' : 'border-gray-300'}`}>
+                    <div className="flex items-center">
+                      <input type="radio" name="address" value={endereco.id} checked={enderecoSelecionado?.id == endereco.id} onChange={() => setEnderecoSelecionado(endereco)} className="w-4 h-4 accent-primary" />
+                      <div className="ml-3 text-sm">
+                        {endereco && (
+                          <p>
+                            <span className="font-bold">
+                              {endereco.endereco && <span>{endereco.endereco}</span>}
+                              {endereco.endereco && endereco.numero && <span>, </span>}
+                              {endereco.numero && <span>{endereco.numero}</span>}
+                            </span>
+
+                            {(endereco.endereco || endereco.numero) && ' - '}
+
+                            {endereco.nome_cidade && <span>{endereco.nome_cidade}</span>}
+                            {endereco.nome_cidade && endereco.sigla_estado && <span>, </span>}
+                            {endereco.sigla_estado && <span>{endereco.sigla_estado}</span>}
+
+                            {(endereco.nome_cidade || endereco.sigla_estado) && endereco.cep && <span>, </span>}
+                            {endereco.cep && <span>CEP {endereco.cep}</span>}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+                );
+              })}
             </div>
+            <button
+              className="mt-6 text-xs font-bold text-primary hover:text-primary cursor-pointer"
+              onClick={() => {
+                navigate('/minhaconta/enderecos/novo');
+              }}
+            >
+              CADASTRAR NOVO ENDEREÇO
+            </button>
           </div>
-        </label>
-        <label className={`block border rounded-md p-4 cursor-pointer ${selectedAddress === 'addr2' ? 'border-primary ring-2 ring-primary' : 'border-gray-300'}`}>
-          <div className="flex items-center">
-            <input type="radio" name="address" value="addr2" checked={selectedAddress === 'addr2'} onChange={() => setSelectedAddress('addr2')} className="w-4 h-4 accent-primary" />
-            <div className="ml-3 text-sm">
-              <span className="font-bold">Rua Apucarana, 285</span> - Santa Fé, PR, CEP 86770000
-            </div>
-          </div>
-        </label>
-        <label className={`block border rounded-md p-4 cursor-pointer ${selectedAddress === 'addr3' ? 'border-primary ring-2 ring-primary' : 'border-gray-300'}`}>
-          <div className="flex items-center">
-            <input type="radio" name="address" value="addr3" checked={selectedAddress === 'addr3'} onChange={() => setSelectedAddress('addr3')} className="w-4 h-4 accent-primary" />
-            <div className="ml-3 text-sm">
-              <span className="font-bold">Rua luiz roncolho, 169</span> - Santa Fé, PR, CEP 86770000
-            </div>
-          </div>
-        </label>
-      </div>
-      <button
-        className="mt-6 text-xs font-bold text-primary hover:text-primary cursor-pointer"
-        onClick={() => {
-          navigate('/minhaconta/enderecos');
-        }}
-      >
-        CADASTRAR NOVO ENDEREÇO
-      </button>
+        )
+      }
     </div>
   );
 }
