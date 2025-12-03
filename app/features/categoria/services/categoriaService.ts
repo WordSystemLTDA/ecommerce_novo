@@ -9,6 +9,11 @@ export const categoriaService = {
         return data;
     },
 
+    listarCategoriasMenu: async () => {
+        const { data } = await apiClient.get<CategoriaResponse>('/categorias?menu');
+        return data;
+    },
+
     listarCategoriasComSubCategorias: async () => {
         const { data } = await apiClient.get<CategoriaResponse>('/categorias?with_subcategories');
         return data;

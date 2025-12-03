@@ -10,7 +10,7 @@ export const authService = {
 
         return data;
     },
-    
+
     sair: async () => {
         const { data } = await apiClient.post('/auth/sair');
 
@@ -21,9 +21,7 @@ export const authService = {
         const { data } = await apiClient.post<EntrarResponse>('/auth/entrar', credentials);
 
         if (data.sucesso) {
-            toast.success(data.mensagem, {
-                position: 'top-center',
-            });
+            toast.success(data.mensagem, { position: 'top-center' });
         }
 
         return data;
@@ -33,9 +31,7 @@ export const authService = {
         const { data } = await apiClient.post('/auth/registrar', userData);
 
         if (data.sucesso) {
-            toast.error(data.mensagem, {
-                position: 'top-center',
-            });
+            toast.error(data.mensagem, { position: 'top-center' });
         }
 
         return data;

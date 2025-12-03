@@ -19,14 +19,14 @@ import { AiFillInfoCircle } from "react-icons/ai"
 import { MdOutlineDescription } from "react-icons/md"
 
 import { ShoppingBag } from 'lucide-react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import Breadcrumb from '~/components/breadcrumb'
 import Button from '~/components/button'
 import Footer from '~/components/footer'
 import RatingStars from '~/components/rating_stars'
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext'
-import { gerarSlug } from '~/utils/formatters'
-import type { Produto } from './types'
+import { currencyFormatter, gerarSlug } from '~/utils/formatters'
+import type { Produto, ProdutoTamanho } from './types'
 
 interface ProdutoProps {
     produto: Produto,
@@ -35,6 +35,16 @@ interface ProdutoProps {
 // --- 1. COMPONENTE PRINCIPAL (A PÁGINA) ---
 export default function ProdutoPage({ produto }: ProdutoProps) {
     const { id, slug } = useParams();
+    const { tamanhoSelecionado, setTamanhoSelecionado } = useCarrinho();
+
+    useEffect(() => {
+        // Reset selected size when product changes
+        if (produto.atributos.listaTamanhos!.length > 0) {
+            setTamanhoSelecionado(produto.atributos.listaTamanhos![0]);
+        } else {
+            setTamanhoSelecionado(null);
+        }
+    }, [id, setTamanhoSelecionado]);
 
     useEffect(() => {
         if (produto && produto.id) {
@@ -74,7 +84,9 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
 
                         {/* Coluna 2: Informações do Produto (4/12) */}
                         <div className='lg:col-span-4'>
-                            <ProdutoInfo produto={produto} />
+                            <ProdutoInfo
+                                produto={produto}
+                            />
                         </div>
 
                         {/* MODIFICATION #1:
@@ -178,6 +190,9 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
 
 // --- INFORMAÇÕES DO PRODUTO (Coluna Central) ---
 function ProdutoInfo({ produto }: ProdutoProps) {
+    let navigate = useNavigate();
+    const { tamanhoSelecionado, setTamanhoSelecionado } = useCarrinho();
+
     return (
         <div className="flex flex-col gap-4">
             <div className='max-lg:hidden flex flex-col gap-4'>
@@ -194,17 +209,67 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                     <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
                 </div>
 
-                {/* <ul className="list-disc space-y-2 pl-5 text-sm">
-                    {produto.specs.map((spec) => (
-                        <li key={spec.title}>
-                            <span className="font-semibold">{spec.title}:</span>{" "}
-                            {spec.description}
-                        </li>
-                    ))}
-                </ul> */}
-                <a href="#" className="text-sm font-semibold text-terciary hover:underline">
-                    Ver mais
-                </a>
+                {/* Colors */}
+                {produto.atributos.listaCores && produto.atributos.listaCores.length > 0 && (
+                    <div className="flex flex-col gap-2 mb-4">
+                        <span className="text-sm font-semibold text-gray-700">
+                            Cor: <span className="font-normal text-gray-600">{produto.atributos.listaCores.find(c => c.id == produto.id)?.nome}</span>
+                        </span>
+                        <div className="flex gap-2 flex-wrap">
+                            {produto.atributos.listaCores.map((cor) => (
+                                <a
+                                    key={cor.id}
+                                    onClick={() => {
+                                        navigate(`/produto/${cor.id}/${gerarSlug(cor.nome)}`);
+                                    }}
+                                    className="group relative w-10 h-10 cursor-pointer"
+                                >
+                                    <div className={`w-full h-full rounded-full border-2 overflow-hidden ${cor.id == produto.id ? 'border-terciary' : 'border-gray-200 group-hover:border-gray-400'}`}>
+                                        <img src={cor.imagem} alt={cor.nome} className="w-full h-full object-cover" />
+                                    </div>
+
+                                    {/* Tooltip */}
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                                        {cor.nome}
+                                        {/* Arrow */}
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-black"></div>
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Sizes */}
+                {produto.atributos.listaTamanhos && produto.atributos.listaTamanhos.length > 0 && (
+                    <div className="flex flex-col gap-2 mb-4">
+                        <span className="text-sm font-semibold text-gray-700">Tamanhos:</span>
+                        <div className="flex gap-2 flex-wrap">
+                            {produto.atributos.listaTamanhos.map((tamanho) => (
+                                <div
+                                    key={tamanho.id}
+                                    onClick={() => {
+                                        if (tamanho.tipodeestoque == '2' || tamanho.estoque > 0) {
+                                            setTamanhoSelecionado(tamanho);
+                                        }
+                                    }}
+                                    className={`relative px-3 py-1 border rounded-md text-sm cursor-pointer overflow-hidden ${tamanhoSelecionado?.id === tamanho.id
+                                        ? 'border-terciary bg-terciary text-white'
+                                        : ((tamanho.tipodeestoque == '2' || tamanho.estoque > 0) ? 'border-gray-300 text-gray-700 hover:border-terciary' : 'border-gray-200 text-gray-400 bg-gray-200 cursor-not-allowed')
+                                        }`}
+                                    title={`Estoque: ${tamanho.estoque}`}
+                                >
+                                    {tamanho.tamanho}
+                                    {!(tamanho.tipodeestoque == '2' || tamanho.estoque > 0) && (
+                                        <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+                                            <line x1="0" y1="0" x2="100%" y2="100%" stroke="#9ca3af" strokeWidth="1" />
+                                        </svg>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )
@@ -249,13 +314,23 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
 }
 
 function PurchaseSidebar({ produto }: ProdutoProps) {
-    let { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
+    let navigate = useNavigate();
+    let { adicionarNovoProduto, verificarAdicionadoCarrinho, tamanhoSelecionado } = useCarrinho();
 
-    const currencyFormatter = Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-        maximumFractionDigits: 3,
-    });
+    // Calculate dynamic price
+    const precoBase = produto.atributos.preco;
+    const valorAdicional = tamanhoSelecionado ? parseFloat(tamanhoSelecionado.valorGrade) : 0;
+    const precoFinal = precoBase + valorAdicional;
+
+    // Create a modified product object for cart checks/addition
+    const produtoComTamanho = {
+        ...produto,
+        atributos: {
+            ...produto.atributos,
+            preco: precoFinal,
+            tamanhoSelecionado: tamanhoSelecionado!
+        }
+    };
 
     return (
         <div className="flex flex-col gap-4 lg:sticky top-42">
@@ -267,7 +342,7 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                     </span>
                 )}
                 <span className="text-3xl font-bold text-primary">
-                    {currencyFormatter.format(produto.atributos.preco)}
+                    {currencyFormatter.format(precoFinal)}
                 </span>
                 <span className="text-xs text-gray-700 mt-1">
                     À vista no PIX com <span className='font-semibold'>15% de desconto</span>
@@ -281,19 +356,40 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                     Ver mais opções de pagamento e parcelamento
                 </a>
 
-                <div className="my-2 text-xs font-semibold text-green-600">
-                    Em estoque
-                </div>
+                {produto.atributos.estoque > 0 &&
+                    <div className="my-2 text-xs font-semibold text-green-600">
+                        Em estoque
+                    </div>
+                }
+                {produto.atributos.estoque <= 0 &&
+                    <div className="my-2 text-xs font-semibold text-red-600">
+                        Sem estoque
+                    </div>
+                }
 
                 {/* Botões */}
-                <div
-                    className="flex flex-col gap-3"
-                    onClick={() => {
-                        adicionarNovoProduto(produto);
-                    }}
-                >
-                    <Button variant="primary">Comprar agora</Button>
-                    <Button variant="grayOutline">
+                <div className="flex flex-col gap-3">
+                    <Button
+                        variant="primary"
+                        onClick={async () => {
+                            if (!verificarAdicionadoCarrinho(produto)) {
+                                const success = await adicionarNovoProduto(produtoComTamanho);
+                                if (success) {
+                                    navigate('/carrinho');
+                                }
+                            } else {
+                                navigate('/carrinho');
+                            }
+                        }}
+                    >
+                        Comprar agora
+                    </Button>
+                    <Button
+                        variant="grayOutline"
+                        onClick={() => {
+                            adicionarNovoProduto(produtoComTamanho);
+                        }}
+                    >
                         <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
                         {verificarAdicionadoCarrinho(produto) ? 'Remover' : 'Adicionar'} ao Carrinho
                     </Button>
@@ -335,4 +431,3 @@ function FreightCalculator() {
         </div>
     )
 }
-

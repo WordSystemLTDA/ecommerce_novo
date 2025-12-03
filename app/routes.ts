@@ -16,7 +16,7 @@ export default [
         route("confirmacao", "routes/checkout.confirmation.tsx"),
     ]),
 
-    route("/minhaconta", "routes/minhaconta.layout.tsx", [
+    route("/minha-conta", "routes/minhaconta.layout.tsx", [
         index("routes/minhaconta.tsx"),
 
         route("enderecos", "routes/minhaconta.endereco.layout.tsx", [
@@ -24,7 +24,9 @@ export default [
             route("novo", "routes/minhaconta.novo_endereco.tsx"),
             route("editar/:id", "routes/minhaconta.editar_endereco.tsx"),
         ]),
+        route("pedidos", "routes/minhaconta.pedidos.tsx"),
+        route("dados", "routes/minhaconta.dados.tsx"),
     ]),
 
-    route("pedido/sucesso", "routes/order.success.tsx"),
+    route("pedido/sucesso/:id", "routes/order.success.tsx"),
 ] satisfies RouteConfig;

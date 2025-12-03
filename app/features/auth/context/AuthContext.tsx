@@ -52,10 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (response.sucesso) {
                 setCliente(response.data.cliente);
-                toast.success('Bem-vindo de volta!');
+                toast.success('Bem-vindo de volta!', { position: 'top-center' });
             }
         } catch (error) {
-            toast.error('Erro ao fazer login');
+            toast.error('Erro ao fazer login', { position: 'top-center' });
             throw error;
         } finally {
             setIsLoading(false);
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await authService.sair();
             setCliente(null);
-            // Redirecionar se necessário, ex: window.location.href = '/';
+            // navigate('/');
         } catch (error) {
             console.error('Erro ao sair', error);
         }

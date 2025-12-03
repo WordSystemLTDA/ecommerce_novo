@@ -1,7 +1,7 @@
 import type { DefaultResponse } from "~/types/DefaultResponse";
 
 export interface Endereco {
-    id: number,
+	id: number,
 	cep: string,
 	endereco: string,
 	numero: string,
@@ -14,5 +14,9 @@ export interface Endereco {
 }
 
 export interface EnderecoResponse extends DefaultResponse {
-    data: Endereco[],
+	data: Endereco[],
+}
+
+export interface EnderecoPegarResponse extends DefaultResponse {
+	data: Endereco,
 }

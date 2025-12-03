@@ -1,15 +1,79 @@
+import type { Cliente } from "~/features/auth/types";
 import type { Produto } from "~/features/produto/types";
 import apiClient from "~/services/api";
 import type { Pagamento, PagamentoResponse } from "~/types/Pagamento";
 
 export const carrinhoService = {
-    listar: async (id_cliente: string) => {
-        const { data } = await apiClient.get<Produto | undefined>(`/carrinho/${id_cliente}`);
-        return data;
+    listar: async (id_cliente: number) => {
+        const response = await apiClient.get<any>(`/carrinho/${id_cliente}`);
+        // The backend now returns the full Produto structure in data.data.produtos
+        const itens = response.data?.data?.produtos || [];
+        return itens as Produto[];
     },
 
     listarPagamentosDisponiveis: async () => {
         const { data } = await apiClient.get<PagamentoResponse>(`/pagamentos`);
+        return data;
+    },
+
+    adicionarNovoItem: async (id_cliente: number, produto: Produto) => {
+        const response = await apiClient.post(`/carrinho/${produto.id}`, {
+            id_cliente,
+            nome_do_produto: produto.atributos.nome,
+            valor: produto.atributos.preco,
+            quantidade: 1,
+            total: produto.atributos.preco,
+            id_grade: produto.atributos.tamanhoSelecionado?.id || 0
+        });
+        return response.data;
+    },
+
+    removerItem: async (id_cliente: number, id_produto: number) => {
+        const response = await apiClient.delete(`/carrinho/${id_produto}`, {
+            data: {
+                id_cliente,
+                quantidade: 1
+            }
+        });
+        return response.data;
+    },
+
+    limparCarrinho: async (id_cliente: number) => {
+        const response = await apiClient.delete(`/carrinho/limpar/${id_cliente}`);
+        return response.data;
+    },
+
+    gerarVenda: async (
+        cliente: Cliente,
+        produtos: {
+            id: number,
+            quantidade: number,
+            habilTipo: string,
+            idTamanho: string,
+        }[],
+        pagamento: Pagamento,
+        id_endereco: number,
+        txid: string,
+        codigopix: string,
+        prazo_de_entrega: string,
+        valor_do_frete: number,
+        tipo_de_envio: string,
+        nome_transportadora: string,
+        valor_venda: number,
+    ) => {
+        const { data } = await apiClient.post(`/vendas/gerar`, {
+            cliente,
+            produtos,
+            pagamento,
+            id_endereco,
+            txid,
+            codigopix,
+            prazo_de_entrega,
+            valor_do_frete,
+            tipo_de_envio,
+            nome_transportadora,
+            valor_venda
+        });
         return data;
     },
 };

@@ -1,6 +1,6 @@
 import type { DefaultResponse } from "~/types/DefaultResponse";
 import type { Categoria } from "../categoria/types";
-import type { Transportadora } from "~/types/Transportadora";
+import type { TipoDeEntrega } from "~/types/TipoDeEntrega";
 
 export interface Produto extends DefaultResponse {
     tipo: string,
@@ -40,6 +40,7 @@ export interface Atributos {
     ehPreEncomenda: boolean,
     dataPreEncomenda: number,
     disponivel: boolean,
+    tipo_de_estoque: string,
     estoque: number,
     limiteCompra: number,
     tipo: number,
@@ -56,6 +57,23 @@ export interface Atributos {
     parcelaMaxima: string,
     linkProduto: string,
     vendidoPor: string,
+    listaCores?: ProdutoCor[],
+    listaTamanhos?: ProdutoTamanho[],
+    tamanhoSelecionado?: ProdutoTamanho,
+}
+
+export interface ProdutoCor {
+    id: number;
+    nome: string;
+    imagem: string;
+}
+
+export interface ProdutoTamanho {
+    id: number;
+    estoque: number;
+    tipodeestoque: string;
+    tamanho: string;
+    valorGrade: string;
 }
 
 export interface Oferta {
@@ -73,7 +91,7 @@ export interface Oferta {
 
 export interface Marca {
     id: string,
-    name: string,
+    nome: string,
     img: string,
 }
 
@@ -101,7 +119,7 @@ export interface Produtos {
 }
 
 export interface Paginacao {
-	pagina: number,
+    pagina: number,
     por_pagina: number,
     total: number,
     total_paginas: number
@@ -109,14 +127,14 @@ export interface Paginacao {
 
 export interface Filtros {
     categoria?: string,
-	sub_categoria?: string,
-	marca_do_produto?: string,
-	min_valor_venda?: string,
-	max_valor_venda?: string,
-	pesquisa?: string,
-	order_by?: string,
-	pagina: number,
-	por_pagina: number,
+    sub_categoria?: string,
+    marca_do_produto?: string,
+    min_valor_venda?: string,
+    max_valor_venda?: string,
+    pesquisa?: string,
+    order_by?: string,
+    pagina: number,
+    por_pagina: number,
 }
 
 export interface Banner {
@@ -134,6 +152,6 @@ export interface ProdutosResponse extends DefaultResponse {
 }
 
 export interface CalculcarFreteResponse extends DefaultResponse {
-    data: Transportadora[],
+    data: TipoDeEntrega[],
 }
 

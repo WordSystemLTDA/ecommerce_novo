@@ -1,210 +1,280 @@
-import React, { useState } from 'react';
-import { Search, Heart, User, ShoppingBag, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router';
-import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
-
-// --- Tipos e Interfaces ---
-
-// Define o tipo do estado do menu (pode ser o nome da categoria ou null)
-type MenuCategory = string | null;
-
-interface NavItemProps {
-    text: string;
-    isRed?: boolean; // ? indica opcional
-    activeMenu: MenuCategory;
-    setActiveMenu: (menu: MenuCategory) => void;
-    hasMegaMenu?: boolean; // ? indica opcional
-}
-
-interface PromoCardProps {
-    image: string;
-    title: string;
-    price1: string;
-    price2: string;
-    bigPrice: string;
-    suffix: string;
-}
-
-// --- Componente Principal ---
+import { useEffect, useState } from "react";
+import { MdKeyboardArrowDown, MdMenu, MdOutlineFavorite, MdOutlineSearch, MdPerson, MdLocationOn, MdHeadsetMic, MdAccessibility, MdNotifications } from "react-icons/md";
+import { FaShoppingCart } from "react-icons/fa";
+import { useNavigate } from "react-router";
+import { categoriaService } from "~/features/categoria/services/categoriaService";
+import type { Categoria } from "~/features/categoria/types";
+import DepartmentMenu from "./departament";
+import { useAuth } from "~/features/auth/context/AuthContext";
+import { AddressSelectionModal } from "./AddressSelectionModal";
+import type { Endereco } from "~/features/minhaconta/types";
+import { minhacontaService } from "~/features/minhaconta/services/minhacontaService";
 
 export default function Header() {
-
     let navigate = useNavigate();
-    let { produtos } = useCarrinho();
+    const { cliente, isAuthenticated } = useAuth();
 
-    // Tipando o useState explicitamente para aceitar string ou null
-    const [activeMenu, setActiveMenu] = useState<MenuCategory>(null);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
+    const [categoriasMenu, setCategoriasMenu] = useState<Categoria[]>([]);
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [selectedAddress, setSelectedAddress] = useState<Endereco | null>(null);
 
-    const handleMouseLeave = () => {
-        setActiveMenu(null);
+    const handleAddressSelect = async (address: Endereco) => {
+        if (!cliente?.id) return;
+
+        try {
+            // Optimistic update
+            setSelectedAddress(address);
+            setIsAddressModalOpen(false);
+
+            // Update backend
+            await minhacontaService.editarEndereco(address.id, {
+                cep: address.cep,
+                logradouro: address.endereco,
+                numero: address.numero,
+                bairro: address.nome_bairro,
+                cidade: address.nome_cidade,
+                uf: address.sigla_estado,
+                id_cliente: cliente.id,
+                padrao: 'Sim',
+                complemento: address.complemento
+            });
+        } catch (error) {
+            console.error("Erro ao atualizar endereço padrão:", error);
+        }
     };
 
+    useEffect(() => {
+        const loadInitialData = async () => {
+            try {
+                const { data } = await categoriaService.listarCategoriasComSubCategorias();
+                const { data: dataMenu } = await categoriaService.listarCategoriasMenu();
+                setCategorias(data ?? []);
+                setCategoriasMenu(dataMenu ?? []);
+
+                // Load default address if logged in
+                if (isAuthenticated && cliente?.id) {
+                    const response = await minhacontaService.listarEnderecos(cliente.id);
+                    if (response && Array.isArray(response.data)) {
+                        const defaultAddress = response.data.find(addr => addr.padrao === 'Sim');
+                        if (defaultAddress) {
+                            setSelectedAddress(defaultAddress);
+                        } else if (response.data.length > 0) {
+                            setSelectedAddress(response.data[0]);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao buscar categorias", error);
+            }
+        };
+
+        loadInitialData();
+    }, [isAuthenticated, cliente]);
+
     return (
-        <header className="sticky top-0 z-50 w-full bg-primary font-sans">
+        <header className="w-full bg-primary sticky top-0 z-50 flex flex-row items-center">
+            {/* Logo */}
+            <div className="w-55 flex items-center justify-center">
+                <img
+                    onClick={() => navigate('/')}
+                    src="/logo_wordsystem.png"
+                    alt="Logo"
+                    className="w-32 lg:w-40 cursor-pointer object-contain"
+                />
+            </div>
 
-            {/* BARRA SUPERIOR */}
-            <div className="max-w-[1600px] mx-auto px-8 py-4 flex items-center justify-between bg-primary relative z-20">
+            <div className="w-full px-4 lg:px-8 py-3">
 
-                {/* Logo */}
-                <div
-                    className="flex items-center text-4xl tracking-tighter cursor-pointer"
-                    onClick={() => {
-                        navigate('/');
-                    }}
-                >
-                    {/* <span className="font-bold text-black">WORD</span> */}
-                    {/* TypeScript pode reclamar do WebkitTextStroke se não estiver nas definições padrão, 
-              mas geralmente funciona. Se der erro, use 'as React.CSSProperties' */}
-                    {/* <span
-                        className="font-bold text-transparent"
-                        style={{ WebkitTextStroke: '1px black' } as React.CSSProperties}
+                {/* Top Row */}
+                <div className="flex items-center gap-4 lg:gap-8">
+                    {/* Location (Hidden on mobile) */}
+                    <div
+                        className="hidden lg:flex items-center gap-2 text-white min-w-fit cursor-pointer hover:opacity-90"
+                        onClick={() => setIsAddressModalOpen(true)}
                     >
-                        SYSTEM
-                    </span> */}
-                    <img src='/logo_wordsystem.png' className='max-w-32' />
+                        <MdLocationOn size={24} />
+                        <div className="flex flex-col text-xs leading-tight">
+                            <span className="opacity-80">Enviar para:</span>
+                            <span className="font-bold underline">
+                                {selectedAddress
+                                    ? `${selectedAddress.endereco}, ${selectedAddress.numero}`
+                                    : "Selecione o endereço"
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Search Bar (Flexible width) */}
+                    <div className="flex-1 w-full">
+                        <SearchBar />
+                    </div>
+
+                    {/* User & Icons */}
+                    <div className="flex items-center gap-4 lg:gap-6 text-white shrink-0">
+                        <ButtonEntreOuCadastrese />
+
+                        <div className="hidden lg:flex items-center gap-4">
+                            <MdHeadsetMic size={24} className="cursor-pointer hover:text-gray-200" title="Atendimento" />
+                            {/* <MdAccessibility size={24} className="cursor-pointer hover:text-gray-200" title="Acessibilidade" />
+                            <MdNotifications size={24} className="cursor-pointer hover:text-gray-200" title="Notificações" /> */}
+                            <ButtonFavoritos />
+                            <ButtonCarrinho />
+                        </div>
+
+                        {/* Mobile Menu Toggle */}
+                        <MdMenu size={28} className="lg:hidden cursor-pointer" />
+                    </div>
                 </div>
 
-                {/* Nav */}
-                <nav className="hidden lg:flex items-center gap-8 h-full">
-                    <NavItem text="Novidades" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-                    <NavItem text="Masculino" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-                    <NavItem text="Feminino" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+                {/* Bottom Row (Navigation) - Hidden on mobile */}
+                <div className="hidden lg:flex items-center justify-between mt-3 pt-2">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+                        <DepartmentMenu categorias={categorias} />
+                        <ButtonMaisVendidos />
 
-                    <NavItem
-                        text="Kids"
-                        activeMenu={activeMenu}
-                        setActiveMenu={setActiveMenu}
-                        hasMegaMenu={true}
-                    />
+                        <nav className="flex items-center gap-4 ml-2">
+                            {(categoriasMenu ?? []).map((categoria) => (
+                                <a key={categoria.id} href="#" className="text-white text-xs font-bold hover:underline whitespace-nowrap">{categoria.nome}</a>
+                            ))}
 
-                    <NavItem text="Jeans" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-                    <NavItem text="Calçados" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-                    <NavItem text="Acessórios" activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-                    <NavItem text="OFF" isRed activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-                </nav>
-
-                {/* Ícones */}
-                <div className="flex items-center gap-6">
-                    <div className="relative hidden xl:block">
-                        <input
-                            type="text"
-                            placeholder="O que você procura?"
-                            className="bg-gray-100 text-gray-600 text-sm rounded-full pl-5 pr-10 py-2.5 w-[280px] focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all"
-                        />
-                        <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5 cursor-pointer" />
+                            {categoriasMenu.length > 10 && (
+                                <ButtonMore hiddenCategories={categoriasMenu.slice(10)} />
+                            )}
+                        </nav>
                     </div>
-                    <div className="flex items-center gap-5">
-                        <Heart className="w-6 h-6 stroke-[1.5] cursor-pointer text-white hover:text-gray-600" />
-                        <User
-                            className="w-6 h-6 stroke-[1.5] cursor-pointer text-white hover:text-gray-600"
-                            onClick={() => {
-                                navigate('/minhaconta');
-                            }}
-                        />
-                        <div
-                            className="relative cursor-pointer hover:text-gray-600"
-                            onClick={() => {
-                                navigate('/carrinho');
-                            }}
 
-                        >
-                            <ShoppingBag className="text-white w-6 h-6 stroke-[1.5]" />
-                            <span className="absolute -top-1 -right-1 bg-black text-white text-tiny font-bold h-4 w-4 flex items-center justify-center rounded-full">{produtos.length}</span>
+                    {/* Banner Right */}
+                    <div className="w-64 ml-4 hidden xl:block">
+                        <div className="bg-white text-primary px-4 py-1 rounded-full text-xs font-bold flex items-center justify-between gap-2 cursor-pointer hover:bg-gray-100 transition-colors">
+                            Seja um sócio
+                            <MdKeyboardArrowDown className="-rotate-90" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* MEGA MENU - Renderização Condicional */}
-            <div
-                className={`absolute left-0 top-full w-full bg-white border-t border-gray-100 shadow-xl transition-all duration-300 ease-in-out overflow-hidden ${activeMenu === 'Kids' ? 'max-h-[500px] opacity-100 visible' : 'max-h-0 opacity-0 invisible'
-                    }`}
-                onMouseEnter={() => setActiveMenu('Kids')}
-                onMouseLeave={handleMouseLeave}
-            >
-                <div className="max-w-[1200px] mx-auto py-8 px-8 flex">
-
-                    {/* Coluna de Links */}
-                    <div className="w-1/4 pr-8 border-r border-gray-100">
-                        <h3 className="font-bold text-gray-900 mb-4 text-lg">Roupas</h3>
-                        <ul className="space-y-3 text-gray-600 text-sm">
-                            <li className="hover:text-black cursor-pointer">T-Shirts</li>
-                            <li className="hover:text-black cursor-pointer">Regatas</li>
-                            <li className="hover:text-black cursor-pointer">Polos</li>
-                            <li className="hover:text-black cursor-pointer">Camisas</li>
-                            <li className="hover:text-black cursor-pointer">Calças Jeans</li>
-                            <li className="hover:text-black cursor-pointer">Bermudas</li>
-                            <li className="hover:text-black cursor-pointer">Shorts</li>
-                            <li className="font-bold text-black border-b border-black inline-block mt-2 cursor-pointer">Ver tudo</li>
-                        </ul>
-                    </div>
-
-                    {/* Coluna de Promoções */}
-                    <div className="w-3/4 pl-12 flex gap-6">
-                        <PromoCard
-                            image="https://images.unsplash.com/photo-1519238263496-6543b3102fc8?q=80&w=600&auto=format&fit=crop"
-                            title="T-SHIRTS ESTAMPADAS KIDS"
-                            price1="1 PEÇA POR R$ 59,90"
-                            price2="3 PEÇAS POR"
-                            bigPrice="R$ 49,90"
-                            suffix="cada"
-                        />
-                        <PromoCard
-                            image="https://images.unsplash.com/photo-1519457431-44ccd64a579b?q=80&w=600&auto=format&fit=crop"
-                            title="CALÇAS JEANS"
-                            price1="1 PEÇA POR R$ 139,90"
-                            price2="2 PEÇAS POR"
-                            bigPrice="R$ 119,90"
-                            suffix="cada"
-                        />
-                    </div>
-                </div>
+            {/* Mobile Search (Visible only on mobile) */}
+            <div className="lg:hidden px-4 pb-3">
+                <SearchBar />
             </div>
 
+            <AddressSelectionModal
+                isOpen={isAddressModalOpen}
+                onClose={() => setIsAddressModalOpen(false)}
+                onSelectAddress={handleAddressSelect}
+                selectedAddressId={selectedAddress?.id}
+            />
         </header>
     );
 }
 
-// --- Sub-componentes Tipados ---
-
-function NavItem({ text, isRed, activeMenu, setActiveMenu, hasMegaMenu }: NavItemProps) {
+export function SearchBar() {
     return (
-        <div
-            className="h-full flex items-center relative group py-4"
-            onMouseEnter={() => hasMegaMenu ? setActiveMenu(text) : setActiveMenu(null)}
-        >
-            <a
-                href="#"
-                className={`text-sm font-medium transition-colors hover:underline underline-offset-4 decoration-2 ${isRed ? 'text-red-600 hover:text-red-700' : 'text-white hover:text-gray-500'
-                    } ${activeMenu === text ? 'underline text-black' : ''}`}
-            >
-                {text}
-            </a>
+        <div className="flex h-10 relative w-full group">
+            <input
+                type="search"
+                name="busca"
+                id="busca"
+                autoComplete="off"
+                className="bg-white w-full rounded text-sm px-4 border-0 outline-none text-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary transition-shadow"
+                placeholder="Busque na Loja!"
+            />
+            <button className="absolute right-0 top-0 h-full px-4 bg-transparent text-primary hover:text-secondary transition-colors">
+                <MdOutlineSearch size={24} />
+            </button>
         </div>
     );
 }
 
-function PromoCard({ image, title, price1, price2, bigPrice, suffix }: PromoCardProps) {
+export function ButtonEntreOuCadastrese() {
+    let navigate = useNavigate();
+    let { isAuthenticated, cliente } = useAuth();
+
     return (
-        <div className="relative w-1/2 h-[350px] group overflow-hidden cursor-pointer">
-            <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-
-            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent"></div>
-
-            <div className="absolute top-1/2 left-4 text-white">
-                <Plus className="w-8 h-8 opacity-70" />
+        <div
+            className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => {
+                if (isAuthenticated) {
+                    navigate('/minha-conta');
+                } else {
+                    navigate('/entrar');
+                }
+            }}
+        >
+            <div className="p-1 border-2 border-white rounded-full">
+                <MdPerson size={20} className="text-white" />
             </div>
 
-            <div className="absolute bottom-6 left-6 text-white">
-                <h4 className="font-bold text-xl mb-2 uppercase leading-tight w-2/3">{title}</h4>
-                <p className="text-xs font-medium opacity-90 mb-1">{price1}</p>
-                <div className="border-t border-white/30 my-2 w-full"></div>
-                <p className="text-xs uppercase opacity-90">{price2}</p>
-                <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold">{bigPrice}</span>
-                    <span className="text-xs font-light">{suffix}</span>
+            {isAuthenticated ? (
+                <div>
+                    <span className="text-[10px] uppercase font-bold">Olá, <span className="font-bold text-white">{cliente?.nome}</span></span>
                 </div>
-            </div>
+            )
+                :
+                (
+                    <div className="flex flex-col leading-none sm:hidden lg:flex">
+                        <span className="text-[10px] uppercase font-bold opacity-80">Olá, faça seu login</span>
+                        <span className="text-xs font-bold">ou cadastre-se</span>
+                    </div>
+                )
+
+            }
+        </div>
+    );
+}
+
+export function ButtonFavoritos() {
+    return (
+        <div className="cursor-pointer hover:text-gray-200 transition-colors relative">
+            <MdOutlineFavorite size={24} />
+        </div>
+    );
+}
+
+export function ButtonCarrinho() {
+    let navigate = useNavigate();
+
+    return (
+        <div
+            className="cursor-pointer hover:text-gray-200 transition-colors relative"
+            onClick={() => navigate('/carrinho')}
+        >
+            <FaShoppingCart size={24} />
+        </div>
+    );
+}
+
+export function ButtonMaisVendidos() {
+    return (
+        <div className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 rounded text-xs font-bold cursor-pointer transition-colors whitespace-nowrap">
+            Mais Vendidos
+        </div>
+    );
+}
+
+export function ButtonOthers({ titulo }: { titulo: string }) {
+    return (
+        <a href="#" className="text-white text-xs font-bold hover:underline whitespace-nowrap px-2">
+            {titulo}
+        </a>
+    );
+}
+
+export function ButtonMore({ hiddenCategories }: { hiddenCategories: Categoria[] }) {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+        <div
+            className="flex items-center gap-1 cursor-pointer text-white hover:text-gray-200"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <span className="text-xs font-bold">Mais</span>
+            <MdKeyboardArrowDown
+                size={16}
+                className={`transition-transform duration-300 ${isHovered ? '-rotate-180' : 'rotate-0'}`}
+            />
         </div>
     );
 }

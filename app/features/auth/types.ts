@@ -3,7 +3,10 @@ import type { DefaultResponse } from "~/types/DefaultResponse";
 export interface Cliente {
     id: number;
     nome: string;
+    razao_social: string;
     email: string;
+    celular: string,
+    doc: string,
 }
 
 export interface EntrarRequest {

@@ -1,6 +1,9 @@
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
-import { MapPin, X, Lock } from 'lucide-react';
-import Header from '~/components/header';
+import { MapPin, Lock } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router';
+import { toast } from 'react-toastify';
+import { useAuth } from '../auth/context/AuthContext';
+import { minhacontaService } from './services/minhacontaService';
 
 // Definição dos tipos para o estado do formulário
 interface AddressFormData {
@@ -11,6 +14,7 @@ interface AddressFormData {
   bairro: string;
   cidade: string;
   uf: string;
+  padrao: string;
 }
 
 // Definição dos tipos para os erros (chaves opcionais ou nulas)
@@ -39,6 +43,11 @@ interface ViaCepResponse {
  * Esta é a implementação principal baseada na imagem fornecida.
  */
 export default function NovoEnderecoPage() {
+  const navigate = useNavigate();
+  const { id } = useParams(); // Se tiver ID, é edição
+  const { cliente } = useAuth();
+  const isEditing = !!id;
+
   // Estado do formulário
   const [formData, setFormData] = useState<AddressFormData>({
     cep: '',
@@ -47,18 +56,51 @@ export default function NovoEnderecoPage() {
     complemento: '',
     bairro: '',
     cidade: '',
-    uf: ''
+    uf: '',
+    padrao: 'Não',
   });
 
   // Estados de controle da UI
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoadingCep, setIsLoadingCep] = useState<boolean>(false);
   const [isFormValid, setIsFormValid] = useState<boolean>(false);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
+
+  // Carregar dados se for edição
+  useEffect(() => {
+    if (isEditing && cliente?.id) {
+      const loadAddress = async () => {
+        setIsLoadingData(true);
+        try {
+          const { data: address } = await minhacontaService.pegarEndereco(Number(id), cliente.id);
+          if (address) {
+            setFormData({
+              cep: address.cep,
+              logradouro: address.endereco,
+              numero: address.numero,
+              complemento: address.complemento || '',
+              bairro: address.nome_bairro, // A API retorna nome_bairro
+              cidade: address.nome_cidade, // A API retorna nome_cidade
+              uf: address.sigla_estado, // A API retorna sigla_estado
+              padrao: address.padrao,
+            });
+          }
+        } catch (error) {
+          console.error("Erro ao carregar endereço:", error);
+          toast.error("Erro ao carregar dados do endereço.", { position: 'top-center' });
+          navigate('/minha-conta/enderecos');
+        } finally {
+          setIsLoadingData(false);
+        }
+      };
+      loadAddress();
+    }
+  }, [isEditing, id, cliente, navigate]);
 
   // Efeito para validar o formulário sempre que os dados mudam
   useEffect(() => {
     const isValid =
-      formData.cep.length === 9 &&
+      (formData.cep ?? '').length >= 8 && // Aceita com ou sem traço
       formData.logradouro.trim() !== '' &&
       formData.numero.trim() !== '' &&
       formData.bairro.trim() !== '' &&
@@ -70,7 +112,12 @@ export default function NovoEnderecoPage() {
 
   // Função para lidar com mudanças nos inputs
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+
+    if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: checked }));
+      return;
+    }
 
     // Tratamento especial para CEP (Máscara 00000-000)
     if (name === 'cep') {
@@ -130,12 +177,17 @@ export default function NovoEnderecoPage() {
   };
 
   // Manipulador de envio do formulário
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    if (!cliente?.id) {
+      toast.error("Você precisa estar logado.", { position: 'top-center' });
+      return;
+    }
 
     // Validação simples
     const newErrors: FormErrors = {};
-    if (!formData.cep || formData.cep.length < 9) newErrors.cep = 'Preencha o CEP corretamente.';
+    if (!formData.cep || formData.cep.replace(/\D/g, '').length < 8) newErrors.cep = 'Preencha o CEP corretamente.';
     if (!formData.logradouro) newErrors.logradouro = 'Campo obrigatório.';
     if (!formData.numero) newErrors.numero = 'Campo obrigatório.';
     if (!formData.bairro) newErrors.bairro = 'Campo obrigatório.';
@@ -144,39 +196,51 @@ export default function NovoEnderecoPage() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      alert('Endereço cadastrado com sucesso!');
-      // Resetar form ou navegar de volta
-      console.log('Dados enviados:', formData);
+      try {
+        const payload = {
+          ...formData,
+          id_cliente: cliente.id,
+          padrao: formData.padrao ? 1 : 0
+        };
+
+        if (isEditing) {
+          await minhacontaService.editarEndereco(Number(id), payload);
+          toast.success('Endereço atualizado com sucesso!', { position: 'top-center' });
+        } else {
+          await minhacontaService.cadastrarEndereco(payload);
+          toast.success('Endereço cadastrado com sucesso!', { position: 'top-center' });
+        }
+
+        navigate('/minha-conta/enderecos');
+      } catch (error: any) {
+        console.error("Erro ao salvar endereço:", error);
+        toast.error(error.response?.data?.message || 'Erro ao salvar endereço.', { position: 'top-center' });
+      }
     }
   };
+
+  if (isLoadingData) {
+    return <div className="flex justify-center py-10">Carregando...</div>;
+  }
 
   return (
     <div className="flex items-center justify-center py-5 px-4">
 
       {/* Card Principal / Modal */}
-      <div className="max-w-387 relative flex flex-col justify-center items-center">
-
-        {/* Botão Fechar (Topo Direito) */}
-        {/* <button
-          onClick={() => { }}
-          className="absolute top-4 right-4 text-primary hover:text-secondary transition-colors"
-          aria-label="Fechar"
-        >
-          <X size={28} strokeWidth={3} />
-        </button> */}
+      <div className="max-w-387 relative flex flex-col justify-center items-center w-full">
 
         {/* Cabeçalho */}
-        <div className="px-8 pt-8 pb-4">
+        <div className="px-8 pt-8 pb-4 w-full">
           <div className="flex items-center gap-2 mb-6">
             <MapPin className="text-primary" size={24} />
             <h2 className="text-xl font-bold text-gray-700 uppercase tracking-wide">
-              Novo Endereço
+              {isEditing ? 'Editar Endereço' : 'Novo Endereço'}
             </h2>
           </div>
         </div>
 
         {/* Formulário */}
-        <form onSubmit={handleSubmit} className="px-8 pb-8">
+        <form onSubmit={handleSubmit} className="px-8 pb-8 w-full">
 
           <div className="space-y-5">
 
@@ -287,6 +351,19 @@ export default function NovoEnderecoPage() {
               </div>
             </div>
 
+            {/* Checkbox Padrão */}
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="padrao"
+                id="padrao"
+                checked={formData.padrao === 'Sim'}
+                onChange={handleChange}
+                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+              />
+              <label htmlFor="padrao" className="text-sm text-gray-600">Definir como endereço padrão</label>
+            </div>
+
           </div>
 
           {/* Botão de Ação (Footer) */}
@@ -301,7 +378,7 @@ export default function NovoEnderecoPage() {
                   : 'bg-gray-300 text-white cursor-not-allowed'}
               `}
             >
-              Cadastrar Endereço
+              {isEditing ? 'Salvar Alterações' : 'Cadastrar Endereço'}
             </button>
           </div>
 

@@ -1,21 +1,21 @@
-export interface Transportadora {
+export interface TipoDeEntrega {
     id: number;
     name: string;
     price: string;
-    custom_price: string;
-    discount: string;
-    currency: string;
+    custom_price?: string;
+    discount?: string;
+    currency?: string;
     delivery_time: number;
-    delivery_range: {
+    delivery_range?: {
         min: number;
         max: number;
     };
-    custom_delivery_time: number;
-    custom_delivery_range: {
+    custom_delivery_time?: number;
+    custom_delivery_range?: {
         min: number;
         max: number;
     };
-    packages: {
+    packages?: {
         price: string;
         discount: string;
         format: string;
@@ -31,12 +31,12 @@ export interface Transportadora {
             length: number;
         };
     }[];
-    additional_services: {
+    additional_services?: {
         receipt: boolean;
         own_hand: boolean;
         collect: boolean;
     };
-    additional: {
+    additional?: {
         unit: {
             price: number;
             delivery: number;

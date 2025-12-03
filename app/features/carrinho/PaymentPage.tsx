@@ -5,7 +5,7 @@ import Loader from '~/components/loader';
 
 // --- PÁGINA DA ETAPA 4 ---
 export default function PaymentPage() {
-  let { pagamentoSelecionado, pagamentos, setPagamentoSelecionado, listarPagamentos, carregandoPagamentos } = useCarrinho();
+  let { pagamentoSelecionado, pagamentos, setPagamentoSelecionado, listarPagamentos, carregandoPagamentos, tipoDeEntregaSelecionada } = useCarrinho();
 
   useEffect(() => {
     listarPagamentos();
@@ -43,6 +43,30 @@ export default function PaymentPage() {
                   </label>
                 )
               })}
+              {tipoDeEntregaSelecionada?.id == 0 && (
+                <label className={`block border rounded-md p-4 cursor-pointer ${0 === pagamentoSelecionado?.id ? 'border-orange-500 ring-2 ring-orange-500' : 'border-gray-300'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="pix"
+                        checked={0 === pagamentoSelecionado?.id}
+                        onChange={() => setPagamentoSelecionado({
+                          id: 0,
+                          nome: "Receber na loja",
+                          nome_banco: '',
+                          pix_dinamico: '',
+                        })}
+                        className="w-4 h-4 accent-orange-500"
+                      />
+                      <div className="ml-3 text-sm">
+                        <span className="font-bold">Pagar depois</span>
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              )}
             </div>
           </div>
         )

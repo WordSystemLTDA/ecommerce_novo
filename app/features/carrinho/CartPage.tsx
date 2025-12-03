@@ -12,6 +12,7 @@ import {
 import { IoIosArrowDown } from "react-icons/io";
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 import type { Produto } from '../produto/types';
+import { currencyFormatter } from '~/utils/formatters';
 
 
 // --- COMPONENTE: Mensagem de Tempo ---
@@ -38,12 +39,6 @@ const QuantityInput = ({ quantity, onDecrease, onIncrease }: { quantity: number,
 const CartItem = ({ produto }: { produto: Produto }) => {
   const [quantity, setQuantity] = useState(1);
 
-  const currencyFormatter = Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    maximumFractionDigits: 3,
-  });
-
   return (
     <div className="bg-white p-4 border-b border-gray-200">
       <div className="flex flex-col md:flex-row gap-4">
@@ -51,8 +46,8 @@ const CartItem = ({ produto }: { produto: Produto }) => {
         <div className="grow">
           <h3 className="text-sm text-gray-800 font-medium mb-1">{produto.atributos.nome}</h3>
           <p className="text-xs text-gray-500">Vendido e entregue por: {produto.atributos.vendidoPor}</p>
-          <p className="text-xs text-gray-500">Com desconto no PIX: <span className="text-gray-700">{currencyFormatter.format(produto.atributos.precoComDesconto)}</span></p>
-          <p className="text-xs text-gray-500">Parcelado no cartão sem juros: <span className="text-gray-700">R$ {produto.atributos.parcelaMaxima}</span></p>
+          {/* <p className="text-xs text-gray-500">Com desconto no PIX: <span className="text-gray-700">{currencyFormatter.format(produto.atributos.precoComDesconto)}</span></p> */}
+          {produto.atributos.tamanhoSelecionado != null && <p className="text-xs text-gray-500">Tamanho: <span className="text-gray-700">{produto.atributos.tamanhoSelecionado?.tamanho}</span></p>}
           {/* <div className="flex gap-2 mt-2"><span className="flex items-center gap-1 text-xs text-primary"><FaTag size={12} /> OFERTA NINJA</span></div> */}
         </div>
         <div className="flex md:flex-col items-end md:items-end justify-between md:justify-start gap-2">

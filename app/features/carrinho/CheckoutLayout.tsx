@@ -10,10 +10,14 @@ import {
     FaShoppingCart,
     FaTruck,
 } from 'react-icons/fa';
-import { Outlet, useLocation, useNavigate } from 'react-router';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
+import { currencyFormatter } from '~/utils/formatters';
+import { carrinhoService } from './services/carrinhoService';
+import { useAuth } from '../auth/context/AuthContext';
+import { toast } from 'react-toastify';
 
 // --- COMPONENTE: Stepper do Checkout ---
 const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
@@ -41,19 +45,19 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                             <div className="flex flex-col items-center">
                                 <div
                                     className={`
-                    w-10 h-10 rounded-full flex items-center justify-center border-2 
-                    ${isActive ? 'border-primary bg-primary text-white' : ''}
-                    ${isCompleted ? 'border-primary bg-white text-primary' : ''}
-                    ${!isActive && !isCompleted ? 'border-gray-300 text-gray-400' : ''}
-                  `}
+                                        w-10 h-10 rounded-full flex items-center justify-center border-2  
+                                        ${isActive ? 'border-primary bg-primary text-white' : ''}
+                                        ${isCompleted ? 'border-primary bg-white text-primary' : ''}
+                                        ${!isActive && !isCompleted ? 'border-gray-300 text-gray-400' : ''}
+                                    `}
                                 >
                                     {isCompleted ? <FaCheck size={20} /> : <step.icon size={20} />}
                                 </div>
                                 <span
                                     className={`
-                    mt-2 text-xs font-medium 
-                    ${(isActive || isCompleted) ? 'text-primary' : 'text-gray-400'}
-                  `}
+                                        mt-2 text-xs font-medium 
+                                        ${(isActive || isCompleted) ? 'text-primary' : 'text-gray-400'}
+                                    `}
                                 >
                                     {step.name}
                                 </span>
@@ -79,13 +83,7 @@ const CartSummary = ({
     onContinue: () => void;
     onBack: () => void;
 }) => {
-    let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, transportadoraSelecionada, pagamentoSelecionado } = useCarrinho();
-
-    const currencyFormatter = Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-        maximumFractionDigits: 3,
-    });
+    let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, tipoDeEntregaSelecionada, pagamentoSelecionado } = useCarrinho();
 
     const isConfirmationStep = step === 5;
     const isDisabled = () => {
@@ -93,7 +91,7 @@ const CartSummary = ({
             case 2:
                 return enderecoSelecionado == undefined;
             case 3:
-                return transportadoraSelecionada == undefined;
+                return tipoDeEntregaSelecionada == undefined;
             case 4:
                 return pagamentoSelecionado == undefined;
             default:
@@ -178,8 +176,8 @@ const CartSummary = ({
                         <p>Número {enderecoSelecionado?.numero}, {enderecoSelecionado?.complemento}, CEP {enderecoSelecionado?.cep} - {enderecoSelecionado?.nome_cidade}, {enderecoSelecionado?.sigla_estado}</p>
                         {/* <p className="font-bold">Vendido e entregue por: KaBuM!</p> */}
                         <div className="flex justify-between items-center border border-gray-300 rounded p-2">
-                            <span>{transportadoraSelecionada?.name}</span>
-                            <span className="font-bold">{currencyFormatter.format(parseFloat(transportadoraSelecionada?.price ?? '0'))}</span>
+                            <span>{tipoDeEntregaSelecionada?.name}</span>
+                            <span className="font-bold">{currencyFormatter.format(parseFloat(tipoDeEntregaSelecionada?.price ?? '0'))}</span>
                         </div>
                         <p className="text-xs text-gray-500">*Mediante a confirmação de pagamento até às 13 horas.</p>
                     </div>
@@ -227,6 +225,9 @@ export default function CheckoutLayout() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const { cliente } = useAuth();
+    const { produtos, pagamentoSelecionado, enderecoSelecionado, tipoDeEntregaSelecionada, valorFrete, retornarValorFinal, resetarCarrinho } = useCarrinho();
+
     // Mapeia o caminho da URL para um número de etapa
     const getActiveStep = (pathname: string): number => {
         if (pathname.endsWith('/carrinho')) return 1;
@@ -241,13 +242,37 @@ export default function CheckoutLayout() {
     // As rotas são relativas à rota pai "/carrinho"
     const stepsRoutes = ['', 'endereco', 'entrega', 'pagamento', 'confirmacao'];
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         const nextStepIndex = activeStep; // (activeStep é 1, 2, 3...)
         if (nextStepIndex < stepsRoutes.length) {
             navigate(`/carrinho/${stepsRoutes[nextStepIndex]}`);
         } else {
-            // Se for a última etapa (Confirmação), navega para a página de sucesso
-            navigate('/pedido/sucesso');
+            var response = await carrinhoService.gerarVenda(
+                cliente!,
+                produtos.map(p => ({
+                    id: p.id,
+                    quantidade: p.atributos.quantidade,
+                    habilTipo: p.tipo,
+                    idTamanho: (p.atributos.tamanhoSelecionado?.id ?? 0).toString(),
+                })),
+                pagamentoSelecionado!,
+                enderecoSelecionado!.id,
+                '',
+                '',
+                '',
+                valorFrete,
+                '',
+                tipoDeEntregaSelecionada!.name,
+                retornarValorFinal(),
+            );
+
+            if (response.sucesso) {
+                resetarCarrinho();
+
+                navigate(`/pedido/sucesso/${response.data.id_venda}`);
+            } else {
+                toast.error(response.mensagem, { position: 'top-center' });
+            }
         }
     };
 
@@ -257,6 +282,10 @@ export default function CheckoutLayout() {
             navigate(`/carrinho/${stepsRoutes[prevStepIndex]}`);
         }
     };
+
+    if (produtos.length <= 0 && activeStep != 1 && activeStep != 5) {
+        return <Navigate to="/" replace />;
+    }
 
     return (
         <div>
@@ -288,19 +317,6 @@ export default function CheckoutLayout() {
                         </div>
                     </div>
                 </div>
-
-                {/* Footer com Selos (Opcional, baseado na sua imagem) */}
-                {/* <div className="bg-white border-t border-gray-200 mt-12 py-8">
-                    <div className="max-w-387 mx-auto px-4 flex flex-wrap justify-center items-center gap-6">
-                        <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">SITE BLINDADO</div>
-                        <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">ReclameAqui</div>
-                        <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">Google</div>
-                        <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">eBit</div>
-                        <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">Selo</div>
-                        <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">RA 1000</div>
-                        <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">Empresa B</div>
-                    </div>
-                </div> */}
             </div>
 
             <Footer />

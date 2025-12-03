@@ -117,9 +117,9 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
     <div className="relative group" onMouseLeave={lidarComSaidaMouse}>
 
       {/* O Botão Principal "Todas as Categorias" */}
-      <button className="flex h-full items-center gap-2 border border-secondary rounded-sm px-6 py-2 text-xs font-bold text-secondary transition-colors cursor-pointer hover:bg-gray-50">
+      <button className="flex h-full items-center gap-2 border border-secondary rounded-sm px-6 py-1.5 text-xs font-bold text-secondary transition-colors cursor-pointer hover:bg-gray-50">
         <FaBars />
-        <p>Todas as Categorias</p>
+        <p>Departamentos</p>
       </button>
 
       {/* O Container do Mega Menu (escondido por padrão, aparece no hover do grupo) */}

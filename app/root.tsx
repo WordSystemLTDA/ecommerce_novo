@@ -21,6 +21,7 @@ import toastStyles from "react-toastify/dist/ReactToastify.css?url";
 import swiperStyles from 'swiper/swiper-bundle.css?url';
 import appStyles from "./app.css?url";
 import { CarrinhoProvider } from "./features/carrinho/context/CarrinhoContext";
+import { ConfigProvider } from "./features/config/context/ConfigContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -80,12 +81,14 @@ export default function App() {
   return (
     <Suspense fallback={<Loader />}>
       <AuthProvider>
-        <ProdutoProvider>
-          <CarrinhoProvider>
-            <Outlet />
-            <ToastContainer />
-          </CarrinhoProvider>
-        </ProdutoProvider>
+        <ConfigProvider>
+          <ProdutoProvider>
+            <CarrinhoProvider>
+              <Outlet />
+              <ToastContainer />
+            </CarrinhoProvider>
+          </ProdutoProvider>
+        </ConfigProvider>
       </AuthProvider>
     </Suspense>
   );

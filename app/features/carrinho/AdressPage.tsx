@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useCarrinho } from './context/CarrinhoContext';
-import Loader from '~/components/loader'; 
+import Loader from '~/components/loader';
 // Removi o import do Loading se não for usar em outro lugar
 
 // --- PÁGINA DA ETAPA 2 ---
@@ -19,7 +19,7 @@ export default function AddressPage() {
 
       {carregandoEnderecos ? (
         <div className="flex items-center justify-center w-full">
-           <Loader />
+          <Loader />
         </div>
       )
         :
@@ -60,7 +60,7 @@ export default function AddressPage() {
             <button
               className="mt-6 text-xs font-bold text-primary hover:text-primary cursor-pointer"
               onClick={() => {
-                navigate('/minhaconta/enderecos/novo');
+                navigate('/minha-conta/enderecos/novo');
               }}
             >
               CADASTRAR NOVO ENDEREÇO

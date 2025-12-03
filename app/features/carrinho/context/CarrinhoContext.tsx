@@ -1,13 +1,14 @@
 // app/context/AuthContext.tsx
 
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { toast } from 'react-toastify';
 import { useAuth } from '~/features/auth/context/AuthContext';
 import { minhacontaService } from '~/features/minhaconta/services/minhacontaService';
 import type { Endereco } from '~/features/minhaconta/types';
 import { produtoService } from '~/features/produto/services/produtoService';
-import type { Produto } from '~/features/produto/types';
+import type { Produto, ProdutoTamanho } from '~/features/produto/types';
 import type { Pagamento } from '~/types/Pagamento';
-import type { Transportadora } from '~/types/Transportadora';
+import type { TipoDeEntrega } from '~/types/TipoDeEntrega';
 import { carrinhoService } from '../services/carrinhoService';
 
 // --------------------------------------------------------------------------
@@ -15,7 +16,7 @@ import { carrinhoService } from '../services/carrinhoService';
 // --------------------------------------------------------------------------
 interface CarrinhoContextType {
     produtos: Produto[];
-    transportadoras: Transportadora[];
+    tipoDeEntregas: TipoDeEntrega[];
     enderecos: Endereco[],
     pagamentos: Pagamento[],
 
@@ -23,35 +24,32 @@ interface CarrinhoContextType {
     valorTotal: number;
     valorDesconto: number;
     valorFrete: number;
-    transportadoraSelecionada: Transportadora | undefined;
+    tipoDeEntregaSelecionada: TipoDeEntrega | undefined;
     enderecoSelecionado: Endereco | undefined;
     pagamentoSelecionado: Pagamento | undefined;
+    tamanhoSelecionado: ProdutoTamanho | null;
 
     carregandoEnderecos: boolean,
-    carregandoTransportadoras: boolean,
+    carregandoTipoDeEntregas: boolean,
     carregandoPagamentos: boolean,
 
     // Métodos existentes
-    adicionarNovoProduto: (produto: Produto) => Promise<void>;
+    adicionarNovoProduto: (produto: Produto) => Promise<boolean>;
     removerTodosProdutos: () => Promise<void>;
-    listarTransportadoras: (cepDestino: string) => Promise<void>;
+    resetarCarrinho: () => Promise<void>;
+    listarTipoDeEntregas: (cepDestino: string) => Promise<void>;
     listarEnderecos: () => Promise<void>;
     listarPagamentos: () => Promise<void>;
     verificarAdicionadoCarrinho: (produto: Produto) => boolean;
 
     // Métodos para setar e calcular valores
-    setTransportadoraSelecionada: (transportadora: Transportadora) => void;
+    setTipoDeEntregaSelecionada: (tipoDeEntrega: TipoDeEntrega) => void;
     setEnderecoSelecionado: (endereco: Endereco) => void;
     setPagamentoSelecionado: (pagamento: Pagamento) => void;
     setValorDesconto: (desconto: number) => void;
+    setTamanhoSelecionado: (tamanho: ProdutoTamanho | null) => void;
     retornarValorProdutos: () => number;
     retornarValorFinal: () => number;
-
-
-
-
-
-
 }
 
 const CarrinhoContext = createContext<CarrinhoContextType | undefined>(undefined);
@@ -60,31 +58,95 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     let { cliente } = useAuth();
 
     const [produtos, setProdutos] = useState<Produto[]>([]);
-    const [transportadoras, setTransportadoras] = useState<Transportadora[]>([]);
+    const [tipoDeEntregas, setTipoDeEntregas] = useState<TipoDeEntrega[]>([]);
     const [enderecos, setEnderecos] = useState<Endereco[]>([]);
     const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
 
     // Estados de valores e seleção
     const [valorDesconto, setValorDesconto] = useState(0);
     const [valorFrete, setValorFrete] = useState(0); // Valor do frete selecionado
-    const [transportadoraSelecionada, setTransportadoraSelecionada] = useState<Transportadora | undefined>(undefined);
+    const [tipoDeEntregaSelecionada, setTipoDeEntregaSelecionada] = useState<TipoDeEntrega | undefined>(undefined);
     const [enderecoSelecionado, setEnderecoSelecionado] = useState<Endereco | undefined>(undefined);
     const [pagamentoSelecionado, setPagamentoSelecionado] = useState<Pagamento>();
+    const [tamanhoSelecionado, setTamanhoSelecionado] = useState<ProdutoTamanho | null>(null);
     // const [cupom, setCupom] = useState('');
     const [aceitouTermos, setAceitouTermos] = useState(false);
 
     const [carregandoEnderecos, setCarregandoEnderecos] = useState(false);
-    const [carregandoTransportadoras, setCarregandoTransportadoras] = useState(false);
+    const [carregandoTipoDeEntregas, setCarregandoTipoDeEntregas] = useState(false);
     const [carregandoPagamentos, setCarregandoPagamentos] = useState(false);
 
+    // Load initial cart state
+    useEffect(() => {
+        if (cliente?.id) {
+            // Logged in: Sync localStorage to DB, then fetch from DB
+            syncCart();
+        } else {
+            // Guest: Load from localStorage
+            const savedCart = localStorage.getItem('carrinho_guest');
+            if (savedCart) {
+                try {
+                    setProdutos(JSON.parse(savedCart));
+                } catch (e) {
+                    console.error("Error parsing local cart", e);
+                }
+            }
+        }
+    }, [cliente]);
+
+    // Save to localStorage when products change (only for guests)
+    useEffect(() => {
+        if (!cliente?.id) {
+            localStorage.setItem('carrinho_guest', JSON.stringify(produtos));
+        }
+    }, [produtos, cliente]);
+
+    const syncCart = async () => {
+        if (!cliente?.id) return;
+
+        const savedCart = localStorage.getItem('carrinho_guest');
+        if (savedCart) {
+            try {
+                const localProducts: Produto[] = JSON.parse(savedCart);
+                // Add each local product to the backend
+                for (const prod of localProducts) {
+                    try {
+                        await carrinhoService.adicionarNovoItem(cliente.id, prod);
+                    } catch (err) {
+                        console.error("Error syncing product", prod.id, err);
+                    }
+                }
+                // Clear local cart after sync attempt
+                localStorage.removeItem('carrinho_guest');
+            } catch (e) {
+                console.error("Error parsing local cart for sync", e);
+            }
+        }
+
+        // Fetch updated cart from DB
+        loadCartFromDb();
+    };
+
+    const loadCartFromDb = async () => {
+        if (!cliente?.id) return;
+        try {
+            const items = await carrinhoService.listar(cliente.id);
+            if (items) {
+                setProdutos(items);
+            }
+        } catch (error) {
+            console.error("Error loading cart from DB", error);
+        }
+    };
+
 
     // --------------------------------------------------------------------------
-    // 2. NOVAS FUNÇÕES SETTERS (Para Transportadora e Desconto)
+    // 2. NOVAS FUNÇÕES SETTERS (Para TipoDeEntrega e Desconto)
     // --------------------------------------------------------------------------
 
-    const handleSetTransportadoraSelecionada = (transportadora: Transportadora) => {
-        setTransportadoraSelecionada(transportadora);
-        setValorFrete(parseFloat(transportadora.price));
+    const handleSetTipoDeEntregaSelecionada = (tipoDeEntrega: TipoDeEntrega) => {
+        setTipoDeEntregaSelecionada(tipoDeEntrega);
+        setValorFrete(parseFloat(tipoDeEntrega.price));
     };
 
     const handleSetEnderecoSelecionado = (endereco: Endereco) => {
@@ -117,22 +179,22 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         return valorProdutos - valorDesconto + valorFrete;
     }
 
-    const listarTransportadoras = async (cepDestino: string) => {
+    const listarTipoDeEntregas = async (cepDestino: string) => {
         try {
-            setCarregandoTransportadoras(true);
+            setCarregandoTipoDeEntregas(true);
 
             var response = await produtoService.calcularFrete(cepDestino, produtos);
 
-            setTransportadoras(response.data);
+            setTipoDeEntregas(response.data);
 
-            setTransportadoraSelecionada(undefined);
+            setTipoDeEntregaSelecionada(undefined);
             setValorFrete(0);
 
         } catch (error) {
-            console.error("Erro ao listar transportadoras:", error);
-            setTransportadoras([]);
+            console.error("Erro ao listar tipoDeEntregas:", error);
+            setTipoDeEntregas([]);
         } finally {
-            setCarregandoTransportadoras(false);
+            setCarregandoTipoDeEntregas(false);
         }
     }
 
@@ -149,7 +211,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
 
         } catch (error) {
             console.error("Erro ao listar endereços:", error);
-            setTransportadoras([]);
+            setTipoDeEntregas([]);
         } finally {
             setCarregandoEnderecos(false);
         }
@@ -166,7 +228,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             setPagamentoSelecionado(undefined);
         } catch (error) {
             console.error("Erro ao listar pagamentos:", error);
-            setTransportadoras([]);
+            setTipoDeEntregas([]);
         } finally {
             setCarregandoPagamentos(false);
         }
@@ -175,28 +237,74 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     // ADICIONAR/REMOVER PRODUTO
     const adicionarNovoProduto = async (produto: Produto) => {
         try {
-            if (verificarAdicionadoCarrinho(produto)) {
-                setProdutos((oldState) => oldState.filter((value) => value.id !== produto.id));
+            const isAdded = verificarAdicionadoCarrinho(produto);
+
+            if (isAdded) {
+                // Remove
+                if (cliente?.id) {
+                    await carrinhoService.removerItem(cliente.id, produto.id);
+
+                    await loadCartFromDb();
+                } else {
+                    setProdutos((oldState) => oldState.filter((value) => value.id !== produto.id));
+                }
+                toast.info("Produto removido do carrinho.", { position: 'top-center' });
+                return true;
             } else {
-                setProdutos((oldState) => [...oldState, produto]);
+                // Add
+                if (cliente?.id) {
+                    await carrinhoService.adicionarNovoItem(cliente.id, produto);
+
+                    await loadCartFromDb();
+                } else {
+                    setProdutos((oldState) => [...oldState, produto]);
+                }
+                toast.success("Produto adicionado ao carrinho!", { position: 'top-center' });
+                return true;
             }
         } catch (error) {
             console.error("Erro ao adicionar/remover produto:", error);
+            toast.error("Erro ao atualizar carrinho.", { position: 'top-center' });
+            return false;
         }
     }
 
     const removerTodosProdutos = async () => {
         try {
             setProdutos([]);
+
+            if (cliente?.id) {
+                await carrinhoService.limparCarrinho(cliente.id);
+            } else {
+                localStorage.removeItem('carrinho_guest');
+            }
         } catch (error) {
             console.error("Erro ao remover todos os produtos:", error);
         }
     }
 
-    const verificarAdicionadoCarrinho = (produto: Produto) => {
-        return produtos.filter((value) => value.id === produto.id).length > 0;
+    const resetarCarrinho = async () => {
+        try {
+            setProdutos([]);
+            setTipoDeEntregaSelecionada(undefined);
+            setEnderecoSelecionado(undefined);
+            setPagamentoSelecionado(undefined);
+            setValorFrete(0);
+            setValorDesconto(0);
+
+            if (cliente?.id) {
+                await carrinhoService.limparCarrinho(cliente.id);
+            } else {
+                localStorage.removeItem('carrinho_guest');
+            }
+        } catch (error) {
+            console.error("Erro ao resetar carrinho:", error);
+        }
     }
 
+    const verificarAdicionadoCarrinho = (produto: Produto) => {
+        return produtos.filter((value) => value.id == produto.id).length > 0;
+    }
 
     // --------------------------------------------------------------------------
     // 4. RETORNO DO CONTEXTO
@@ -205,34 +313,37 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         <CarrinhoContext.Provider value={{
             // Dados (Estados)
             produtos,
-            transportadoras,
+            tipoDeEntregas,
             enderecos,
             pagamentos,
 
             valorTotal: retornarValorProdutos(), // Retorna o valor calculado dos produtos
             valorDesconto,
             valorFrete,
-            transportadoraSelecionada,
+            tipoDeEntregaSelecionada,
             enderecoSelecionado,
             pagamentoSelecionado,
+            tamanhoSelecionado,
 
             carregandoEnderecos,
-            carregandoTransportadoras,
+            carregandoTipoDeEntregas,
             carregandoPagamentos,
 
             // Funções
             adicionarNovoProduto,
             removerTodosProdutos,
-            listarTransportadoras,
+            listarTipoDeEntregas,
             listarEnderecos,
             listarPagamentos,
             verificarAdicionadoCarrinho,
+            resetarCarrinho,
 
             // Novas funções para setar valores
-            setTransportadoraSelecionada: handleSetTransportadoraSelecionada,
+            setTipoDeEntregaSelecionada: handleSetTipoDeEntregaSelecionada,
             setValorDesconto: handleSetValorDesconto,
             setEnderecoSelecionado: handleSetEnderecoSelecionado,
             setPagamentoSelecionado: handleSetPagamentoSelecionado,
+            setTamanhoSelecionado,
 
             // Funções de Cálculo
             retornarValorProdutos, // Retorna apenas o valor dos produtos

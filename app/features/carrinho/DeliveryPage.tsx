@@ -1,27 +1,20 @@
-import React, { useEffect } from 'react';
-import { useProduto } from '../produto/context/ProdutoContext';
-import { useCarrinho } from './context/CarrinhoContext';
-import { calcularDataChegada } from '~/utils/formatters';
+import { useEffect } from 'react';
 import Loader from '~/components/loader';
+import { calcularDataChegada, currencyFormatter } from '~/utils/formatters';
+import { useCarrinho } from './context/CarrinhoContext';
 
 // --- PÁGINA DA ETAPA 3 ---
 export default function DeliveryPage() {
 
-  let { listarTransportadoras, transportadoras, setTransportadoraSelecionada, transportadoraSelecionada, enderecoSelecionado, carregandoTransportadoras } = useCarrinho();
+  let { listarTipoDeEntregas, tipoDeEntregas, setTipoDeEntregaSelecionada, tipoDeEntregaSelecionada, enderecoSelecionado, carregandoTipoDeEntregas } = useCarrinho();
 
   useEffect(() => {
     if (enderecoSelecionado != null) {
-      listarTransportadoras(enderecoSelecionado?.cep);
+      listarTipoDeEntregas(enderecoSelecionado?.cep);
     }
   }, []);
 
-  const currencyFormatter = Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    maximumFractionDigits: 3,
-  });
-
-  if (transportadoras == undefined) {
+  if (tipoDeEntregas == undefined) {
     return (
       <div>
         <p>não tem transportes</p>
@@ -32,7 +25,7 @@ export default function DeliveryPage() {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
 
-      {carregandoTransportadoras ? (
+      {carregandoTipoDeEntregas ? (
         <div className="flex items-center justify-center w-full">
           <Loader />
         </div>
@@ -69,41 +62,73 @@ export default function DeliveryPage() {
             {/* <p className="text-sm font-medium mb-2">Vendido e entregue por: <span className="font-bold">Word System!</span></p> */}
 
             <div className="space-y-3">
-              {transportadoras.filter((t) => t.error == null).map((transportadora) => (
+              {tipoDeEntregas.filter((t) => t.error == null).map((tipoDeEntrega) => (
                 (
                   <label
                     className="block border border-orange-500 ring-2 ring-orange-500 rounded-md p-4 cursor-pointer"
                     onClick={() => {
-                      setTransportadoraSelecionada(transportadora);
+                      setTipoDeEntregaSelecionada(tipoDeEntrega);
                     }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <input type="radio" name="delivery" checked={transportadoraSelecionada?.id == transportadora.id} className="w-4 h-4 accent-orange-500" />
+                        <input type="radio" name="delivery" checked={tipoDeEntregaSelecionada?.id == tipoDeEntrega.id} className="w-4 h-4 accent-orange-500" />
                         <div className="ml-3 text-sm">
                           <div className='flex flex-row items-center gap-2'>
 
-                            <img src={transportadora.company.picture} className='max-h-3' />
-                            <span className="font-bold">{transportadora.name}</span>
+                            <img src={tipoDeEntrega.company.picture} className='max-h-3' />
+                            <span className="font-bold">{tipoDeEntrega.name}</span>
                           </div>
 
-                          {transportadora.error == null && (
-                            <p className="text-gray-600">Chegará até {calcularDataChegada(new Date('2025-12-01T10:00:00'), transportadora.delivery_time)}</p>
+                          {tipoDeEntrega.error == null && (
+                            <p className="text-gray-600">Chegará até {calcularDataChegada(new Date('2025-12-01T10:00:00'), tipoDeEntrega.delivery_time)}</p>
                           )}
                         </div>
                       </div>
 
-                      <span className="text-sm font-bold">{currencyFormatter.format(parseFloat(transportadora.price))}</span>
+                      <span className="text-sm font-bold">{currencyFormatter.format(parseFloat(tipoDeEntrega.price))}</span>
                     </div>
                   </label>
                 )
               ))}
+
+              <label
+                className="block border border-orange-500 ring-2 ring-orange-500 rounded-md p-4 cursor-pointer"
+                onClick={() => {
+                  setTipoDeEntregaSelecionada({
+                    id: 0,
+                    name: "Retirar na loja",
+                    price: '0',
+                    delivery_time: 0,
+                    company: {
+                      id: 0,
+                      picture: "https://via.placeholder.com/150",
+                      name: "Retirar na loja"
+                    }
+                  });
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input type="radio" name="delivery" checked={tipoDeEntregaSelecionada?.id == 0} className="w-4 h-4 accent-orange-500" />
+                    <div className="ml-3 text-sm">
+                      <div className='flex flex-row items-center gap-2'>
+
+                        <span className="font-bold">Retirar na loja</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </label>
             </div>
+
             <p className="text-xs text-gray-500 mt-4">*Mediante a confirmação de pagamento até às <span className="font-bold">13 horas</span>.</p>
           </div>
         )
       }
 
-    </div>
+
+    </div >
   );
 }

@@ -1,34 +1,29 @@
 import React, { useState } from 'react';
 // 1. Importe o componente da nova biblioteca
 import RangeSlider from 'react-range-slider-input';
+import { currencyFormatter } from '~/utils/formatters';
 
 // --- Constantes baseadas na sua imagem ---
 const MIN_PRICE = 2.87;
 const MAX_PRICE = 89093.72;
 
-// Formata R$ 1234.5 para "R$ 1.234,50"
-const currencyFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
-
 export function PriceRangeSlider() {
-  
+
   // O estado 'values' guarda um array [min, max]
   const [values, setValues] = useState<[number, number]>([MIN_PRICE, MAX_PRICE]);
 
   // Handler para quando os inputs de texto mudam
   const handleMinInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let newMin = Number(event.target.value);
-    
+
     // Validação
     if (isNaN(newMin) || newMin < MIN_PRICE) {
       newMin = MIN_PRICE;
     }
     if (newMin >= values[1]) {
-      newMin = values[1] - 1; 
+      newMin = values[1] - 1;
     }
-    
+
     setValues([newMin, values[1]]);
   };
 
@@ -42,13 +37,13 @@ export function PriceRangeSlider() {
     if (newMax <= values[0]) {
       newMax = values[0] + 1;
     }
-    
+
     setValues([values[0], newMax]);
   };
 
   return (
     <div className="p-0">
-      
+
       {/* 4. Título "Intervalo de Preço" (Tailwind) */}
       <div className="text-xs text-gray-500 mb-2">Intervalo de Preço</div>
 
@@ -60,9 +55,9 @@ export function PriceRangeSlider() {
         value={values}
 
         onInput={setValues} // 'onInput' atualiza o estado
-        
+
         // Classe do container principal (para espaçamento)
-        className="w-full h-4 mb-1" 
+        className="w-full h-4 mb-1"
         id="range-slider-custom"
       />
 
@@ -81,9 +76,9 @@ export function PriceRangeSlider() {
           onChange={handleMinInputChange}
           className="w-full border border-gray-300 rounded-md p-2 text-sm"
         />
-        
+
         <span className="text-gray-400">-</span>
-        
+
         <input
           type="number"
           placeholder={`Máximo - R$ ${Math.ceil(MAX_PRICE)}`}

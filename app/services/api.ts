@@ -19,9 +19,7 @@ apiClient.interceptors.response.use(
     (error) => {
         const payload = error.response?.data || error.message;
         var error = payload['error'];
-        toast.error(error, {
-            position: 'top-center',
-        });
+        toast.error(error, { position: 'top-center' });
 
         return Promise.reject({
             sucesso: false,
