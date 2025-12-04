@@ -15,9 +15,9 @@ export default function MinhaContaLayout() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/";
   };
 
   const navItems = [

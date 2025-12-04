@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         async function checkUser() {
             try {
                 const response = await authService.eu();
-                console.log(response);
+
                 if (response.sucesso) {
                     setCliente(response.data.cliente);
                 }

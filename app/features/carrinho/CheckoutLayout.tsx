@@ -222,6 +222,13 @@ export default function CheckoutLayout() {
 
     const handleContinue = async () => {
         const nextStepIndex = activeStep;
+
+        if (activeStep === 1 && !cliente?.id) {
+            toast.info("Faça login para continuar.", { position: 'top-center' });
+            navigate("/entrar");
+            return;
+        }
+
         if (nextStepIndex < stepsRoutes.length) {
             navigate(`/carrinho/${stepsRoutes[nextStepIndex]}`);
         } else {
@@ -230,7 +237,7 @@ export default function CheckoutLayout() {
                 produtos.map(p => ({
                     id: p.id,
                     quantidade: p.quantidade,
-                    habilTipo: p.tipo.toString(),
+                    habilTipo: (p.tipo ?? 0).toString(),
                     idTamanho: (p.tamanhoSelecionado?.id ?? 0).toString(),
                 })),
                 pagamentoSelecionado!,
@@ -263,6 +270,10 @@ export default function CheckoutLayout() {
 
     if (produtos.length <= 0 && activeStep != 1 && activeStep != 5) {
         return <Navigate to="/" replace />;
+    }
+
+    if (activeStep > 1 && !cliente?.id) {
+        return <Navigate to="/entrar" replace />;
     }
 
     return (
