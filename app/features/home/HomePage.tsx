@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 
 import { useEffect, useState } from 'react';
 
-import { FaList, FaTh } from "react-icons/fa";
+import { FaChevronDown, FaChevronUp, FaList, FaTh } from "react-icons/fa";
 
 import sign from 'jwt-encode';
 import { useNavigate } from "react-router";
@@ -760,51 +760,128 @@ export function Sidebar() {
   return (
     <aside className="lg:col-span-1 w-64 min-w-[250px]">
       <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
-        <div className="border-b border-gray-200 py-4">
-          <h4 className="text-sm font-bold text-gray-800 uppercase mb-4">Preço</h4>
+        <FilterSection title="Departamentos">
+          <CheckboxFilter
+            items={filterOptions.categorias.map(c => ({ id: c.id, label: c.nome }))}
+            selectedValues={activeFilters.categorias}
+            onChange={(id) => handleCheckboxChange('categorias', id)}
+            showSearch={true}
+          />
+        </FilterSection>
+
+        <FilterSection title="Marcas" defaultOpen={true}>
+          <CheckboxFilter
+            items={filterOptions.marcas.map(m => ({ id: m.id, label: m.nome }))}
+            selectedValues={activeFilters.marcas}
+            onChange={(id) => handleCheckboxChange('marcas', id)}
+            showSearch={true}
+          />
+        </FilterSection>
+
+        <FilterSection title="Cores" defaultOpen={true}>
+          <CheckboxFilter
+            items={filterOptions.cores.map(c => ({ id: c.id, label: c.nome }))}
+            selectedValues={activeFilters.cores}
+            onChange={(id) => handleCheckboxChange('cores', id)}
+            showSearch={true}
+          />
+        </FilterSection>
+
+        <FilterSection title="Tamanhos" defaultOpen={true}>
+          <CheckboxFilter
+            items={filterOptions.tamanhos.map(t => ({ id: t, label: t }))}
+            selectedValues={activeFilters.tamanhos}
+            onChange={(id) => handleCheckboxChange('tamanhos', id)}
+            showSearch={true}
+          />
+        </FilterSection>
+
+        <FilterSection title="Opções" defaultOpen={true}>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm text-gray-700">Frete Grátis</label>
+            <input
+              type="checkbox"
+              checked={activeFilters.freteGratis}
+              onChange={() => handleToggleChange('freteGratis')}
+              className="rounded border-gray-300 text-primary focus:ring-orange-500"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-sm text-gray-700">Promoções</label>
+            <input
+              type="checkbox"
+              checked={activeFilters.promocao}
+              onChange={() => handleToggleChange('promocao')}
+              className="rounded border-gray-300 text-primary focus:ring-orange-500"
+            />
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Preços" defaultOpen={true}>
           <PriceRangeSlider
             min={0}
             max={10000}
             onChange={(min, max) => {
-              applyFilters({ ...activeFilters, minPreco: min, maxPreco: max });
+              const newFilters = { ...activeFilters, minPreco: min, maxPreco: max };
+              applyFilters(newFilters);
             }}
           />
-        </div>
-
-        <div className="border-b border-gray-200 py-4">
-          <h4 className="text-sm font-bold text-gray-800 uppercase mb-4">Marcas</h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {filterOptions.marcas.map((marca) => (
-              <label key={marca.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={activeFilters.marcas.includes(marca.id)}
-                  onChange={() => handleCheckboxChange('marcas', marca.id)}
-                  className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                />
-                {marca.nome}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="border-b border-gray-200 py-4">
-          <h4 className="text-sm font-bold text-gray-800 uppercase mb-4">Categorias</h4>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {filterOptions.categorias.map((categoria) => (
-              <label key={categoria.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={activeFilters.categorias.includes(categoria.id)}
-                  onChange={() => handleCheckboxChange('categorias', categoria.id)}
-                  className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                />
-                {categoria.nome}
-              </label>
-            ))}
-          </div>
-        </div>
+        </FilterSection>
       </div>
     </aside>
   );
-}
+};
+
+const FilterSection = ({ title, children, defaultOpen = true }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border-b border-gray-200 py-4">
+      <button
+        className="flex justify-between items-center w-full"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <h4 className="text-sm font-bold text-gray-800 uppercase">{title}</h4>
+        {isOpen ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
+      </button>
+      {isOpen && (
+        <div className="mt-4">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CheckboxFilter = ({ items, selectedValues, onChange, showSearch = false }: { items: { id: any, label: string }[], selectedValues: any[], onChange: (id: any) => void, showSearch?: boolean }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredItems = items.filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  return (
+    <div className="space-y-3">
+      {showSearch && (
+        <input
+          type="search"
+          placeholder="Buscar"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+        />
+      )}
+      <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+        {filteredItems.map((item) => (
+          <label key={item.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={selectedValues.includes(item.id)}
+              onChange={() => onChange(item.id)}
+              className="rounded border-gray-300 text-primary focus:ring-orange-500"
+            />
+            {item.label}
+          </label>
+        ))}
+      </div>
+      {/* <button className="text-xs text-primary hover:text-orange-700">Ver mais</button> */}
+    </div>
+  );
+};
