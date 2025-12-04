@@ -20,11 +20,8 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
                 const data = await getConfig();
                 setConfig(data);
 
-                // Update CSS variables if needed, overriding static config
                 if (data) {
                     const root = document.documentElement;
-                    // Example: if API returns colors
-                    // if (data.cor_primaria) root.style.setProperty('--dynamic-primary', data.cor_primaria);
                 }
             } catch (err: any) {
                 console.error("Failed to fetch config", err);

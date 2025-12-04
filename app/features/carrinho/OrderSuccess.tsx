@@ -5,7 +5,6 @@ import {
   FaQrcode,
   FaRegCopy,
   FaExclamationCircle,
-  FaVideo,
   FaShoppingCart,
   FaMapMarkerAlt,
   FaTruck,
@@ -16,7 +15,6 @@ import QRCode from 'react-qr-code';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
 
-// --- COMPONENTE: Stepper do Checkout ---
 const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
   const steps = [
     { name: 'Carrinho', icon: FaShoppingCart },
@@ -68,7 +66,6 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
   );
 };
 
-// --- COMPONENTE: Conteúdo de Sucesso ---
 const Step6_Success = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-8 max-w-4xl mx-auto">
@@ -79,9 +76,7 @@ const Step6_Success = () => {
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
-        {/* QR Code */}
         <div className="flex-1 flex flex-col items-center">
-          {/* Container do QR Code */}
           <div className="w-64 h-64 border-4 border-gray-300 rounded-lg mx-auto flex items-center justify-center bg-white">
             <QRCode
               value="asdoskaodksakodsaoidoi1j23u12932199asdasijdjadojsadoijasdoi1oi23joi12j3i21o3i21io"
@@ -89,7 +84,6 @@ const Step6_Success = () => {
             />
           </div>
 
-          {/* Botão */}
           <button
             className="mt-4 w-64 bg-orange-500 text-white font-bold py-3 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
             onClick={() => {
@@ -101,7 +95,6 @@ const Step6_Success = () => {
           </button>
         </div>
 
-        {/* Informações */}
         <div className="flex-1">
           <div className="bg-orange-50 border border-orange-200 text-orange-700 p-4 rounded-md flex items-start gap-3 mb-6">
             <FaExclamationCircle className="text-2xl mt-1" />
@@ -131,7 +124,6 @@ const Step6_Success = () => {
   );
 };
 
-// --- PÁGINA DE SUCESSO ---
 export default function OrderSuccessPage() {
   return (
     <div>
@@ -140,12 +132,10 @@ export default function OrderSuccessPage() {
       <div className="bg-gray-100 min-h-screen py-8">
         <div className="max-w-387 mx-auto px-4">
 
-          {/* Stepper de Sucesso (Etapa 6 ativa) */}
           <div className="bg-white rounded-lg shadow-sm mb-6">
             <CheckoutStepper activeStep={6} />
           </div>
 
-          {/* Conteúdo da página */}
           <Step6_Success />
 
         </div>

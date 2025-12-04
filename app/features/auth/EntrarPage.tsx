@@ -1,11 +1,6 @@
 import React, { useState } from 'react'
-// --- CORREÇÃO ---
-// Alterando o caminho de importação dos ícones para ser mais explícito
-// Isso deve resolver o erro "Could not resolve"
 import { FaLock, FaUserPlus } from 'react-icons/fa'
 import { FiEye, FiEyeOff } from 'react-icons/fi'
-// --- FIM DA CORREÇÃO ---
-
 import { useNavigate } from 'react-router'
 import Button from '~/components/button'
 import Footer from '~/components/footer'
@@ -13,12 +8,7 @@ import Header from '~/components/header'
 import IconCircle from '~/components/icon_circle'
 import CustomInput from '~/components/input'
 import { authService } from './services/authService'
-// --- 1. Componente Principal (A Página) ---
 
-/**
- * Componente principal da página de Login/Cadastro.
- * Gerencia o estado do formulário de login.
- */
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -26,10 +16,10 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
 
   let navigate = useNavigate();
-  
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    await authService.entrar({email, senha: password});
+    await authService.entrar({ email, senha: password });
   }
 
   return (
@@ -40,7 +30,6 @@ export default function LoginPage() {
         <main className="w-full max-w-387">
           <div className="grid grid-cols-1 gap-16 md:grid-cols-2">
 
-            {/* Coluna 1: Login */}
             <div className="flex flex-col">
               <IconCircle icon={FaLock} color='primary' />
               <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
@@ -51,7 +40,6 @@ export default function LoginPage() {
               </p>
 
               <form onSubmit={handleLogin} className="flex flex-col gap-4">
-                {/* Campo de E-mail */}
                 <CustomInput
                   type="email"
                   placeholder="E-mail *"
@@ -60,7 +48,6 @@ export default function LoginPage() {
                   required
                 />
 
-                {/* Campo de Senha */}
                 <PasswordInput
                   placeholder="Senha *"
                   show={showPassword}
@@ -70,7 +57,6 @@ export default function LoginPage() {
                   required
                 />
 
-                {/* Checkbox "Lembrar" */}
                 <label className="flex cursor-pointer items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -81,7 +67,6 @@ export default function LoginPage() {
                   Lembrar meus dados
                 </label>
 
-                {/* Botão de Acessar */}
                 <Button
                   variant="primary"
                   type="submit"
@@ -89,7 +74,6 @@ export default function LoginPage() {
                   ACESSAR CONTA
                 </Button>
 
-                {/* Link "Esqueci a senha" */}
                 <a
                   href="#"
                   className="mt-2 text-center text-sm text-primary hover:text-terciary hover:underline"
@@ -99,7 +83,6 @@ export default function LoginPage() {
               </form>
             </div>
 
-            {/* Coluna 2: Novo Cliente */}
             <div className="flex flex-col">
               <IconCircle icon={FaUserPlus} color="green" />
               <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
@@ -110,7 +93,6 @@ export default function LoginPage() {
                 aproveitar todos os benefícios de ter uma conta.
               </p>
 
-              {/* Botão de Cadastrar */}
               <Button variant="primary" type="button" onClick={() => navigate("/registrar/")}>
                 CADASTRE-SE
               </Button>
@@ -126,16 +108,11 @@ export default function LoginPage() {
   )
 }
 
-// --- 2. Componentes Auxiliares Reutilizáveis ---
-// --- Input de Senha (com ícone de olho) ---
 interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   show: boolean
   onToggle: () => void
 }
 
-/**
- * Componente de input de senha com botão para mostrar/esconder.
- */
 function PasswordInput({ show, onToggle, ...props }: PasswordInputProps) {
   return (
     <div className="relative">

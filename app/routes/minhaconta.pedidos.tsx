@@ -33,7 +33,6 @@ export default function PedidosPage() {
             setLoading(true);
             const response = await minhacontaService.listarPedidos(cliente!.id, page, itemsPerPage);
 
-            // Handle both array (legacy/error) and object (pagination) responses
             if (Array.isArray(response)) {
                 setPedidos(response);
                 setTotalPages(1);

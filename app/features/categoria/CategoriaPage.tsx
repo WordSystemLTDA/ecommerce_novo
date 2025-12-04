@@ -18,9 +18,6 @@ import type { Produto, Paginacao } from '~/features/produto/types';
 import type { Categoria } from '~/features/categoria/types';
 import { gerarSlug } from '~/utils/formatters';
 
-// ===================================================================
-// TYPES (Copied/Adapted from HomeContext for independence)
-// ===================================================================
 interface FilterOptions {
     marcas: { id: number; nome: string }[];
     categorias: { id: number; nome: string }[];
@@ -50,7 +47,6 @@ const defaultFilters: ActiveFilters = {
     ordenacao: 'mais_procurados'
 };
 
-// Helper to decode JWT payload safely
 function decodeJwt(token: string): any {
     try {
         const base64Url = token.split('.')[1];
@@ -64,9 +60,6 @@ function decodeJwt(token: string): any {
     }
 }
 
-// ===================================================================
-// COMPONENTE: Barra de Ferramentas de Filtro
-// ===================================================================
 const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao }: { totalProdutos: number, onSortChange: (val: string) => void, onPerPageChange: (val: number) => void, ordenacao: string }) => (
     <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center">
         <div className="flex items-center gap-4 mb-4 md:mb-0">
@@ -110,9 +103,6 @@ const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao
     </div>
 );
 
-// ===================================================================
-// COMPONENTE: Seção de Filtro Reutilizável
-// ===================================================================
 const FilterSection = ({ title, children, defaultOpen = true }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -134,9 +124,6 @@ const FilterSection = ({ title, children, defaultOpen = true }: { title: string,
     );
 };
 
-// ===================================================================
-// COMPONENTE: Filtro de Checkbox
-// ===================================================================
 const CheckboxFilter = ({ items, selectedValues, onChange, showSearch = false }: { items: { id: any, label: string }[], selectedValues: any[], onChange: (id: any) => void, showSearch?: boolean }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const filteredItems = items.filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -169,9 +156,6 @@ const CheckboxFilter = ({ items, selectedValues, onChange, showSearch = false }:
     );
 };
 
-// ===================================================================
-// COMPONENTE: Barra Lateral (Sidebar)
-// ===================================================================
 const Sidebar = ({ filterOptions, activeFilters, onFilterChange }: { filterOptions: FilterOptions, activeFilters: ActiveFilters, onFilterChange: (newFilters: ActiveFilters) => void }) => {
 
     const handleCheckboxChange = (type: keyof ActiveFilters, value: any) => {
@@ -219,9 +203,6 @@ const Sidebar = ({ filterOptions, activeFilters, onFilterChange }: { filterOptio
     );
 };
 
-// ===================================================================
-// COMPONENTE: Grade de Produtos
-// ===================================================================
 const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: boolean }) => {
     if (isLoading) {
         return <div className="p-8 text-center">Carregando produtos...</div>;
@@ -240,13 +221,9 @@ const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: 
     );
 };
 
-// ===================================================================
-// COMPONENTE: Paginação
-// ===================================================================
 const Pagination = ({ pagination, onPageChange }: { pagination: Paginacao, onPageChange: (page: number) => void }) => {
     const { pagina, total_paginas } = pagination;
 
-    // Logic to show a window of pages
     const pages = [];
     const maxVisiblePages = 5;
     let startPage = Math.max(1, pagina - Math.floor(maxVisiblePages / 2));
@@ -307,9 +284,6 @@ const Pagination = ({ pagination, onPageChange }: { pagination: Paginacao, onPag
     );
 };
 
-// ===================================================================
-// COMPONENTE PRINCIPAL DA PÁGINA
-// ===================================================================
 export default function CategoryPage() {
     const { id, slug } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -320,7 +294,6 @@ export default function CategoryPage() {
     const [categoryName, setCategoryName] = useState('CATEGORIA');
     const [porPagina, setPorPagina] = useState(20);
 
-    // Filter State
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         marcas: [],
         categorias: [],
@@ -331,7 +304,6 @@ export default function CategoryPage() {
 
     const page = Number(searchParams.get('page')) || 1;
 
-    // 1. Fetch Filter Options (Once)
     useEffect(() => {
         const fetchOptions = async () => {
             try {
@@ -346,16 +318,10 @@ export default function CategoryPage() {
         fetchOptions();
     }, []);
 
-    // 2. Fetch Category Name
     useEffect(() => {
         const fetchCategoryName = async () => {
             if (!id) return;
             try {
-                // We need to find the category name. 
-                // Since we don't have a direct endpoint for "get category by id" that returns just the name easily without listing all,
-                // we'll list all and find it. 
-                // Optimization: If the backend supported /categorias/:id it would be better.
-                // For now, let's use listarCategoriasComSubCategorias or similar.
                 const { data } = await categoriaService.listarCategoriasComSubCategorias();
 
                 const findCategory = (cats: Categoria[]): Categoria | undefined => {
@@ -380,7 +346,6 @@ export default function CategoryPage() {
         fetchCategoryName();
     }, [id]);
 
-    // 2.1 Enforce Slug
     useEffect(() => {
         if (categoryName && categoryName !== 'CATEGORIA' && id) {
             const expectedSlug = gerarSlug(categoryName);
@@ -392,17 +357,13 @@ export default function CategoryPage() {
         }
     }, [categoryName, id, slug]);
 
-    // 3. Sync URL params to State
     useEffect(() => {
         const token = searchParams.get('filtros');
         if (token) {
             const decodedPartial = decodeJwt(token);
             if (decodedPartial) {
-                // Merge decoded partial filters with defaults
-                // IMPORTANT: Ensure the URL category ID is always respected if not present in token (though it should be)
                 const mergedFilters = { ...defaultFilters, ...decodedPartial };
 
-                // Force current category ID if not in filters (edge case)
                 if (!mergedFilters.categorias.includes(Number(id))) {
                     mergedFilters.categorias = [Number(id)];
                 }
@@ -410,34 +371,22 @@ export default function CategoryPage() {
                 setActiveFilters(mergedFilters);
             }
         } else {
-            // If no filters in URL, reset to defaults BUT keep the current category
             setActiveFilters({ ...defaultFilters, categorias: [Number(id)] });
         }
     }, [searchParams, id]);
 
-    // 4. Fetch Products when ActiveFilters or Pagination changes
     useEffect(() => {
         const fetchProducts = async () => {
             if (!id) return;
 
             setIsLoading(true);
             try {
-                // Ensure the current category is always included in the fetch
                 const filtersToApply = {
                     ...activeFilters,
                     categorias: [Number(id)],
                     pagina: page,
                     por_pagina: porPagina,
                 };
-
-                // If the user selected other categories in sidebar, we might want to allow that, 
-                // but usually a Category Page is scoped to that category. 
-                // For now, let's assume the sidebar category filter might add MORE categories or refine.
-                // But wait, if we are in "Hardware" page, and user selects "SSD" (sub), 
-                // we should probably include both or just the sub?
-                // The current backend logic likely uses `IN` clause.
-
-                // Let's just use the activeFilters as is, assuming it's correctly populated from URL.
 
                 const token = sign(filtersToApply, 'secret');
                 const params = new URLSearchParams();
@@ -456,15 +405,11 @@ export default function CategoryPage() {
             }
         };
 
-        // Only fetch if we have active filters synced (to avoid double fetch on initial load if URL has params)
-        // But we need to fetch at least once.
         fetchProducts();
     }, [activeFilters, page, porPagina, id]);
 
 
-    // 5. Update URL when Filters Change
     const handleFilterChange = (newFilters: ActiveFilters) => {
-        // Minify payload
         const payload: any = {};
 
         if (newFilters.marcas.length > 0) payload.marcas = newFilters.marcas;
@@ -480,16 +425,12 @@ export default function CategoryPage() {
 
         if (newFilters.ordenacao !== 'mais_procurados') payload.ordenacao = newFilters.ordenacao;
 
-        // Ensure current category is in payload if it's the only one, or just rely on the fact that 
-        // if we are in this page, we want this category.
-        // However, if we remove 'categorias' from payload, the backend might return ALL products.
-        // So we MUST ensure the current category ID is in the payload.
         if (!payload.categorias || payload.categorias.length === 0) {
             payload.categorias = [Number(id)];
         }
 
         const token = sign(payload, 'secret');
-        setSearchParams({ filtros: token, page: '1' }); // Reset to page 1 on filter change
+        setSearchParams({ filtros: token, page: '1' });
     };
 
     const handlePageChange = (newPage: number) => {
@@ -507,10 +448,8 @@ export default function CategoryPage() {
             <div className="max-w-387 mx-auto px-0 mb-4">
                 <Breadcrumb />
 
-                {/* Layout Principal: Sidebar + Conteúdo */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-                    {/* Coluna da Sidebar */}
                     <div className="lg:col-span-1">
                         <Sidebar
                             filterOptions={filterOptions}
@@ -519,7 +458,6 @@ export default function CategoryPage() {
                         />
                     </div>
 
-                    {/* Coluna de Conteúdo Principal */}
                     <div className="lg:col-span-4 lg:mb-5">
                         <FilterToolbar
                             totalProdutos={pagination.total}

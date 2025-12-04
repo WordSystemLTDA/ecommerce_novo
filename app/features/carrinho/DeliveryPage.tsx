@@ -3,7 +3,6 @@ import Loader from '~/components/loader';
 import { calcularDataChegada, currencyFormatter } from '~/utils/formatters';
 import { useCarrinho } from './context/CarrinhoContext';
 
-// --- PÁGINA DA ETAPA 3 ---
 export default function DeliveryPage() {
 
   let { listarTipoDeEntregas, tipoDeEntregas, setTipoDeEntregaSelecionada, tipoDeEntregaSelecionada, enderecoSelecionado, carregandoTipoDeEntregas } = useCarrinho();
@@ -37,21 +36,17 @@ export default function DeliveryPage() {
               <p className="text-sm text-gray-600">Endereço selecionado: {enderecoSelecionado && (
                 <>
                   <span className="font-bold">
-                    {/* 1. Endereço e Número: Juntos e separados por vírgula SÓ SE ambos existirem */}
                     {enderecoSelecionado.endereco && <span>{enderecoSelecionado.endereco}</span>}
                     {enderecoSelecionado.endereco && enderecoSelecionado.numero && <span>, </span>}
                     {enderecoSelecionado.numero && <span>{enderecoSelecionado.numero}</span>}
                   </span>
 
-                  {/* Adiciona o hífen de separação SOMENTE se houver algo antes dele (ou seja, se endereco.endereco ou endereco.numero existir) */}
                   {(enderecoSelecionado.endereco || enderecoSelecionado.numero) && ' - '}
 
-                  {/* 2. Cidade e Estado: Separados por vírgula SÓ SE ambos existirem */}
                   {enderecoSelecionado.nome_cidade && <span>{enderecoSelecionado.nome_cidade}</span>}
                   {enderecoSelecionado.nome_cidade && enderecoSelecionado.sigla_estado && <span>, </span>}
                   {enderecoSelecionado.sigla_estado && <span>{enderecoSelecionado.sigla_estado}</span>}
 
-                  {/* 3. CEP: Adiciona o prefixo 'CEP ' SÓ SE o CEP existir */}
                   {(enderecoSelecionado.nome_cidade || enderecoSelecionado.sigla_estado) && enderecoSelecionado.cep && <span>, </span>}
                   {enderecoSelecionado.cep && <span>CEP {enderecoSelecionado.cep}</span>}
                 </>
@@ -59,7 +54,6 @@ export default function DeliveryPage() {
             </div>
 
             <h2 className="text-lg font-bold text-gray-800 mb-4">Selecione o tipo de entrega</h2>
-            {/* <p className="text-sm font-medium mb-2">Vendido e entregue por: <span className="font-bold">Word System!</span></p> */}
 
             <div className="space-y-3">
               {tipoDeEntregas.filter((t) => t.error == null).map((tipoDeEntrega) => (

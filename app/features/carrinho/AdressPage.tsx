@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useCarrinho } from './context/CarrinhoContext';
 import Loader from '~/components/loader';
-// Removi o import do Loading se não for usar em outro lugar
 
-// --- PÁGINA DA ETAPA 2 ---
 export default function AddressPage() {
   let { enderecos, enderecoSelecionado, setEnderecoSelecionado, listarEnderecos, carregandoEnderecos } = useCarrinho();
 

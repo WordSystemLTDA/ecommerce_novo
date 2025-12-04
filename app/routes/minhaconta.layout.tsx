@@ -34,7 +34,6 @@ export default function MinhaContaLayout() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row gap-8">
 
-          {/* Sidebar Navigation */}
           <aside className="w-full md:w-64 shrink-0">
             <div className="bg-white rounded-lg shadow-sm p-4 sticky top-24">
               <nav className="space-y-1">
@@ -66,7 +65,6 @@ export default function MinhaContaLayout() {
             </div>
           </aside>
 
-          {/* Main Content Area */}
           <main className="flex-1">
             <div className="bg-white rounded-lg shadow-sm p-6 min-h-[500px]">
               <Outlet />

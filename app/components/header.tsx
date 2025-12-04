@@ -24,7 +24,6 @@ export default function Header() {
 
     return (
         <header className="w-full bg-primary sticky top-0 z-50 flex flex-row items-center">
-            {/* Logo */}
             <div className="w-55 flex items-center justify-center">
                 <img
                     onClick={() => {
@@ -39,9 +38,7 @@ export default function Header() {
 
             <div className="w-full px-4 lg:px-8 py-3">
 
-                {/* Top Row */}
                 <div className="flex items-center gap-4 lg:gap-8">
-                    {/* Location (Hidden on mobile) */}
                     <div
                         className="hidden lg:flex items-center gap-2 text-white min-w-fit cursor-pointer hover:opacity-90"
                         onClick={() => setIsAddressModalOpen(true)}
@@ -58,38 +55,30 @@ export default function Header() {
                         </div>
                     </div>
 
-                    {/* Search Bar (Flexible width) */}
                     <div className="flex-1 w-full">
                         <SearchBar />
                     </div>
 
-                    {/* User & Icons */}
                     <div className="flex items-center gap-4 lg:gap-6 text-white shrink-0">
                         <ButtonEntreOuCadastrese />
 
                         <div className="hidden lg:flex items-center gap-4">
                             <MdHeadsetMic size={24} className="cursor-pointer hover:text-gray-200" title="Atendimento" />
-                            {/* <MdAccessibility size={24} className="cursor-pointer hover:text-gray-200" title="Acessibilidade" />
-                            <MdNotifications size={24} className="cursor-pointer hover:text-gray-200" title="Notificações" /> */}
                             <ButtonFavoritos />
                             <ButtonCarrinho />
                         </div>
 
-                        {/* Mobile Menu Toggle */}
                         <MdMenu size={28} className="lg:hidden cursor-pointer" />
                     </div>
                 </div>
 
-                {/* Bottom Row (Navigation) - Hidden on mobile */}
                 <div className="hidden lg:flex items-center justify-between mt-3 pt-2">
                     <div className="flex items-center gap-2 w-full">
-                        {/* Static Left Side (Menu + Mais Vendidos) - No overflow here */}
                         <div className="flex items-center gap-2 shrink-0">
                             <DepartmentMenu categorias={categorias} />
                             <ButtonMaisVendidos />
                         </div>
 
-                        {/* Scrollable Right Side (Categories) */}
                         <nav className="flex items-center gap-4 ml-2 overflow-x-auto no-scrollbar flex-1">
                             {(categoriasMenu ?? []).map((categoria) => (
                                 <a
@@ -105,7 +94,6 @@ export default function Header() {
                         </nav>
                     </div>
 
-                    {/* Banner Right */}
                     <div className="w-64 ml-4 hidden xl:block">
                         <div className="bg-white text-primary px-4 py-1 rounded-full text-xs font-bold flex items-center justify-between gap-2 cursor-pointer hover:bg-gray-100 transition-colors">
                             Seja um sócio
@@ -115,7 +103,6 @@ export default function Header() {
                 </div>
             </div>
 
-            {/* Mobile Search (Visible only on mobile) */}
             <div className="lg:hidden px-4 pb-3">
                 <SearchBar />
             </div>

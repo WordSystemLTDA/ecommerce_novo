@@ -12,7 +12,6 @@ import {
 } from 'react-icons/fa';
 import { SiApple, SiGoogleplay } from 'react-icons/si';
 
-// Componente de Link reutilizável para o rodapé
 const FooterLink = ({ href = '#', children }: { href?: string, children: React.ReactNode }) => (
     <li>
         <a href={href} className="text-gray-400 hover:text-white transition-colors text-sm">
@@ -21,7 +20,6 @@ const FooterLink = ({ href = '#', children }: { href?: string, children: React.R
     </li>
 );
 
-// Componente de Título de Coluna reutilizável
 const FooterTitle = ({ title }: { title: string }) => (
     <>
         <h4 className="text-sm font-bold text-white uppercase tracking-wider">{title}</h4>
@@ -29,12 +27,9 @@ const FooterTitle = ({ title }: { title: string }) => (
     </>
 );
 
-// Componente principal do Rodapé
 export function Footer() {
     return (
         <footer className="bg-primary text-white relative">
-
-            {/* SEÇÃO 1: BARRA DE INFORMAÇÕES SUPERIOR */}
             <div className="bg-gray-800">
                 <div className="max-w-387 mx-auto px-4 py-3 flex flex-col lg:flex-row justify-between items-center text-xs text-gray-300">
                     <div className="flex flex-col md:flex-row gap-4 lg:gap-8 items-center">
@@ -65,16 +60,13 @@ export function Footer() {
                 </div>
             </div>
 
-            {/* SEÇÃO 3: CORPO PRINCIPAL (LINKS) */}
             <div className="max-w-387 mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-                    {/* Coluna 1 e 2: Departamentos */}
                     <div className="lg:col-span-2">
                         <FooterTitle title="Departamentos" />
 
                         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                            {/* Coluna esquerda dos departamentos */}
                             <ul className="space-y-2">
                                 <FooterLink>Hardware</FooterLink>
                                 <FooterLink>Computadores</FooterLink>
@@ -86,7 +78,6 @@ export function Footer() {
                                 <FooterLink>Openbox</FooterLink>
                                 <FooterLink>Vestuário</FooterLink>
                             </ul>
-                            {/* Coluna direita dos departamentos */}
                             <ul className="space-y-2">
                                 <FooterLink>Periféricos</FooterLink>
                                 <FooterLink>Kit Upgrade</FooterLink>
@@ -122,7 +113,6 @@ export function Footer() {
                         </div>
                     </div>
 
-                    {/* Coluna 3: Institucional / Dúvidas / Ajuda */}
                     <div>
                         <FooterTitle title="Institucional" />
                         <ul className="space-y-2 mb-6">
@@ -150,7 +140,6 @@ export function Footer() {
                         </ul>
                     </div>
 
-                    {/* Coluna 4: Newsletter / Social / Pagamento */}
                     <div>
                         <FooterTitle title="Newsletter" />
                         <p className="text-sm text-gray-400 mb-4">Receba ofertas exclusivas no seu e-mail</p>
@@ -185,7 +174,6 @@ export function Footer() {
                         </h5>
 
                         <div className="grid grid-cols-3 gap-2">
-                            {/* Placeholders para logotipos de pagamento */}
                             <div className="bg-white rounded p-2 flex items-center justify-center h-10"><img src="https://logodownload.org/wp-content/uploads/2016/10/visa-logo-0-2048x2048.png" alt="Visa" className="h-full object-contain" /></div>
                             <div className="bg-white rounded p-2 flex items-center justify-center h-10"><img src="https://logodownload.org/wp-content/uploads/2014/07/mastercard-logo-1-1.png" alt="Mastercard" className="h-full object-contain" /></div>
                             <div className="bg-white rounded p-2 flex items-center justify-center h-10"><img src="https://logodownload.org/wp-content/uploads/2014/04/amex-american-express-logo-1-2048x2048.png" alt="American Express" className="h-full object-contain" /></div>
@@ -197,12 +185,10 @@ export function Footer() {
                 </div>
             </div>
 
-            {/* SEÇÃO 4: RODAPÉ INFERIOR (LEGAL E CERTIFICADOS) */}
             <div className="bg-black text-gray-500 py-8">
                 <div className="max-w-387 mx-auto px-4 text-xs">
 
                     <div className="flex flex-col md:flex-row justify-between gap-8">
-                        {/* Coluna da Esquerda: Textos Legais */}
                         <div className="flex-1">
                             <p className="mb-2 text-secondary text-xl">
                                 WORD SYSTEM É UMA MARCA REGISTRADA DA WORD<br />SYSTEM LTDA | CNPJ: 09.376.495/0001-22
@@ -230,14 +216,12 @@ export function Footer() {
                             </div>
                         </div>
 
-                        {/* Coluna da Direita: Certificados */}
                         <div className="shrink-0">
                             <h5 className="text-sm font-bold text-white uppercase tracking-wider mb-4">
                                 Certificados de Segurança
                             </h5>
-                            
+
                             <div className="flex gap-4">
-                                {/* Placeholders para Certificados */}
                                 <div className="w-24 h-24 bg-gray-700 rounded flex items-center justify-center text-center text-xs">Site Blindado</div>
                                 <div className="w-24 h-24 bg-gray-700 rounded flex items-center justify-center text-center text-xs">NIQ Ebit</div>
                                 <div className="w-24 h-24 bg-gray-700 rounded flex items-center justify-center text-center text-xs">Google Avaliações</div>

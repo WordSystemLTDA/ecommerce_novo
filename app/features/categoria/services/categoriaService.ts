@@ -1,4 +1,4 @@
-// app/components/features/auth/services/authService.ts
+
 
 import apiClient from "~/services/api";
 import type { CategoriaResponse } from "../types";

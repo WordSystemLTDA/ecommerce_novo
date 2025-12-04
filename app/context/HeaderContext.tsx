@@ -26,10 +26,8 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         if (!cliente?.id) return;
 
         try {
-            // Optimistic update
             setSelectedAddress(address);
 
-            // Update backend
             await minhacontaService.editarEndereco(address.id, {
                 cep: address.cep,
                 logradouro: address.endereco,
@@ -69,7 +67,6 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const loadAddressData = async () => {
             try {
-                // Load default address if logged in
                 if (isAuthenticated && cliente?.id) {
                     const response = await minhacontaService.listarEnderecos(cliente.id);
                     if (response && Array.isArray(response.data)) {

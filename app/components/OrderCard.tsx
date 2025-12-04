@@ -2,7 +2,7 @@ import { ChevronDown, ChevronUp, Package, Clock, CheckCircle, XCircle, Truck } f
 import { currencyFormatter } from "~/utils/formatters";
 
 interface OrderCardProps {
-    pedido: any; // Ideally this should be a proper type
+    pedido: any;
     isExpanded: boolean;
     onToggle: () => void;
 }
@@ -36,7 +36,6 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
 
     return (
         <div className="bg-white border rounded-lg overflow-hidden transition-shadow hover:shadow-md">
-            {/* Header do Pedido */}
             <div
                 className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer bg-gray-50/50"
                 onClick={onToggle}
@@ -62,14 +61,12 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
                 </div>
             </div>
 
-            {/* Detalhes do Pedido (Expandido) */}
             {isExpanded && (
                 <div className="border-t p-4 sm:p-6 bg-white">
                     <h4 className="font-medium text-gray-700 mb-4">Itens do Pedido</h4>
                     <div className="space-y-4">
                         {pedido.itens?.map((item: any) => (
                             <div key={item.id} className="flex items-start py-2 border-b last:border-0">
-                                {/* Imagem do produto (placeholder se não tiver) */}
                                 <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center shrink-0 mr-4">
                                     <Package size={24} className="text-gray-400" />
                                 </div>

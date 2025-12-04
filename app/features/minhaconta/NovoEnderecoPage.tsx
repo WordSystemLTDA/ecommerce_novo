@@ -5,7 +5,6 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../auth/context/AuthContext';
 import { minhacontaService } from './services/minhacontaService';
 
-// Definição dos tipos para o estado do formulário
 interface AddressFormData {
   cep: string;
   logradouro: string;
@@ -17,7 +16,6 @@ interface AddressFormData {
   padrao: string;
 }
 
-// Definição dos tipos para os erros (chaves opcionais ou nulas)
 interface FormErrors {
   cep?: string | null;
   logradouro?: string | null;
@@ -26,10 +24,9 @@ interface FormErrors {
   bairro?: string | null;
   cidade?: string | null;
   uf?: string | null;
-  [key: string]: string | null | undefined; // Index signature para acesso dinâmico
+  [key: string]: string | null | undefined;
 }
 
-// Resposta da API ViaCEP
 interface ViaCepResponse {
   erro?: boolean;
   logradouro: string;
@@ -38,17 +35,12 @@ interface ViaCepResponse {
   uf: string;
 }
 
-/**
- * Página de Cadastro de Endereço
- * Esta é a implementação principal baseada na imagem fornecida.
- */
 export default function NovoEnderecoPage() {
   const navigate = useNavigate();
-  const { id } = useParams(); // Se tiver ID, é edição
+  const { id } = useParams();
   const { cliente } = useAuth();
   const isEditing = !!id;
 
-  // Estado do formulário
   const [formData, setFormData] = useState<AddressFormData>({
     cep: '',
     logradouro: '',
@@ -60,13 +52,11 @@ export default function NovoEnderecoPage() {
     padrao: 'Não',
   });
 
-  // Estados de controle da UI
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoadingCep, setIsLoadingCep] = useState<boolean>(false);
   const [isFormValid, setIsFormValid] = useState<boolean>(false);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
 
-  // Carregar dados se for edição
   useEffect(() => {
     if (isEditing && cliente?.id) {
       const loadAddress = async () => {
@@ -79,9 +69,9 @@ export default function NovoEnderecoPage() {
               logradouro: address.endereco,
               numero: address.numero,
               complemento: address.complemento || '',
-              bairro: address.nome_bairro, // A API retorna nome_bairro
-              cidade: address.nome_cidade, // A API retorna nome_cidade
-              uf: address.sigla_estado, // A API retorna sigla_estado
+              bairro: address.nome_bairro,
+              cidade: address.nome_cidade,
+              uf: address.sigla_estado,
               padrao: address.padrao,
             });
           }
@@ -97,10 +87,9 @@ export default function NovoEnderecoPage() {
     }
   }, [isEditing, id, cliente, navigate]);
 
-  // Efeito para validar o formulário sempre que os dados mudam
   useEffect(() => {
     const isValid =
-      (formData.cep ?? '').length >= 8 && // Aceita com ou sem traço
+      (formData.cep ?? '').length >= 8 &&
       formData.logradouro.trim() !== '' &&
       formData.numero.trim() !== '' &&
       formData.bairro.trim() !== '' &&
@@ -110,7 +99,6 @@ export default function NovoEnderecoPage() {
     setIsFormValid(isValid);
   }, [formData]);
 
-  // Função para lidar com mudanças nos inputs
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
 
@@ -119,7 +107,6 @@ export default function NovoEnderecoPage() {
       return;
     }
 
-    // Tratamento especial para CEP (Máscara 00000-000)
     if (name === 'cep') {
       const numericValue = value.replace(/\D/g, '');
       let formattedValue = numericValue;
@@ -129,25 +116,21 @@ export default function NovoEnderecoPage() {
 
       setFormData(prev => ({ ...prev, [name]: formattedValue }));
 
-      // Limpa erro se o usuário começar a digitar
       if (errors.cep) {
         setErrors(prev => ({ ...prev, cep: null }));
       }
 
-      // Se o CEP estiver completo, busca o endereço
       if (numericValue.length === 8) {
         fetchAddressByCep(numericValue);
       }
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
-      // Limpa erro do campo específico
       if (errors[name]) {
         setErrors(prev => ({ ...prev, [name]: null }));
       }
     }
   };
 
-  // Função para buscar endereço via API (ViaCEP)
   const fetchAddressByCep = async (cepNumbers: string) => {
     setIsLoadingCep(true);
     try {
@@ -165,7 +148,6 @@ export default function NovoEnderecoPage() {
           uf: data.uf
         }));
 
-        // Foca no campo de número após preencher
         const numeroInput = document.getElementById('numero');
         if (numeroInput) numeroInput.focus();
       }
@@ -176,7 +158,6 @@ export default function NovoEnderecoPage() {
     }
   };
 
-  // Manipulador de envio do formulário
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -185,7 +166,6 @@ export default function NovoEnderecoPage() {
       return;
     }
 
-    // Validação simples
     const newErrors: FormErrors = {};
     if (!formData.cep || formData.cep.replace(/\D/g, '').length < 8) newErrors.cep = 'Preencha o CEP corretamente.';
     if (!formData.logradouro) newErrors.logradouro = 'Campo obrigatório.';
@@ -226,10 +206,8 @@ export default function NovoEnderecoPage() {
   return (
     <div className="flex items-center justify-center py-5 px-4">
 
-      {/* Card Principal / Modal */}
       <div className="max-w-387 relative flex flex-col justify-center items-center w-full">
 
-        {/* Cabeçalho */}
         <div className="px-8 pt-8 pb-4 w-full">
           <div className="flex items-center gap-2 mb-6">
             <MapPin className="text-primary" size={24} />
@@ -239,12 +217,10 @@ export default function NovoEnderecoPage() {
           </div>
         </div>
 
-        {/* Formulário */}
         <form onSubmit={handleSubmit} className="px-8 pb-8 w-full">
 
           <div className="space-y-5">
 
-            {/* Linha 1: CEP (Com destaque de erro igual à imagem) */}
             <div>
               <label className={`block text-sm font-medium mb-1 ${errors.cep ? 'text-red-600' : 'text-gray-600'}`}>
                 CEP*
@@ -261,7 +237,6 @@ export default function NovoEnderecoPage() {
                   ${isLoadingCep ? 'opacity-70' : ''}
                 `}
               />
-              {/* Mensagem de Erro / Loading */}
               {isLoadingCep && <p className="text-xs text-primary mt-1">Buscando endereço...</p>}
               {errors.cep && (
                 <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
@@ -271,7 +246,6 @@ export default function NovoEnderecoPage() {
               )}
             </div>
 
-            {/* Linha 3: Logradouro */}
             <div>
               <label className="block text-gray-500 text-sm mb-1">Logradouro*</label>
               <input
@@ -283,7 +257,6 @@ export default function NovoEnderecoPage() {
               />
             </div>
 
-            {/* Linha 4: Número e Complemento (Grid de 2 colunas) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-500 text-sm mb-1">Número*</label>
@@ -308,7 +281,6 @@ export default function NovoEnderecoPage() {
               </div>
             </div>
 
-            {/* Linha 6: Bairro */}
             <div>
               <label className="block text-gray-500 text-sm mb-1">Bairro*</label>
               <input
@@ -320,7 +292,6 @@ export default function NovoEnderecoPage() {
               />
             </div>
 
-            {/* Linha 7: Cidade e UF (Campos bloqueados com ícone de cadeado) */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-3 relative">
                 <label className="block text-gray-300 text-sm mb-1 font-medium">Cidade*</label>
@@ -351,7 +322,6 @@ export default function NovoEnderecoPage() {
               </div>
             </div>
 
-            {/* Checkbox Padrão */}
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -366,7 +336,6 @@ export default function NovoEnderecoPage() {
 
           </div>
 
-          {/* Botão de Ação (Footer) */}
           <div className="mt-8 flex justify-end">
             <button
               type="submit"

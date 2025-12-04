@@ -31,7 +31,7 @@ export function ProductCard({ produto }: ProductCardProps) {
                     <MdOutlineAddShoppingCart size={20} color="gray" className="cursor-pointer" />
                 </div>
 
-                {/* Mantive comentado conforme o original, mas adicionei loading="lazy" caso descomente */}
+
                 <img src={produto.fotos.m[0]} alt={produto.nome} className="w-full h-48 object-contain p-4" loading="lazy" />
             </div>
 

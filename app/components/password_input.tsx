@@ -1,7 +1,7 @@
 import CustomInput from "./input"
 import { FiEye, FiEyeOff } from 'react-icons/fi'
 
-// --- Input de Senha ---
+
 interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     show: boolean
     onToggle: () => void

@@ -1,18 +1,8 @@
 import React, { useState } from 'react'
-// --- CORREÇÃO ---
-// Os caminhos 'react-icons/fa' e 'react-icons/fi' não estão resolvendo.
-// Vamos tentar importar tudo de um único ponto, o que é mais provável de funcionar
-// se a biblioteca estiver instalada.
-
 import { FaUserPlus } from 'react-icons/fa'
-
-// O erro "~/components/header" indica que o alias (~) não está funcionando
-// e o caminho relativo ('../') também não.
-// Vou reverter para o alias (~), pois é o mais provável de estar
-// correto no *seu* ambiente de projeto (baseado no seu tsconfig/vite.config).
 import Button from '~/components/button'
 import Footer from '~/components/footer'
-import Header from '~/components/header'; // Você usará seu header aqui
+import Header from '~/components/header';
 import IconCircle from '~/components/icon_circle'
 import CustomInput from '~/components/input'
 import InputIE from '~/components/input_ie'
@@ -20,30 +10,23 @@ import PasswordInput from '~/components/password_input'
 import CustomSelect from '~/components/select'
 import { normalizeCnpj, normalizeCpf, normalizeRg } from '~/utils/masks'
 import { authService } from './services/authService'
-// --- FIM DA CORREÇÃO ---
-
-// --- 1. Componente Principal (Página de Cadastro) ---
 
 export default function RegistrarPage() {
-    // --- Estados do Formulário ---
-    // Comuns
     const [nome, setNome] = useState('');
-    const [tipoPessoa, setTipoPessoa] = useState('Física'); // 'Física' ou 'Jurídica'
+    const [tipoPessoa, setTipoPessoa] = useState('Física');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [aceitaMarketing, setAceitaMarketing] = useState(true);
     const [aceitaTermos, setAceitaTermos] = useState(false);
 
-    // Pessoa Física
     const [cpf, setCpf] = useState('');
     const [rg, setRg] = useState('');
 
-    // Pessoa Jurídica
     const [razaoSocial, setRazaoSocial] = useState('');
     const [cnpj, setCnpj] = useState('');
     const [ie, setIe] = useState('');
-    const [isentoIE, setIsentoIE] = useState(false); // Para o checkbox 'ISENTO'
+    const [isentoIE, setIsentoIE] = useState(false);
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -64,13 +47,10 @@ export default function RegistrarPage() {
         <div>
             <Header />
 
-            {/* Container principal com padding vertical e centralização horizontal */}
             <div className="relative flex flex-col items-center bg-white p-4 py-4 text-gray-700">
 
-                {/* Box de conteúdo central - usei max-w-3xl para um formulário mais estreito */}
                 <main className="w-full max-w-387">
                     <div className="flex flex-col">
-                        {/* Ícone e Título */}
                         <IconCircle icon={FaUserPlus} color="primary" />
                         <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
                             Criar minha conta
@@ -79,11 +59,8 @@ export default function RegistrarPage() {
                             Informe os seus dados abaixo para criar sua conta.
                         </p>
 
-                        {/* Formulário de Cadastro */}
                         <form onSubmit={handleRegister} className="flex flex-col gap-4">
-                            {/* Grid para campos lado a lado */}
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
-                                {/* Campo "Quero me cadastrar como" */}
                                 <CustomSelect
                                     value={tipoPessoa}
                                     onChange={(e) => setTipoPessoa(e.target.value)}
@@ -94,7 +71,6 @@ export default function RegistrarPage() {
                                 </CustomSelect>
                             </div>
 
-                            {/* Campos de Pessoa Física */}
                             {tipoPessoa === 'Física' && (
                                 <>
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
@@ -125,7 +101,6 @@ export default function RegistrarPage() {
                                 </>
                             )}
 
-                            {/* Campos de Pessoa Jurídica (NOVOS) */}
                             {tipoPessoa === 'Jurídica' && (
                                 <>
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -152,7 +127,6 @@ export default function RegistrarPage() {
                                             onChange={(e) => setCnpj(normalizeCnpj(e.target.value))}
                                             required
                                         />
-                                        {/* Campo de IE com Checkbox "ISENTO" */}
                                         <InputIE
                                             value={ie}
                                             onChange={(e) => setIe(e.target.value)}
@@ -166,15 +140,12 @@ export default function RegistrarPage() {
 
                                                 setIsentoIE(e.target.checked);
                                             }}
-                                            required={!isentoIE} // IE é obrigatório A MENOS que "ISENTO" esteja marcado
+                                            required={!isentoIE}
                                         />
                                     </div>
                                 </>
                             )}
 
-                            {/* --- FIM DA ALTERAÇÃO --- */}
-
-                            {/* Campos de largura total (comuns) */}
                             <CustomInput
                                 type="email"
                                 placeholder="E-mail *"
@@ -192,7 +163,6 @@ export default function RegistrarPage() {
                                 required
                             />
 
-                            {/* Checkboxes */}
                             <label className="flex cursor-pointer items-center gap-2 text-sm">
                                 <input
                                     type="checkbox"
@@ -224,14 +194,12 @@ export default function RegistrarPage() {
                                 </span>
                             </label>
 
-                            {/* Botão de Criar Conta */}
                             <Button variant="primary" type="submit" className="mt-4">
                                 CRIAR CONTA
                             </Button>
 
-                            {/* Link "Voltar" */}
                             <a
-                                href="/entrar" // Idealmente, isso seria um <Link> do seu roteador
+                                href="/entrar"
                                 className="mt-2 text-center text-sm text-gray-600 hover:text-gray-900 hover:underline"
                             >
                                 Voltar para o login
@@ -245,10 +213,3 @@ export default function RegistrarPage() {
         </div>
     )
 }
-
-
-
-
-
-
-

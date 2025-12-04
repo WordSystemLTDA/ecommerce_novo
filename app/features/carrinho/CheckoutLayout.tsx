@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-// Outlet é onde as páginas (cart, address, etc.) serão renderizadas
 import {
     FaCheck,
     FaCheckCircle,
@@ -19,7 +18,6 @@ import { carrinhoService } from './services/carrinhoService';
 import { useAuth } from '../auth/context/AuthContext';
 import { toast } from 'react-toastify';
 
-// --- COMPONENTE: Stepper do Checkout ---
 const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
     const steps = [
         { name: 'Carrinho', icon: FaShoppingCart },
@@ -38,7 +36,7 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                     const isActive = stepNumber === activeStep;
                     const isCompleted = stepNumber < activeStep;
 
-                    if (step.name === 'Concluído') return null; // Não mostramos "Concluído" no fluxo
+                    if (step.name === 'Concluído') return null;
 
                     return (
                         <React.Fragment key={step.name}>
@@ -62,7 +60,7 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                                     {step.name}
                                 </span>
                             </div>
-                            {index < steps.length - 2 && ( // Ajustado para não ligar na confirmação
+                            {index < steps.length - 2 && (
                                 <div className={`flex-auto h-0.5 mx-2 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
                             )}
                         </React.Fragment>
@@ -73,7 +71,6 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
     );
 };
 
-// --- COMPONENTE: Resumo do Pedido ---
 const CartSummary = ({
     step,
     onContinue,
@@ -129,28 +126,14 @@ const CartSummary = ({
                     <span className="text-gray-600">Total a prazo:</span>
                     <div className="text-right">
                         <span className="text-xl font-bold text-gray-800">{currencyFormatter.format(retornarValorFinal())}</span>
-                        {/* <p className="text-xs text-gray-500">(em até 10x de R$ 1.192,74 sem juros)</p> */}
                     </div>
                 </div>
             </div>
 
             {step < 5 ? (
                 <></>
-                // <div className="bg-green-100 border border-green-200 text-green-800 p-3 rounded-md mt-4 text-center">
-                //     <span className="font-bold text-lg">Valor à vista no PIX:</span>
-                //     <p className="text-2xl font-bold text-green-700">{currencyFormatter.format(retornarValorProdutos())}</p>
-                //     <p className="text-sm font-bold">(Economize R$ 1.008,87)</p>
-                // </div>
             ) : (
                 <></>
-                // <div className="bg-green-100 border border-green-200 text-green-800 p-3 rounded-md mt-4">
-                //     <span className="font-bold text-sm">Forma de pagamento</span>
-                //     <p className="text-lg font-bold">PIX</p>
-                //     <div className="text-right">
-                //         <p className="text-xl font-bold">{currencyFormatter.format(retornarValorProdutos())}</p>
-                //         <p className="text-sm font-bold">(Economizou R$ 1.008,87)</p>
-                //     </div>
-                // </div>
             )}
 
             {(step >= 2 && step <= 4) && (
@@ -174,7 +157,6 @@ const CartSummary = ({
                     <div className="text-sm text-gray-600 space-y-1">
                         <p>{enderecoSelecionado?.endereco}</p>
                         <p>Número {enderecoSelecionado?.numero}, {enderecoSelecionado?.complemento}, CEP {enderecoSelecionado?.cep} - {enderecoSelecionado?.nome_cidade}, {enderecoSelecionado?.sigla_estado}</p>
-                        {/* <p className="font-bold">Vendido e entregue por: KaBuM!</p> */}
                         <div className="flex justify-between items-center border border-gray-300 rounded p-2">
                             <span>{tipoDeEntregaSelecionada?.name}</span>
                             <span className="font-bold">{currencyFormatter.format(parseFloat(tipoDeEntregaSelecionada?.price ?? '0'))}</span>
@@ -185,7 +167,6 @@ const CartSummary = ({
             )}
 
             <div className="mt-6 space-y-3">
-                {/* {enderecoSelecionado?.id} */}
                 <button
                     onClick={onContinue}
                     disabled={isDisabled()}
@@ -220,7 +201,6 @@ const CartSummary = ({
     );
 };
 
-// --- COMPONENTE DE LAYOUT PRINCIPAL ---
 export default function CheckoutLayout() {
     const location = useLocation();
     const navigate = useNavigate();
@@ -228,22 +208,20 @@ export default function CheckoutLayout() {
     const { cliente } = useAuth();
     const { produtos, pagamentoSelecionado, enderecoSelecionado, tipoDeEntregaSelecionada, valorFrete, retornarValorFinal, resetarCarrinho } = useCarrinho();
 
-    // Mapeia o caminho da URL para um número de etapa
     const getActiveStep = (pathname: string): number => {
         if (pathname.endsWith('/carrinho')) return 1;
         if (pathname.endsWith('/endereco')) return 2;
         if (pathname.endsWith('/entrega')) return 3;
         if (pathname.endsWith('/pagamento')) return 4;
         if (pathname.endsWith('/confirmacao')) return 5;
-        return 1; // Padrão
+        return 1;
     };
 
     const activeStep = getActiveStep(location.pathname);
-    // As rotas são relativas à rota pai "/carrinho"
     const stepsRoutes = ['', 'endereco', 'entrega', 'pagamento', 'confirmacao'];
 
     const handleContinue = async () => {
-        const nextStepIndex = activeStep; // (activeStep é 1, 2, 3...)
+        const nextStepIndex = activeStep;
         if (nextStepIndex < stepsRoutes.length) {
             navigate(`/carrinho/${stepsRoutes[nextStepIndex]}`);
         } else {
@@ -252,7 +230,7 @@ export default function CheckoutLayout() {
                 produtos.map(p => ({
                     id: p.id,
                     quantidade: p.quantidade,
-                    habilTipo: p.tipo,
+                    habilTipo: p.tipo.toString(),
                     idTamanho: (p.tamanhoSelecionado?.id ?? 0).toString(),
                 })),
                 pagamentoSelecionado!,
@@ -277,7 +255,7 @@ export default function CheckoutLayout() {
     };
 
     const handleBack = () => {
-        const prevStepIndex = activeStep - 2; // (activeStep é 1-indexado e queremos o anterior)
+        const prevStepIndex = activeStep - 2;
         if (prevStepIndex >= 0) {
             navigate(`/carrinho/${stepsRoutes[prevStepIndex]}`);
         }
@@ -294,20 +272,16 @@ export default function CheckoutLayout() {
             <div className="bg-gray-100 min-h-screen py-8">
                 <div className="max-w-387 mx-auto px-4">
 
-                    {/* O Stepper é renderizado aqui, com a etapa ativa */}
                     <CheckoutStepper activeStep={activeStep} />
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                        {/* Coluna Esquerda (Renderiza a Etapa Atual) */}
                         <div className="lg:col-span-2">
 
-                            {/* O Outlet renderiza o componente da rota filha */}
                             <Outlet />
 
                         </div>
 
-                        {/* Coluna Direita (Resumo) */}
                         <div className="lg:col-span-1">
                             <CartSummary
                                 step={activeStep}

@@ -3,7 +3,6 @@ import { FaQrcode } from 'react-icons/fa';
 import { useCarrinho } from './context/CarrinhoContext';
 import Loader from '~/components/loader';
 
-// --- PÁGINA DA ETAPA 4 ---
 export default function PaymentPage() {
   let { pagamentoSelecionado, pagamentos, setPagamentoSelecionado, listarPagamentos, carregandoPagamentos, tipoDeEntregaSelecionada } = useCarrinho();
 

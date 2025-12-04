@@ -1,5 +1,3 @@
-// app/context/AuthContext.tsx
-
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { categoriaService } from '~/features/categoria/services/categoriaService';
@@ -10,7 +8,6 @@ import sign from 'jwt-encode';
 interface HomeContextType {
     produtos: ProdutosBanners[];
     listarProdutos: (id: string, filtros: string) => Promise<void>;
-    // New Filter State
     filterOptions: FilterOptions;
     activeFilters: ActiveFilters;
     setFilterOptions: React.Dispatch<React.SetStateAction<FilterOptions>>;
@@ -42,7 +39,6 @@ export interface ActiveFilters {
 
 const HomeContext = createContext<HomeContextType | undefined>(undefined);
 
-// Helper to decode JWT payload safely on client side
 function decodeJwt(token: string): any {
     try {
         const base64Url = token.split('.')[1];
@@ -72,7 +68,6 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     const [isLoadingFilters, setIsLoadingFilters] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Filter State
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         marcas: [],
         categorias: [],
@@ -87,13 +82,11 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         fetchFilterOptions();
     }, []);
 
-    // Effect to sync URL params to state and fetch products
     useEffect(() => {
         const token = searchParams.get('filtros');
         if (token) {
             const decodedPartial = decodeJwt(token);
             if (decodedPartial) {
-                // Merge decoded partial filters with defaults to ensure complete state
                 const mergedFilters = { ...defaultFilters, ...decodedPartial };
                 setActiveFilters(mergedFilters);
                 setIsFiltering(true);
@@ -137,7 +130,6 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     }
 
     const applyFilters = (filters: ActiveFilters) => {
-        // Minify payload: remove empty arrays, false booleans, and default values
         const payload: any = {};
 
         if (filters.marcas.length > 0) payload.marcas = filters.marcas;
@@ -153,7 +145,6 @@ export function HomeProvider({ children }: { children: ReactNode }) {
 
         if (filters.ordenacao !== 'mais_procurados') payload.ordenacao = filters.ordenacao;
 
-        // If payload is empty (no filters), remove the param
         if (Object.keys(payload).length === 0) {
             setSearchParams({});
         } else {
@@ -162,7 +153,6 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Função de Login (envolve o service e atualiza o estado local)
     const listarProdutos = async (id: string, filtros: string) => {
         setIsLoading(true);
         try {
@@ -171,7 +161,6 @@ export function HomeProvider({ children }: { children: ReactNode }) {
 
             if (responseProdutos.sucesso) {
                 setProdutos((oldState) => {
-                    // Check if we already have this ID to avoid duplicates or stale data
                     const exists = oldState.find(p => p.id === id);
                     if (exists) {
                         return oldState.map(p => p.id === id ? {

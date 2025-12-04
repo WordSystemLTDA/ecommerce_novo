@@ -1,5 +1,3 @@
-// app/context/AuthContext.tsx
-
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '~/features/auth/context/AuthContext';
@@ -11,16 +9,12 @@ import type { Pagamento } from '~/types/Pagamento';
 import type { TipoDeEntrega } from '~/types/TipoDeEntrega';
 import { carrinhoService } from '../services/carrinhoService';
 
-// --------------------------------------------------------------------------
-// 1. ATUALIZAÇÃO DA INTERFACE DO CONTEXTO (CarrinhoContextType)
-// --------------------------------------------------------------------------
 interface CarrinhoContextType {
     produtos: Produto[];
     tipoDeEntregas: TipoDeEntrega[];
     enderecos: Endereco[],
     pagamentos: Pagamento[],
 
-    // Novos estados de valores
     valorTotal: number;
     valorDesconto: number;
     valorFrete: number;
@@ -33,7 +27,6 @@ interface CarrinhoContextType {
     carregandoTipoDeEntregas: boolean,
     carregandoPagamentos: boolean,
 
-    // Métodos existentes
     adicionarNovoProduto: (produto: Produto) => Promise<boolean>;
     removerTodosProdutos: () => Promise<void>;
     resetarCarrinho: () => Promise<void>;
@@ -42,7 +35,6 @@ interface CarrinhoContextType {
     listarPagamentos: () => Promise<void>;
     verificarAdicionadoCarrinho: (produto: Produto) => boolean;
 
-    // Métodos para setar e calcular valores
     setTipoDeEntregaSelecionada: (tipoDeEntrega: TipoDeEntrega) => void;
     setEnderecoSelecionado: (endereco: Endereco) => void;
     setPagamentoSelecionado: (pagamento: Pagamento) => void;
@@ -62,27 +54,22 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     const [enderecos, setEnderecos] = useState<Endereco[]>([]);
     const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
 
-    // Estados de valores e seleção
     const [valorDesconto, setValorDesconto] = useState(0);
-    const [valorFrete, setValorFrete] = useState(0); // Valor do frete selecionado
+    const [valorFrete, setValorFrete] = useState(0);
     const [tipoDeEntregaSelecionada, setTipoDeEntregaSelecionada] = useState<TipoDeEntrega | undefined>(undefined);
     const [enderecoSelecionado, setEnderecoSelecionado] = useState<Endereco | undefined>(undefined);
     const [pagamentoSelecionado, setPagamentoSelecionado] = useState<Pagamento>();
     const [tamanhoSelecionado, setTamanhoSelecionado] = useState<ProdutoTamanho | null>(null);
-    // const [cupom, setCupom] = useState('');
     const [aceitouTermos, setAceitouTermos] = useState(false);
 
     const [carregandoEnderecos, setCarregandoEnderecos] = useState(false);
     const [carregandoTipoDeEntregas, setCarregandoTipoDeEntregas] = useState(false);
     const [carregandoPagamentos, setCarregandoPagamentos] = useState(false);
 
-    // Load initial cart state
     useEffect(() => {
         if (cliente?.id) {
-            // Logged in: Sync localStorage to DB, then fetch from DB
             syncCart();
         } else {
-            // Guest: Load from localStorage
             const savedCart = localStorage.getItem('carrinho_guest');
             if (savedCart) {
                 try {
@@ -94,7 +81,6 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         }
     }, [cliente]);
 
-    // Save to localStorage when products change (only for guests)
     useEffect(() => {
         if (!cliente?.id) {
             localStorage.setItem('carrinho_guest', JSON.stringify(produtos));
@@ -108,7 +94,6 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         if (savedCart) {
             try {
                 const localProducts: Produto[] = JSON.parse(savedCart);
-                // Add each local product to the backend
                 for (const prod of localProducts) {
                     try {
                         await carrinhoService.adicionarNovoItem(cliente.id, prod);
@@ -116,14 +101,12 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
                         console.error("Error syncing product", prod.id, err);
                     }
                 }
-                // Clear local cart after sync attempt
                 localStorage.removeItem('carrinho_guest');
             } catch (e) {
                 console.error("Error parsing local cart for sync", e);
             }
         }
 
-        // Fetch updated cart from DB
         loadCartFromDb();
     };
 
@@ -139,10 +122,6 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         }
     };
 
-
-    // --------------------------------------------------------------------------
-    // 2. NOVAS FUNÇÕES SETTERS (Para TipoDeEntrega e Desconto)
-    // --------------------------------------------------------------------------
 
     const handleSetTipoDeEntregaSelecionada = (tipoDeEntrega: TipoDeEntrega) => {
         setTipoDeEntregaSelecionada(tipoDeEntrega);
@@ -161,19 +140,12 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         setValorDesconto(desconto);
     };
 
-    // --------------------------------------------------------------------------
-    // 3. FUNÇÕES EXISTENTES E DE CÁLCULO
-    // --------------------------------------------------------------------------
-
-    // Calculadora: Retorna a soma do preço de todos os produtos
     const retornarValorProdutos = () => {
         return produtos.reduce((accumulator: number, currentItem) => {
-            // Garante que o atributo 'preco' é tratado como número
             return accumulator + Number(currentItem.preco);
         }, 0);
     }
 
-    // Calculadora: Retorna o valor final (Produtos - Desconto + Frete)
     const retornarValorFinal = () => {
         const valorProdutos = retornarValorProdutos();
         return valorProdutos - valorDesconto + valorFrete;
@@ -234,13 +206,11 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         }
     }
 
-    // ADICIONAR/REMOVER PRODUTO
     const adicionarNovoProduto = async (produto: Produto) => {
         try {
             const isAdded = verificarAdicionadoCarrinho(produto);
 
             if (isAdded) {
-                // Remove
                 if (cliente?.id) {
                     await carrinhoService.removerItem(cliente.id, produto.id);
 
@@ -251,7 +221,6 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
                 toast.info("Produto removido do carrinho.", { position: 'top-center' });
                 return true;
             } else {
-                // Add
                 if (cliente?.id) {
                     await carrinhoService.adicionarNovoItem(cliente.id, produto);
 
@@ -306,18 +275,14 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         return produtos.filter((value) => value.id == produto.id).length > 0;
     }
 
-    // --------------------------------------------------------------------------
-    // 4. RETORNO DO CONTEXTO
-    // --------------------------------------------------------------------------
     return (
         <CarrinhoContext.Provider value={{
-            // Dados (Estados)
             produtos,
             tipoDeEntregas,
             enderecos,
             pagamentos,
 
-            valorTotal: retornarValorProdutos(), // Retorna o valor calculado dos produtos
+            valorTotal: retornarValorProdutos(),
             valorDesconto,
             valorFrete,
             tipoDeEntregaSelecionada,
@@ -329,7 +294,6 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             carregandoTipoDeEntregas,
             carregandoPagamentos,
 
-            // Funções
             adicionarNovoProduto,
             removerTodosProdutos,
             listarTipoDeEntregas,
@@ -338,16 +302,14 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             verificarAdicionadoCarrinho,
             resetarCarrinho,
 
-            // Novas funções para setar valores
             setTipoDeEntregaSelecionada: handleSetTipoDeEntregaSelecionada,
             setValorDesconto: handleSetValorDesconto,
             setEnderecoSelecionado: handleSetEnderecoSelecionado,
             setPagamentoSelecionado: handleSetPagamentoSelecionado,
             setTamanhoSelecionado,
 
-            // Funções de Cálculo
-            retornarValorProdutos, // Retorna apenas o valor dos produtos
-            retornarValorFinal, // Retorna o valor final (Produtos - Desconto + Frete)
+            retornarValorProdutos,
+            retornarValorFinal,
         }}>
             {children}
         </CarrinhoContext.Provider>

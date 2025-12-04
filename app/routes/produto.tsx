@@ -16,7 +16,6 @@ export async function clientLoader({ params }: Route.LoaderArgs) {
       throw new Response("Produto não encontrado", { status: 404 });
     }
 
-    // Retornamos o produto para ser usado no componente
     return { produto };
   } catch (error) {
     throw new Response("Produto não encontrado", { status: 404 });
@@ -30,9 +29,7 @@ export function meta({ }: Route.MetaArgs) {
   ];
 }
 
-// 2. O Componente NÃO é async e apenas RECEBE os dados
 export default function Produto({ loaderData }: Route.ComponentProps) {
-  // O loaderData já vem tipado graças ao Route.ComponentProps
   if (!loaderData) {
     return (
       <div>
@@ -43,7 +40,6 @@ export default function Produto({ loaderData }: Route.ComponentProps) {
 
   const { produto } = loaderData;
 
-  // Validações simples caso o loader retorne null (se a sua lógica permitir)
   if (!produto) {
     return (
       <div>
@@ -52,8 +48,5 @@ export default function Produto({ loaderData }: Route.ComponentProps) {
     );
   }
 
-  // console.log(produto);
-
   return <ProductPage produto={produto.data} />;
-  // return <div>{produto.nome}</div>;
 }

@@ -32,13 +32,11 @@ interface ProdutoProps {
     produto: Produto,
 }
 
-// --- 1. COMPONENTE PRINCIPAL (A PÁGINA) ---
 export default function ProdutoPage({ produto }: ProdutoProps) {
     const { id, slug } = useParams();
     const { tamanhoSelecionado, setTamanhoSelecionado } = useCarrinho();
 
     useEffect(() => {
-        // Reset selected size when product changes
         if ((produto.tamanhos ?? []).length > 0) {
             setTamanhoSelecionado(produto.tamanhos![0]);
         } else {
@@ -50,9 +48,7 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
         if (produto && produto.id) {
             const slugCorreto = gerarSlug(produto.nome);
 
-            // Se a URL atual não tem o slug ou o slug está errado
             if (slug !== slugCorreto) {
-                // Atualiza a URL no navegador sem recarregar a página
                 window.history.replaceState(null, '', `/produto/${id}/${slugCorreto}`);
             }
         }
@@ -62,37 +58,27 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
         <div>
             <Header />
 
-            {/* Container principal - fundo cinza claro, padding vertical */}
             <div className="flex flex-col items-center bg-white text-gray-900 pb-8">
-                {/* MODIFICATION: Changed max-w-387 to w-full and added px/py */}
                 <div className="w-full px-10 py-0">
                     <Breadcrumb />
 
-                    {/* Grid principal da página */}
                     <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 relative">
                         <div className='lg:hidden flex flex-col gap-4'>
-                            {/* This is the mobile-only title */}
                             <ProdutoNameInfo produto={produto} />
                         </div>
 
-                        {/* Coluna 1: Galeria de Imagens (5/12) */}
                         {produto.imagens != null &&
                             <div className='lg:col-span-5'>
                                 <ProdutoGallery images={produto.imagens} />
                             </div>
                         }
 
-                        {/* Coluna 2: Informações do Produto (4/12) */}
                         <div className='lg:col-span-4'>
                             <ProdutoInfo
                                 produto={produto}
                             />
                         </div>
 
-                        {/* MODIFICATION #1:
-                          This description block is told to start on column 1 
-                          and row 2 on large screens (lg:).
-                        */}
                         <div className="flex flex-col max-w-full relative lg:col-span-9 lg:col-start-1 lg:row-start-2">
                             <div className='mt-8'>
                                 <div className='flex gap-2 items-center'>
@@ -103,10 +89,6 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                             </div>
                         </div>
 
-                        {/* MODIFICATION #2:
-                          The sidebar is told to start on column 10
-                          and row 1 on large screens (lg:).
-                        */}
                         <div className="lg:col-span-3 lg:col-start-10 lg:row-start-1 lg:row-span-2">
                             <PurchaseSidebar produto={produto} />
                         </div>
@@ -119,27 +101,21 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
     )
 }
 
-// --- 2. COMPONENTES FILHOS (Auxiliares da Página) ---
-
-// --- GALERIA DE IMAGENS (COM SWIPER) ---
 interface ProdutoGalleryProps {
     images: string[]
 }
 
 function ProdutoGallery({ images }: ProdutoGalleryProps) {
-    // Estado para linkar os dois Swipers (galeria principal e miniaturas)
     const [thumbsSwiper, setThumbsSwiper] =
         useState<SwiperInstance | null>(null)
 
     return (
         <div className="flex flex-col gap-4 max-w-full">
-            {/* Galeria Principal (Imagem Grande) */}
             <div className="overflow-hidden rounded-lg border border-gray-200">
                 <Swiper
                     modules={[FreeMode, Navigation, Thumbs]}
                     spaceBetween={10}
                     navigation={true}
-                    // Conecta este Swiper com o Swiper das miniaturas
                     thumbs={{
                         swiper:
                             thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
@@ -158,13 +134,12 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
                 </Swiper>
             </div>
 
-            {/* Galeria de Miniaturas (Thumbnails) */}
             <div className="h-24">
                 <Swiper
                     modules={[FreeMode, Navigation, Thumbs]}
-                    onSwiper={setThumbsSwiper} // Guarda a instância deste Swiper no estado
+                    onSwiper={setThumbsSwiper}
                     spaceBetween={10}
-                    slidesPerView={4} // Mostra 4 miniaturas por vez
+                    slidesPerView={4}
                     freeMode={true}
                     watchSlidesProgress={true}
 
@@ -188,7 +163,6 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
     )
 }
 
-// --- INFORMAÇÕES DO PRODUTO (Coluna Central) ---
 function ProdutoInfo({ produto }: ProdutoProps) {
     let navigate = useNavigate();
     const { tamanhoSelecionado, setTamanhoSelecionado } = useCarrinho();
@@ -199,17 +173,14 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                 <ProdutoNameInfo produto={produto} />
             </div>
 
-            {/* Divisória */}
             <hr className="my-2 border-gray-200" />
 
-            {/* Sobre o Produto */}
             <div className="flex flex-col gap-3">
                 <div className='flex gap-2 items-center text-terciary'>
                     <AiFillInfoCircle />
                     <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
                 </div>
 
-                {/* Colors */}
                 {produto.cores && produto.cores.length > 0 && (
                     <div className="flex flex-col gap-2 mb-4">
                         <span className="text-sm font-semibold text-gray-700">
@@ -228,10 +199,8 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                                         <img src={cor.imagem} alt={cor.nome} className="w-full h-full object-cover" />
                                     </div>
 
-                                    {/* Tooltip */}
                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                                         {cor.nome}
-                                        {/* Arrow */}
                                         <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-black"></div>
                                     </div>
                                 </a>
@@ -240,7 +209,6 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                     </div>
                 )}
 
-                {/* Sizes */}
                 {produto.tamanhos && produto.tamanhos.length > 0 && (
                     <div className="flex flex-col gap-2 mb-4">
                         <span className="text-sm font-semibold text-gray-700">Tamanhos:</span>
@@ -278,7 +246,6 @@ function ProdutoInfo({ produto }: ProdutoProps) {
 function ProdutoNameInfo({ produto }: ProdutoProps) {
     return (
         <>
-            {/* Ícone e Botões */}
             <div className="flex items-center justify-between">
                 {produto.marca != null &&
                     <img src={produto.marca.img} className="text-gray-800" />
@@ -293,10 +260,8 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
                 </div>
             </div>
 
-            {/* Título */}
             <h1 className="text-2xl font-semibold leading-tight">{produto.nome}</h1>
 
-            {/* Avaliações */}
             <div className="flex items-center gap-2">
                 <RatingStars rating={produto.avaliacao} variant='normal' />
                 <span className="text-sm text-gray-600">
@@ -304,7 +269,6 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
                 </span>
             </div>
 
-            {/* Vendido por */}
             <div className="text-sm text-gray-600">
                 Vendido e entregue por:{" "}
                 <span className="font-semibold text-terciary">{produto.vendidoPor}</span>
@@ -317,12 +281,10 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
     let navigate = useNavigate();
     let { adicionarNovoProduto, verificarAdicionadoCarrinho, tamanhoSelecionado } = useCarrinho();
 
-    // Calculate dynamic price
     const precoBase = parseFloat(produto.preco);
     const valorAdicional = tamanhoSelecionado ? parseFloat(tamanhoSelecionado.valorGrade) : 0;
     const precoFinal = precoBase + valorAdicional;
 
-    // Create a modified product object for cart checks/addition
     const produtoComTamanho = {
         ...produto,
         quantidade: 1,
@@ -332,7 +294,6 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
 
     return (
         <div className="flex flex-col gap-4 lg:sticky top-42">
-            {/* Box de Preço */}
             <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                 {produto.precoAntigo && (
                     <span className="text-xs text-gray-500 line-through">
@@ -347,7 +308,6 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                 </span>
                 <div className='my-2'></div>
                 <span className="text-tiny text-gray-600">
-                    {/* {produto.price.installments} */}
                     <span className='font-bold'>R$ 2.699,90</span> em até 10x de <span className='font-bold'>R$ 269,99</span> sem juros ou 1x com <span className='font-bold'>10% de desconto</span> no cartão
                 </span>
                 <a href="#" className="text-tiny font-semibold text-black underline mt-2">
@@ -365,7 +325,6 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                     </div>
                 }
 
-                {/* Botões */}
                 <div className="flex flex-col gap-3">
                     <Button
                         variant="primary"
@@ -394,13 +353,11 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                 </div>
             </div>
 
-            {/* Box de Frete */}
             <FreightCalculator />
         </div>
     )
 }
 
-// --- Calculadora de Frete ---
 function FreightCalculator() {
     const [cep, setCep] = useState('');
 
@@ -425,7 +382,6 @@ function FreightCalculator() {
             <a href="#" className="text-tiny text-primary underline">
                 Não sei meu CEP
             </a>
-            {/* Aqui você pode renderizar os resultados do frete */}
         </div>
     )
 }

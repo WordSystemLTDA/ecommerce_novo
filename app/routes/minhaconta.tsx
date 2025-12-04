@@ -21,7 +21,6 @@ export default function MinhaConta() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        {/* Card Pedidos */}
         <Link to="/minha-conta/pedidos" className="block group">
           <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow h-full">
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -35,7 +34,6 @@ export default function MinhaConta() {
           </div>
         </Link>
 
-        {/* Card Endereços */}
         <Link to="/minha-conta/enderecos" className="block group">
           <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow h-full">
             <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors">
@@ -49,7 +47,6 @@ export default function MinhaConta() {
           </div>
         </Link>
 
-        {/* Card Dados */}
         <Link to="/minha-conta/dados" className="block group">
           <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow h-full">
             <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">

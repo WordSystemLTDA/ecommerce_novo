@@ -2,7 +2,7 @@ import {
     FaStar,
     FaStarHalfAlt,
     FaRegStar,
-} from 'react-icons/fa' // Caminho específico para Font Awesome
+} from 'react-icons/fa'
 
 
 interface RatingStarsProps {
@@ -10,7 +10,7 @@ interface RatingStarsProps {
     rating: number,
 }
 
-// --- Estrelas de Avaliação ---
+
 export default function RatingStars({ variant, rating }: RatingStarsProps) {
     const fullStars = Math.floor(rating)
     const halfStar = rating % 1 >= 0.5 ? 1 : 0

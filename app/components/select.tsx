@@ -1,4 +1,4 @@
-// --- Select Customizado (NOVO) ---
+
 interface CustomSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> { }
 
 export default function CustomSelect(props: CustomSelectProps) {

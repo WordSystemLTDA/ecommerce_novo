@@ -1,29 +1,24 @@
-// --- IMPORTS ---
-import { MdFavoriteBorder, MdOutlineAddShoppingCart } from "react-icons/md";
 import { SlArrowLeft, SlArrowRight } from "react-icons/sl";
 import Header from "~/components/header";
 
-// --- IMPORTS DO SWIPER (OS ÚNICOS NECESSÁRIOS) ---
-import { Swiper, SwiperSlide } from 'swiper/react';
-// Módulos que vamos usar:
 import { Autoplay, EffectFade, Navigation, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
-import { useEffect, useState } from 'react'; // Adicionado useRef
+import { useEffect, useState } from 'react';
 
-import { FaChevronDown, FaChevronUp, FaList, FaShoppingCart, FaTh } from "react-icons/fa";
+import { FaList, FaTh } from "react-icons/fa";
 
 import sign from 'jwt-encode';
 import { useNavigate } from "react-router";
 import Footer from "~/components/footer";
 import LazySection from "~/components/lazy_section";
 import { PriceRangeSlider } from "~/components/price_range_slider";
-import RatingStars from "~/components/rating_stars";
+import { ProductCard } from "~/components/ProductCard";
 import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
 import { SkeletonProductCard } from "~/components/skeleton_product_card";
 import { useProduto } from "~/features/produto/context/ProdutoContext";
-import { currencyFormatter, gerarSlug } from "~/utils/formatters";
 import type { Categoria } from "../categoria/types";
-import type { Banner, Produto } from "../produto/types";
+import type { Banner } from "../produto/types";
 import { useHome } from "./context/HomeContext";
 
 const mockBanners: Banner[] = [
@@ -31,41 +26,29 @@ const mockBanners: Banner[] = [
     id: 1,
     imagemUrl: "/1762447412.webp",
     corHex: "#f05802"
-  }, // Azul escuro
+  },
   {
     id: 2,
     imagemUrl: "/1762949636.gif",
     corHex: "#060709"
-  }, // Vermelho
+  },
   {
     id: 3,
     imagemUrl: "/1762948553.webp",
     corHex: "#000000"
-  }  // Verde
+  }
 ];
-
-// ===================================================================
-// 0. COMPONENTE UTILITÁRIO: LAZY SECTION
-// Este componente só renderiza o conteúdo quando ele entra na tela.
-// ===================================================================
-
-
-// ===================================================================
-// 3. COMPONENTE WELCOME (HOME PAGE)
-// ===================================================================
 
 export function HomePage() {
   const { isFiltering, filteredProducts, activeFilters, applyFilters } = useHome();
   const navigate = useNavigate();
 
-  // State to track selected category for each section
   const [sectionCategories, setSectionCategories] = useState<Record<string, number | null>>({});
 
   const handleSectionCategoryClick = (sectionId: string, category: Categoria) => {
     const catId = Number(category.id);
     setSectionCategories(prev => {
       const current = prev[sectionId];
-      // Toggle: if already selected, deselect (return null), otherwise select
       return { ...prev, [sectionId]: current === catId ? null : catId };
     });
   };
@@ -104,7 +87,6 @@ export function HomePage() {
               </LazySection>
 
               <section className="my-8">
-                {/* Lazy Loading aplicado nos componentes abaixo da dobra */}
                 <LazySection>
                   <CarouselBannersSecundarios
                     id="promocoes"
@@ -140,7 +122,6 @@ export function HomePage() {
               </LazySection>
 
               <section className="my-8">
-                {/* Lazy Loading aplicado nos componentes abaixo da dobra */}
                 <LazySection>
                   <CarouselBannersSecundarios
                     id="maisprocurados"
@@ -285,7 +266,6 @@ interface CarouselBannersPrincipaisProps {
 
 export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisProps) {
 
-  // Classes únicas para os botões deste carrossel
   const prevButtonId = 'main-banner-prev';
   const nextButtonId = 'main-banner-next';
 
@@ -294,10 +274,10 @@ export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisP
       <Swiper
         className="main-banner-carousel"
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
-        effect="fade" // Efeito de transição
-        slidesPerView={1} // 1 slide por vez
-        loop={true} // (infiniteLoop)
-        autoplay={{ // (autoPlay)
+        effect="fade"
+        slidesPerView={1}
+        loop={true}
+        autoplay={{
           delay: 10000,
           disableOnInteraction: false,
         }}
@@ -377,18 +357,6 @@ export function MarcaCardComImagem({ categoria, onClick, isSelected }: Categoria
   );
 }
 
-// ===================================================================
-// 5. CARD DE PRODUTO (Nenhuma mudança)
-// ===================================================================
-
-// ... (imports)
-import { ProductCard } from "~/components/ProductCard";
-
-// ... (rest of the file)
-
-// ===================================================================
-// 6. CARROSSEL SECUNDÁRIO (Swiper - Nenhuma mudança)
-// ===================================================================
 
 export function CarouselBannersSecundarios({ id, filtros, globalFilters, selectedCategoryId }: { id: string, filtros: string, globalFilters?: any, selectedCategoryId?: number | null }) {
   const prevButtonId = `${id}-produto-carousel-prev`;
@@ -401,12 +369,10 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
     const fetchWithFilters = async () => {
       let finalFilters = globalFilters ? { ...globalFilters } : {};
 
-      // Apply local section filter if selected
       if (selectedCategoryId) {
         finalFilters = { ...finalFilters, categorias: [selectedCategoryId] };
       }
 
-      // Generate token
       const token = sign(finalFilters, 'secret');
       const params = new URLSearchParams();
       params.append('filtros', token);
@@ -477,7 +443,6 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
         ))}
       </Swiper>
 
-      {/* --- Setas Customizadas (estilo da foto) --- */}
       <div
         className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
@@ -570,7 +535,6 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
         ))}
       </Swiper>
 
-      {/* --- Setas Customizadas (estilo da foto) --- */}
       <div
         className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
@@ -638,7 +602,7 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }:
         {categorias.map((categoria) => (
           <SwiperSlide key={`${id}-${categoria.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
             <CategoriaCardComImagem
-              categoria={categoria as any} // Cast to any to avoid type mismatch with full Categoria interface
+              categoria={categoria as any}
               onClick={onChange}
               isSelected={selectedCategoryId === Number(categoria.id)}
             />
@@ -646,7 +610,6 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }:
         ))}
       </Swiper>
 
-      {/* --- Setas Customizadas (estilo da foto) --- */}
       <div
         className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
@@ -714,7 +677,7 @@ export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: Car
         {marcas.map((marca) => (
           <SwiperSlide key={`${id}-${marca.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
             <MarcaCardComImagem
-              categoria={marca as any} // Treat marca as categoria for the card
+              categoria={marca as any}
               onClick={onChange}
               isSelected={selectedCategoryId === Number(marca.id)}
             />
@@ -722,7 +685,6 @@ export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: Car
         ))}
       </Swiper>
 
-      {/* --- Setas Customizadas (estilo da foto) --- */}
       <div
         className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
@@ -798,128 +760,51 @@ export function Sidebar() {
   return (
     <aside className="lg:col-span-1 w-64 min-w-[250px]">
       <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
-        <FilterSection title="Departamentos">
-          <CheckboxFilter
-            items={filterOptions.categorias.map(c => ({ id: c.id, label: c.nome }))}
-            selectedValues={activeFilters.categorias}
-            onChange={(id) => handleCheckboxChange('categorias', id)}
-            showSearch={true}
-          />
-        </FilterSection>
-
-        <FilterSection title="Marcas" defaultOpen={true}>
-          <CheckboxFilter
-            items={filterOptions.marcas.map(m => ({ id: m.id, label: m.nome }))}
-            selectedValues={activeFilters.marcas}
-            onChange={(id) => handleCheckboxChange('marcas', id)}
-            showSearch={true}
-          />
-        </FilterSection>
-
-        <FilterSection title="Cores" defaultOpen={true}>
-          <CheckboxFilter
-            items={filterOptions.cores.map(c => ({ id: c.id, label: c.nome }))}
-            selectedValues={activeFilters.cores}
-            onChange={(id) => handleCheckboxChange('cores', id)}
-            showSearch={true}
-          />
-        </FilterSection>
-
-        <FilterSection title="Tamanhos" defaultOpen={true}>
-          <CheckboxFilter
-            items={filterOptions.tamanhos.map(t => ({ id: t, label: t }))}
-            selectedValues={activeFilters.tamanhos}
-            onChange={(id) => handleCheckboxChange('tamanhos', id)}
-            showSearch={true}
-          />
-        </FilterSection>
-
-        <FilterSection title="Opções" defaultOpen={true}>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-gray-700">Frete Grátis</label>
-            <input
-              type="checkbox"
-              checked={activeFilters.freteGratis}
-              onChange={() => handleToggleChange('freteGratis')}
-              className="rounded border-gray-300 text-primary focus:ring-orange-500"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <label className="text-sm text-gray-700">Promoções</label>
-            <input
-              type="checkbox"
-              checked={activeFilters.promocao}
-              onChange={() => handleToggleChange('promocao')}
-              className="rounded border-gray-300 text-primary focus:ring-orange-500"
-            />
-          </div>
-        </FilterSection>
-
-        <FilterSection title="Preços" defaultOpen={true}>
+        <div className="border-b border-gray-200 py-4">
+          <h4 className="text-sm font-bold text-gray-800 uppercase mb-4">Preço</h4>
           <PriceRangeSlider
             min={0}
             max={10000}
             onChange={(min, max) => {
-              const newFilters = { ...activeFilters, minPreco: min, maxPreco: max };
-              applyFilters(newFilters);
+              applyFilters({ ...activeFilters, minPreco: min, maxPreco: max });
             }}
           />
-        </FilterSection>
+        </div>
+
+        <div className="border-b border-gray-200 py-4">
+          <h4 className="text-sm font-bold text-gray-800 uppercase mb-4">Marcas</h4>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {filterOptions.marcas.map((marca) => (
+              <label key={marca.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={activeFilters.marcas.includes(marca.id)}
+                  onChange={() => handleCheckboxChange('marcas', marca.id)}
+                  className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                />
+                {marca.nome}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-b border-gray-200 py-4">
+          <h4 className="text-sm font-bold text-gray-800 uppercase mb-4">Categorias</h4>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {filterOptions.categorias.map((categoria) => (
+              <label key={categoria.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={activeFilters.categorias.includes(categoria.id)}
+                  onChange={() => handleCheckboxChange('categorias', categoria.id)}
+                  className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                />
+                {categoria.nome}
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
     </aside>
   );
-};
-
-const FilterSection = ({ title, children, defaultOpen = true }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  return (
-    <div className="border-b border-gray-200 py-4">
-      <button
-        className="flex justify-between items-center w-full"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <h4 className="text-sm font-bold text-gray-800 uppercase">{title}</h4>
-        {isOpen ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
-      </button>
-      {isOpen && (
-        <div className="mt-4">
-          {children}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const CheckboxFilter = ({ items, selectedValues, onChange, showSearch = false }: { items: { id: any, label: string }[], selectedValues: any[], onChange: (id: any) => void, showSearch?: boolean }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const filteredItems = items.filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
-
-  return (
-    <div className="space-y-3">
-      {showSearch && (
-        <input
-          type="search"
-          placeholder="Buscar"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-        />
-      )}
-      <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
-        {filteredItems.map((item) => (
-          <label key={item.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={selectedValues.includes(item.id)}
-              onChange={() => onChange(item.id)}
-              className="rounded border-gray-300 text-primary focus:ring-orange-500"
-            />
-            {item.label}
-          </label>
-        ))}
-      </div>
-      {/* <button className="text-xs text-primary hover:text-orange-700">Ver mais</button> */}
-    </div>
-  );
-};
+}

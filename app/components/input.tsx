@@ -1,9 +1,7 @@
-// --- Input Padrão (para E-mail) ---
+
 interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> { }
 
-/**
- * Componente de input customizado com o estilo da página.
- */
+
 export default function CustomInput(props: CustomInputProps) {
   return (
     <input

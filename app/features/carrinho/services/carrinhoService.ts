@@ -6,7 +6,7 @@ import type { Pagamento, PagamentoResponse } from "~/types/Pagamento";
 export const carrinhoService = {
     listar: async (id_cliente: number) => {
         const response = await apiClient.get<any>(`/carrinho/${id_cliente}`);
-        // The backend now returns the full Produto structure in data.data.produtos
+
         const itens = response.data?.data?.produtos || [];
         return itens as Produto[];
     },

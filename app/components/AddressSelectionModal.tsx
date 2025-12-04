@@ -41,9 +41,8 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b">
                     <div className="flex items-center gap-2 text-primary">
                         <MapPin size={20} />
@@ -57,7 +56,6 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
                     </button>
                 </div>
 
-                {/* Content */}
                 <div className="p-4 max-h-[60vh] overflow-y-auto">
                     <p className="text-sm text-gray-600 mb-4">Escolha um endereço cadastrado.</p>
 
@@ -119,7 +117,6 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
                     )}
                 </div>
 
-                {/* Footer */}
                 {isAuthenticated && (
                     <div className="p-4 border-t bg-gray-50">
                         <button

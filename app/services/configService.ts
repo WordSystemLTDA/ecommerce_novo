@@ -6,7 +6,7 @@ export interface ConfigData {
     razao_social: string;
     cnpj: string;
     logo_url?: string;
-    // Add other fields as needed based on the 'empresas' table structure
+
     [key: string]: any;
 }
 

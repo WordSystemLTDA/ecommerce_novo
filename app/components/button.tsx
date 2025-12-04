@@ -1,6 +1,6 @@
-// --- Botão Customizado (Versão desta página) ---
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant: 'primary' |  'secondary' | 'primaryOutline' | 'secondaryOutline' | 'blue' | 'greenOutline' | 'grayOutline'
+    variant: 'primary' | 'secondary' | 'primaryOutline' | 'secondaryOutline' | 'blue' | 'greenOutline' | 'grayOutline'
 }
 
 export default function Button({ variant, children, ...props }: ButtonProps) {

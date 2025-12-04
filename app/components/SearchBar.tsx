@@ -13,13 +13,11 @@ export function SearchBar() {
     const navigate = useNavigate();
     const wrapperRef = useRef<HTMLDivElement>(null);
 
-    // Debounce search
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
             if (searchTerm.trim().length > 2) {
                 setIsSearching(true);
                 try {
-                    // Using simple query param as supported by backend fallback
                     const response = await produtoService.listarProdutos(`pesquisa=${searchTerm}`);
                     if (response.data) {
                         setSearchResults(response.data.produtos);
@@ -42,7 +40,6 @@ export function SearchBar() {
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm]);
 
-    // Close on click outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -80,7 +77,6 @@ export function SearchBar() {
                 <MdOutlineSearch size={24} />
             </button>
 
-            {/* Dropdown de Resultados */}
             {showResults && (
                 <div className="absolute top-full left-0 w-full bg-white rounded-b-md shadow-xl border-t border-gray-100 z-50 max-h-96 overflow-y-auto mt-1">
                     {isSearching ? (

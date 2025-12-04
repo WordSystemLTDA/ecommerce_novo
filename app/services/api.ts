@@ -11,7 +11,7 @@ const apiClient = axios.create({
     },
 });
 
-// Interceptor de resposta
+
 apiClient.interceptors.response.use(
     (response) => {
         return response;

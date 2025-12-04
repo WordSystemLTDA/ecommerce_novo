@@ -1,21 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import {
-  FaExclamationCircle,
   FaMinus,
   FaPlus,
-  FaShieldAlt,
-  FaTag,
   FaTrash
 } from 'react-icons/fa';
 
-import { IoIosArrowDown } from "react-icons/io";
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 import type { Produto } from '../produto/types';
 import { currencyFormatter } from '~/utils/formatters';
 
 
-// --- COMPONENTE: Mensagem de Tempo ---
 const TimerMessage = () => (
   <div className="bg-blue-100 border border-blue-300 text-blue-800 p-4 rounded-md flex items-center gap-3">
     <span className="shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs">!</span>
@@ -26,7 +21,6 @@ const TimerMessage = () => (
   </div>
 );
 
-// --- COMPONENTE: Seletor de Quantidade ---
 const QuantityInput = ({ quantity, onDecrease, onIncrease }: { quantity: number, onDecrease: () => void, onIncrease: () => void }) => (
   <div className="flex items-center border border-gray-300 rounded overflow-hidden h-8">
     <button onClick={onDecrease} className="px-2 text-gray-500 hover:bg-gray-100 h-full"><FaMinus size={10} /></button>
@@ -35,7 +29,6 @@ const QuantityInput = ({ quantity, onDecrease, onIncrease }: { quantity: number,
   </div>
 );
 
-// --- COMPONENTE: Item do Carrinho (Produto + Serviços) ---
 const CartItem = ({ produto }: { produto: Produto }) => {
   const [quantity, setQuantity] = useState(1);
 
@@ -46,9 +39,7 @@ const CartItem = ({ produto }: { produto: Produto }) => {
         <div className="grow">
           <h3 className="text-sm text-gray-800 font-medium mb-1">{produto.nome}</h3>
           <p className="text-xs text-gray-500">Vendido e entregue por: {produto.vendidoPor}</p>
-          {/* <p className="text-xs text-gray-500">Com desconto no PIX: <span className="text-gray-700">{currencyFormatter.format(produto.precoComDesconto)}</span></p> */}
           {produto.tamanhoSelecionado != null && <p className="text-xs text-gray-500">Tamanho: <span className="text-gray-700">{produto.tamanhoSelecionado?.tamanho}</span></p>}
-          {/* <div className="flex gap-2 mt-2"><span className="flex items-center gap-1 text-xs text-primary"><FaTag size={12} /> OFERTA NINJA</span></div> */}
         </div>
         <div className="flex md:flex-col items-end md:items-end justify-between md:justify-start gap-2">
           <QuantityInput
@@ -62,12 +53,10 @@ const CartItem = ({ produto }: { produto: Produto }) => {
           </div>
         </div>
       </div>
-      {/* <ServicesAccordion services={product.services} subtotal={product.subtotalServices} /> */}
     </div>
   );
 };
 
-// --- PÁGINA DA ETAPA 1 ---
 export default function CartPage() {
   let { produtos, removerTodosProdutos } = useCarrinho();
 

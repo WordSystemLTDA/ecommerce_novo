@@ -13,7 +13,6 @@ export default function EnderecosPage() {
   const [enderecos, setEnderecos] = useState<Endereco[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -28,7 +27,6 @@ export default function EnderecosPage() {
     try {
       setLoading(true);
       const { data } = await minhacontaService.listarEnderecos(cliente!.id);
-      // Ensure data is an array, handle potential API inconsistencies
       setEnderecos(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erro ao carregar endereços:", error);
@@ -51,7 +49,6 @@ export default function EnderecosPage() {
       await minhacontaService.excluirEndereco(addressToDelete, cliente.id);
       toast.success("Endereço excluído com sucesso!", { position: 'top-center' });
 
-      // Remove from local state to avoid full reload
       setEnderecos(enderecos.filter(e => e.id !== addressToDelete));
       setIsDeleteModalOpen(false);
     } catch (error) {

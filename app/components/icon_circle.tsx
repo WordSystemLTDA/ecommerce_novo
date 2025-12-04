@@ -1,14 +1,10 @@
 import type { IconType } from "react-icons"
 
-// --- Círculo do Ícone ---
 interface IconCircleProps {
   icon: IconType
   color: 'primary' | 'secondary' | 'red' | 'green'
 }
 
-/**
- * Círculo customizado para exibir o ícone no topo de cada coluna.
- */
 export default function IconCircle({ icon: Icon, color }: IconCircleProps) {
   const colorClasses = {
     primary: 'bg-primary',

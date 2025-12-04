@@ -69,16 +69,12 @@ export function HydrateFallback() {
 
 export default function App() {
 
-  // Este efeito roda assim que o app abre
   useEffect(() => {
-    // 1. Pegamos o elemento raiz do HTML (:root)
     const root = document.documentElement;
-
-    // 2. Injetamos as cores do config nas variáveis que criamos no CSS
     root.style.setProperty('--dynamic-primary', config.CORES.PRIMARIA);
     root.style.setProperty('--dynamic-secondary', config.CORES.SECUNDARIA);
     root.style.setProperty('--dynamic-terciary', config.CORES.TERCIARIA);
-  }, []); // O array vazio garante que roda apenas uma vez
+  }, []);
 
   return (
     <Suspense fallback={<Loader />}>

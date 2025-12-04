@@ -1,6 +1,6 @@
 import CustomInput from "./input"
 
-// --- Input de IE (NOVO - Componente específico) ---
+
 interface InputIEProps extends React.InputHTMLAttributes<HTMLInputElement> {
     isento: boolean
     onIsentoChange: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -13,7 +13,7 @@ export default function InputIE({ isento, onIsentoChange, ...props }: InputIEPro
                 {...props}
                 type="text"
                 placeholder="IE"
-                disabled={isento} // Desabilita o input se 'ISENTO' estiver marcado
+                disabled={isento}
             />
             <label className="absolute right-3 top-1/3 -translate-y-1-2 flex cursor-pointer items-center gap-2 text-sm text-gray-600">
                 <input

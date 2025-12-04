@@ -1,4 +1,4 @@
-// app/components/features/auth/services/authService.ts
+
 
 import { toast } from "react-toastify";
 import apiClient from "~/services/api";
