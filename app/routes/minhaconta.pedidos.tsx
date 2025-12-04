@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { ShoppingBag, Package, ChevronDown, ChevronUp, Clock, CheckCircle, XCircle, Truck } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import type { Route } from "./+types/home";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { minhacontaService } from "~/features/minhaconta/services/minhacontaService";
 import { Link } from "react-router";
+import { OrderCard } from "~/components/OrderCard";
+import { Pagination } from "~/components/Pagination";
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -65,39 +67,6 @@ export default function PedidosPage() {
         }
     };
 
-    const formatCurrency = (value: string | number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        }).format(Number(value));
-    };
-
-    const formatDate = (dateString: string) => {
-        if (!dateString) return "-";
-        const [year, month, day] = dateString.split('-');
-        return `${day}/${month}/${year}`;
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status?.toLowerCase()) {
-            case 'pendente': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-            case 'aprovado': return 'text-green-600 bg-green-50 border-green-200';
-            case 'cancelado': return 'text-red-600 bg-red-50 border-red-200';
-            case 'entregue': return 'text-blue-600 bg-blue-50 border-blue-200';
-            default: return 'text-gray-600 bg-gray-50 border-gray-200';
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status?.toLowerCase()) {
-            case 'pendente': return <Clock size={16} className="mr-1" />;
-            case 'aprovado': return <CheckCircle size={16} className="mr-1" />;
-            case 'cancelado': return <XCircle size={16} className="mr-1" />;
-            case 'entregue': return <Truck size={16} className="mr-1" />;
-            default: return <Package size={16} className="mr-1" />;
-        }
-    };
-
     if (loading) {
         return (
             <div className="flex justify-center items-center py-20">
@@ -128,104 +97,21 @@ export default function PedidosPage() {
 
             <div className="space-y-4">
                 {pedidos.map((pedido) => (
-                    <div key={pedido.id} className="bg-white border rounded-lg overflow-hidden transition-shadow hover:shadow-md">
-                        {/* Header do Pedido */}
-                        <div
-                            className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer bg-gray-50/50"
-                            onClick={() => toggleOrder(pedido.id)}
-                        >
-                            <div className="flex-1">
-                                <div className="flex items-center mb-2">
-                                    <span className="font-bold text-lg text-gray-800 mr-3">Pedido #{pedido.id}</span>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center ${getStatusColor(pedido.status)}`}>
-                                        {getStatusIcon(pedido.status)}
-                                        {pedido.status || 'Pendente'}
-                                    </span>
-                                </div>
-                                <div className="text-sm text-gray-500 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                    <span>Data: {formatDate(pedido.data_lanc)}</span>
-                                    <span className="hidden sm:inline">•</span>
-                                    <span>Total: <span className="font-semibold text-gray-800">{formatCurrency(pedido.valor)}</span></span>
-                                    <span className="hidden sm:inline">•</span>
-                                    <span>{pedido.itens?.length || 0} itens</span>
-                                </div>
-                            </div>
-                            <div className="mt-4 sm:mt-0 text-gray-400">
-                                {expandedOrder === pedido.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                            </div>
-                        </div>
-
-                        {/* Detalhes do Pedido (Expandido) */}
-                        {expandedOrder === pedido.id && (
-                            <div className="border-t p-4 sm:p-6 bg-white">
-                                <h4 className="font-medium text-gray-700 mb-4">Itens do Pedido</h4>
-                                <div className="space-y-4">
-                                    {pedido.itens?.map((item: any) => (
-                                        <div key={item.id} className="flex items-start py-2 border-b last:border-0">
-                                            {/* Imagem do produto (placeholder se não tiver) */}
-                                            <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center shrink-0 mr-4">
-                                                <Package size={24} className="text-gray-400" />
-                                            </div>
-
-                                            <div className="flex-1">
-                                                <h5 className="font-medium text-gray-800 line-clamp-2">
-                                                    {item.nome_do_produto || `Produto #${item.produto}`}
-                                                </h5>
-                                                <div className="text-sm text-gray-500 mt-1">
-                                                    {item.quantidade}x {formatCurrency(item.valor)}
-                                                </div>
-                                            </div>
-                                            <div className="text-right font-medium text-gray-800">
-                                                {formatCurrency(item.total)}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="mt-6 pt-4 border-t flex justify-end">
-                                    <div className="w-full sm:w-64 space-y-2">
-                                        <div className="flex justify-between text-sm text-gray-600">
-                                            <span>Subtotal</span>
-                                            <span>{formatCurrency(pedido.subtotal || pedido.valor)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm text-gray-600">
-                                            <span>Frete</span>
-                                            <span>{formatCurrency(pedido.valor_do_frete || 0)}</span>
-                                        </div>
-                                        <div className="flex justify-between font-bold text-lg text-gray-800 pt-2 border-t">
-                                            <span>Total</span>
-                                            <span>{formatCurrency(pedido.valor)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <OrderCard
+                        key={pedido.id}
+                        pedido={pedido}
+                        isExpanded={expandedOrder === pedido.id}
+                        onToggle={() => toggleOrder(pedido.id)}
+                    />
                 ))}
             </div>
 
-            {/* Paginação */}
-            {totalPages > 1 && (
-                <div className="flex justify-center mt-8 gap-2">
-                    <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="px-4 py-2 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Anterior
-                    </button>
-                    <span className="px-4 py-2 text-sm font-medium text-gray-700">
-                        Página {currentPage} de {totalPages}
-                    </span>
-                    <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="px-4 py-2 border rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Próxima
-                    </button>
-                </div>
-            )}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+            />
         </div>
     );
 }
+
