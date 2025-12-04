@@ -21,10 +21,10 @@ export default function MinhaContaLayout() {
   };
 
   const navItems = [
-    { name: "Visão Geral", path: "/minhaconta", icon: LayoutDashboard, end: true },
-    { name: "Meus Pedidos", path: "/minhaconta/pedidos", icon: ShoppingBag, end: false },
-    { name: "Meus Endereços", path: "/minhaconta/enderecos", icon: MapPin, end: false },
-    { name: "Meus Dados", path: "/minhaconta/dados", icon: User, end: false },
+    { name: "Visão Geral", path: "/minha-conta", icon: LayoutDashboard, end: true },
+    { name: "Meus Pedidos", path: "/minha-conta/pedidos", icon: ShoppingBag, end: false },
+    { name: "Meus Endereços", path: "/minha-conta/enderecos", icon: MapPin, end: false },
+    { name: "Meus Dados", path: "/minha-conta/dados", icon: User, end: false },
   ];
 
   return (

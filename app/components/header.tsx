@@ -1,83 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MdKeyboardArrowDown, MdMenu, MdOutlineFavorite, MdOutlineSearch, MdPerson, MdLocationOn, MdHeadsetMic, MdAccessibility, MdNotifications } from "react-icons/md";
 import { FaShoppingCart } from "react-icons/fa";
 import { useNavigate } from "react-router";
-import { categoriaService } from "~/features/categoria/services/categoriaService";
 import type { Categoria } from "~/features/categoria/types";
 import DepartmentMenu from "./departament";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { AddressSelectionModal } from "./AddressSelectionModal";
 import type { Endereco } from "~/features/minhaconta/types";
-import { minhacontaService } from "~/features/minhaconta/services/minhacontaService";
+import { currencyFormatter, gerarSlug } from "~/utils/formatters";
+import { produtoService } from "~/features/produto/services/produtoService";
+import type { Produto } from "~/features/produto/types";
+import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
+import { useHeader } from "~/context/HeaderContext";
 
 export default function Header() {
     let navigate = useNavigate();
     const { cliente, isAuthenticated } = useAuth();
+    const { categorias, categoriasMenu, selectedAddress, handleAddressSelect } = useHeader();
 
-    const [categorias, setCategorias] = useState<Categoria[]>([]);
-    const [categoriasMenu, setCategoriasMenu] = useState<Categoria[]>([]);
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-    const [selectedAddress, setSelectedAddress] = useState<Endereco | null>(null);
 
-    const handleAddressSelect = async (address: Endereco) => {
-        if (!cliente?.id) return;
-
-        try {
-            // Optimistic update
-            setSelectedAddress(address);
-            setIsAddressModalOpen(false);
-
-            // Update backend
-            await minhacontaService.editarEndereco(address.id, {
-                cep: address.cep,
-                logradouro: address.endereco,
-                numero: address.numero,
-                bairro: address.nome_bairro,
-                cidade: address.nome_cidade,
-                uf: address.sigla_estado,
-                id_cliente: cliente.id,
-                padrao: 'Sim',
-                complemento: address.complemento
-            });
-        } catch (error) {
-            console.error("Erro ao atualizar endereço padrão:", error);
-        }
+    const onAddressSelect = async (address: Endereco) => {
+        await handleAddressSelect(address);
+        setIsAddressModalOpen(false);
     };
-
-    useEffect(() => {
-        const loadInitialData = async () => {
-            try {
-                const { data } = await categoriaService.listarCategoriasComSubCategorias();
-                const { data: dataMenu } = await categoriaService.listarCategoriasMenu();
-                setCategorias(data ?? []);
-                setCategoriasMenu(dataMenu ?? []);
-
-                // Load default address if logged in
-                if (isAuthenticated && cliente?.id) {
-                    const response = await minhacontaService.listarEnderecos(cliente.id);
-                    if (response && Array.isArray(response.data)) {
-                        const defaultAddress = response.data.find(addr => addr.padrao === 'Sim');
-                        if (defaultAddress) {
-                            setSelectedAddress(defaultAddress);
-                        } else if (response.data.length > 0) {
-                            setSelectedAddress(response.data[0]);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Erro ao buscar categorias", error);
-            }
-        };
-
-        loadInitialData();
-    }, [isAuthenticated, cliente]);
 
     return (
         <header className="w-full bg-primary sticky top-0 z-50 flex flex-row items-center">
             {/* Logo */}
             <div className="w-55 flex items-center justify-center">
                 <img
-                    onClick={() => navigate('/')}
+                    onClick={() => {
+                        const currentParams = new URLSearchParams(window.location.search);
+                        navigate('/' + (currentParams.toString() ? '?' + currentParams.toString() : ''));
+                    }}
                     src="/logo_wordsystem.png"
                     alt="Logo"
                     className="w-32 lg:w-40 cursor-pointer object-contain"
@@ -129,13 +85,21 @@ export default function Header() {
 
                 {/* Bottom Row (Navigation) - Hidden on mobile */}
                 <div className="hidden lg:flex items-center justify-between mt-3 pt-2">
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-                        <DepartmentMenu categorias={categorias} />
-                        <ButtonMaisVendidos />
+                    <div className="flex items-center gap-2 w-full">
+                        {/* Static Left Side (Menu + Mais Vendidos) - No overflow here */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            <DepartmentMenu categorias={categorias} />
+                            <ButtonMaisVendidos />
+                        </div>
 
-                        <nav className="flex items-center gap-4 ml-2">
+                        {/* Scrollable Right Side (Categories) */}
+                        <nav className="flex items-center gap-4 ml-2 overflow-x-auto no-scrollbar flex-1">
                             {(categoriasMenu ?? []).map((categoria) => (
-                                <a key={categoria.id} href="#" className="text-white text-xs font-bold hover:underline whitespace-nowrap">{categoria.nome}</a>
+                                <a
+                                    key={categoria.id}
+                                    onClick={() => navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`)}
+                                    className="text-white text-xs font-bold hover:underline whitespace-nowrap cursor-pointer">{categoria.nome}
+                                </a>
                             ))}
 
                             {categoriasMenu.length > 10 && (
@@ -162,7 +126,7 @@ export default function Header() {
             <AddressSelectionModal
                 isOpen={isAddressModalOpen}
                 onClose={() => setIsAddressModalOpen(false)}
-                onSelectAddress={handleAddressSelect}
+                onSelectAddress={onAddressSelect}
                 selectedAddressId={selectedAddress?.id}
             />
         </header>
@@ -170,19 +134,118 @@ export default function Header() {
 }
 
 export function SearchBar() {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchResults, setSearchResults] = useState<Produto[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+    const navigate = useNavigate();
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    // Debounce search
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchTerm.trim().length > 2) {
+                setIsSearching(true);
+                try {
+                    // Using simple query param as supported by backend fallback
+                    const response = await produtoService.listarProdutos(`pesquisa=${searchTerm}`);
+                    if (response.data) {
+                        setSearchResults(response.data.produtos);
+                        setShowResults(true);
+                    } else {
+                        setSearchResults([]);
+                    }
+                } catch (error) {
+                    console.error("Erro na busca:", error);
+                    setSearchResults([]);
+                } finally {
+                    setIsSearching(false);
+                }
+            } else {
+                setSearchResults([]);
+                setShowResults(false);
+            }
+        }, 500);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
+
+    // Close on click outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setShowResults(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [wrapperRef]);
+
+    const handleProductClick = (produto: Produto) => {
+        navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
+        setShowResults(false);
+        setSearchTerm("");
+    };
+
     return (
-        <div className="flex h-10 relative w-full group">
+        <div className="flex h-10 relative w-full group" ref={wrapperRef}>
             <input
                 type="search"
                 name="busca"
                 id="busca"
                 autoComplete="off"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => {
+                    if (searchResults.length > 0) setShowResults(true);
+                }}
                 className="bg-white w-full rounded text-sm px-4 border-0 outline-none text-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary transition-shadow"
                 placeholder="Busque na Loja!"
             />
             <button className="absolute right-0 top-0 h-full px-4 bg-transparent text-primary hover:text-secondary transition-colors">
                 <MdOutlineSearch size={24} />
             </button>
+
+            {/* Dropdown de Resultados */}
+            {showResults && (
+                <div className="absolute top-full left-0 w-full bg-white rounded-b-md shadow-xl border-t border-gray-100 z-50 max-h-96 overflow-y-auto mt-1">
+                    {isSearching ? (
+                        <div className="p-4 text-center text-gray-500 text-sm">Buscando...</div>
+                    ) : searchResults.length > 0 ? (
+                        <ul>
+                            {searchResults.map((produto) => (
+                                <li
+                                    key={produto.id}
+                                    onClick={() => handleProductClick(produto)}
+                                    className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
+                                >
+                                    <div className="w-12 h-12 shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                                        {produto.imagens && produto.imagens.length > 0 ? (
+                                            <img
+                                                src={produto.imagens[0]}
+                                                alt={produto.nome}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="text-xs text-gray-400">Sem img</div>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium text-gray-800 line-clamp-1">{produto.nome}</span>
+                                        <span className="text-xs font-bold text-primary">
+                                            {currencyFormatter.format(parseFloat(produto.preco))}
+                                        </span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="p-4 text-center text-gray-500 text-sm">Nenhum produto encontrado.</div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
@@ -234,6 +297,7 @@ export function ButtonFavoritos() {
 
 export function ButtonCarrinho() {
     let navigate = useNavigate();
+    let { produtos } = useCarrinho();
 
     return (
         <div
@@ -241,6 +305,11 @@ export function ButtonCarrinho() {
             onClick={() => navigate('/carrinho')}
         >
             <FaShoppingCart size={24} />
+            {produtos.length > 0 && (
+                <span className="absolute -top-1 -right-2 inline-flex items-center justify-center px-1 py-0 text-xs font-medium text-white bg-red-500 rounded-full">
+                    {produtos.length}
+                </span>
+            )}
         </div>
     );
 }

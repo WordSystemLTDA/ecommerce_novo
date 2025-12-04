@@ -169,7 +169,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     const retornarValorProdutos = () => {
         return produtos.reduce((accumulator: number, currentItem) => {
             // Garante que o atributo 'preco' é tratado como número
-            return accumulator + Number(currentItem.atributos.preco);
+            return accumulator + Number(currentItem.preco);
         }, 0);
     }
 

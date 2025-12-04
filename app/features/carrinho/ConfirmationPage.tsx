@@ -50,18 +50,18 @@ export default function ConfirmationPage() {
         {produtos.map((produto) => {
           return (
             <div className="flex gap-4 border-b pb-4 mb-4">
-              <img src={produto.atributos.fotos.m[0]} alt={produto.atributos.nome} className="w-16 h-16 object-contain rounded" />
+              <img src={produto.fotos.m[0]} alt={produto.nome} className="w-16 h-16 object-contain rounded" />
               <div className="grow">
-                <p className="text-sm text-gray-700">{produto.atributos.nome}</p>
-                {produto.atributos.tamanhoSelecionado != null && <p className="text-xs text-gray-500">Tamanho: {produto.atributos.tamanhoSelecionado?.tamanho}</p>}
+                <p className="text-sm text-gray-700">{produto.nome}</p>
+                {produto.tamanhoSelecionado != null && <p className="text-xs text-gray-500">Tamanho: {produto.tamanhoSelecionado?.tamanho}</p>}
                 {/* <p className="text-xs text-gray-500">Com desconto no PIX: R$ 8.239,90</p> */}
                 {/* <p className="text-xs text-gray-500">Parcelado no cartão sem juros: R$ 9.222,11</p>
                 <span className="flex items-center gap-1 text-xs text-orange-500 mt-1"><FaTag size={12} /> OFERTA NINJA</span> */}
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-500">Quant: {produto.atributos.quantidade}</p>
+                <p className="text-xs text-gray-500">Quant: {produto.quantidade}</p>
                 <p className="text-sm text-gray-500">Preço à vista no PIX:</p>
-                <p className="text-lg font-bold text-orange-500">{currencyFormatter.format(produto.atributos.preco)}</p>
+                <p className="text-lg font-bold text-orange-500">{currencyFormatter.format(produto.preco)}</p>
               </div>
             </div>
           )

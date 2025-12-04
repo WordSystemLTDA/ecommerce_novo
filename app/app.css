@@ -14,7 +14,7 @@
   --color-header-light: #0E1116;
   --color-header-dark: white;
 
-  --color-primary: var(--dynamic-primary); 
+  --color-primary: var(--dynamic-primary);
   --color-secondary: var(--dynamic-secondary);
   --color-terciary: var(--dynamic-terciary);
 }
@@ -92,8 +92,8 @@ body {
 #range-slider-custom .range-slider__thumb {
   background: theme(--color-terciary);
   transition: transform 0.3s;
-  width: 16px;
-  height: 16px;
+  width: 10px;
+  height: 10px;
 }
 
 #range-slider-custom .range-slider__thumb[data-active] {
@@ -101,5 +101,5 @@ body {
 }
 
 #range-slider-custom .range-slider__range[data-active] {
-  height: 16px;
+  height: 10px;
 }

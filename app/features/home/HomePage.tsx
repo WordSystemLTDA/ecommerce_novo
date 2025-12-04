@@ -12,21 +12,19 @@ import { useEffect, useState } from 'react'; // Adicionado useRef
 
 import { FaChevronDown, FaChevronUp, FaList, FaShoppingCart, FaTh } from "react-icons/fa";
 
+import sign from 'jwt-encode';
 import { useNavigate } from "react-router";
 import Footer from "~/components/footer";
 import LazySection from "~/components/lazy_section";
+import { PriceRangeSlider } from "~/components/price_range_slider";
 import RatingStars from "~/components/rating_stars";
+import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
+import { SkeletonProductCard } from "~/components/skeleton_product_card";
 import { useProduto } from "~/features/produto/context/ProdutoContext";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
 import type { Categoria } from "../categoria/types";
 import type { Banner, Produto } from "../produto/types";
-import { SkeletonProductCard } from "~/components/skeleton_product_card";
-import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
-import { PriceRangeSlider } from "~/components/price_range_slider";
-
-const mockMarcas = [
-  'ISIPlayer', '5+', 'Acer', 'Adata', 'AERO COOL', 'AFOX', 'AINIX', 'AMD', 'AOC', 'Apple'
-];
+import { useHome } from "./context/HomeContext";
 
 const mockBanners: Banner[] = [
   {
@@ -55,7 +53,27 @@ const mockBanners: Banner[] = [
 // ===================================================================
 // 3. COMPONENTE WELCOME (HOME PAGE)
 // ===================================================================
+
 export function HomePage() {
+  const { isFiltering, filteredProducts, activeFilters, applyFilters } = useHome();
+  const navigate = useNavigate();
+
+  // State to track selected category for each section
+  const [sectionCategories, setSectionCategories] = useState<Record<string, number | null>>({});
+
+  const handleSectionCategoryClick = (sectionId: string, category: Categoria) => {
+    const catId = Number(category.id);
+    setSectionCategories(prev => {
+      const current = prev[sectionId];
+      // Toggle: if already selected, deselect (return null), otherwise select
+      return { ...prev, [sectionId]: current === catId ? null : catId };
+    });
+  };
+
+  const handleVerTodosClick = () => {
+    navigate('/categoria/1/hardware');
+  };
+
   return (
     <div>
       <Header />
@@ -66,7 +84,7 @@ export function HomePage() {
             images={mockBanners}
           />
 
-          <div className="flex mt-5 ml-10">
+          <div className="flex mt-5 ml-10 mb-10">
             <Sidebar />
 
             <main className="max-w-387 mx-auto w-full bg-background-dark">
@@ -74,17 +92,26 @@ export function HomePage() {
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">PROMOÇÕES</p>
-                <p className="text-sm">VER TODOS</p>
+                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
               </div>
 
               <LazySection>
-                <CarouselCategoria id='maisprocurados' onChange={() => { }} />
+                <CarouselCategoria
+                  id='promocoes'
+                  onChange={(cat) => handleSectionCategoryClick('promocoes', cat)}
+                  selectedCategoryId={sectionCategories['promocoes']}
+                />
               </LazySection>
 
               <section className="my-8">
                 {/* Lazy Loading aplicado nos componentes abaixo da dobra */}
                 <LazySection>
-                  <CarouselBannersSecundarios id="blackfriday" filtros="blackfriday" />
+                  <CarouselBannersSecundarios
+                    id="promocoes"
+                    filtros="blackfriday"
+                    globalFilters={activeFilters}
+                    selectedCategoryId={sectionCategories['promocoes']}
+                  />
                 </LazySection>
               </section>
 
@@ -101,36 +128,53 @@ export function HomePage() {
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">DEPARTAMENTOS</p>
-                <p className="text-sm">VER TODOS</p>
+                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
               </div>
 
               <LazySection>
-                <CarouselCategoria id='maisprocurados' onChange={() => { }} />
+                <CarouselCategoria
+                  id='maisprocurados'
+                  onChange={(cat) => handleSectionCategoryClick('maisprocurados', cat)}
+                  selectedCategoryId={sectionCategories['maisprocurados']}
+                />
               </LazySection>
 
               <section className="my-8">
                 {/* Lazy Loading aplicado nos componentes abaixo da dobra */}
                 <LazySection>
-                  <CarouselBannersSecundarios id="blackfriday" filtros="blackfriday" />
+                  <CarouselBannersSecundarios
+                    id="maisprocurados"
+                    filtros="maisprocurados"
+                    globalFilters={activeFilters}
+                    selectedCategoryId={sectionCategories['maisprocurados']}
+                  />
                 </LazySection>
               </section>
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">DEPARTAMENTOS</p>
-                <p className="text-sm">VER TODOS</p>
+                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
               </div>
 
               <LazySection>
-                <CarouselCategoriaComImagem id='maisprocurados' onChange={() => { }} />
+                <CarouselCategoriaComImagem
+                  id='maisprocurados_img'
+                  onChange={(cat) => handleSectionCategoryClick('maisprocurados_img', cat)}
+                  selectedCategoryId={sectionCategories['maisprocurados_img']}
+                />
               </LazySection>
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">MARCAS</p>
-                <p className="text-sm">VER TODOS</p>
+                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
               </div>
 
               <LazySection>
-                <CarouselMarcaComImagem id='maisprocurados' onChange={() => { }} />
+                <CarouselMarcaComImagem
+                  id='marcas'
+                  onChange={(cat) => handleSectionCategoryClick('marcas', cat)}
+                  selectedCategoryId={sectionCategories['marcas']}
+                />
               </LazySection>
 
               <div className="flex gap-10 mx-12 my-10">
@@ -144,16 +188,25 @@ export function HomePage() {
               <section className="my-8">
                 <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
                   <p className="text-xl font-bold">MAIS PROCURADOS</p>
-                  <p className="text-sm">VER TODOS</p>
+                  <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
                 </div>
 
                 <LazySection>
-                  <CarouselCategoria id='maisprocurados' onChange={() => { }} />
+                  <CarouselCategoria
+                    id='maisprocurados_bottom'
+                    onChange={(cat) => handleSectionCategoryClick('maisprocurados_bottom', cat)}
+                    selectedCategoryId={sectionCategories['maisprocurados_bottom']}
+                  />
                 </LazySection>
 
                 <section className="my-4">
                   <LazySection>
-                    <CarouselBannersSecundarios id="maisprocurados" filtros="maisprocurados" />
+                    <CarouselBannersSecundarios
+                      id="maisprocurados_bottom"
+                      filtros="maisprocurados"
+                      globalFilters={activeFilters}
+                      selectedCategoryId={sectionCategories['maisprocurados_bottom']}
+                    />
                   </LazySection>
                 </section>
               </section>
@@ -163,16 +216,25 @@ export function HomePage() {
               <section className="my-8">
                 <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
                   <p className="text-xl font-bold">ACABARAM DE CHEGAR</p>
-                  <p className="text-sm">VER TODOS</p>
+                  <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
                 </div>
 
                 <LazySection>
-                  <CarouselCategoria id="novos" onChange={() => { }} />
+                  <CarouselCategoria
+                    id="novos"
+                    onChange={(cat) => handleSectionCategoryClick('novos', cat)}
+                    selectedCategoryId={sectionCategories['novos']}
+                  />
                 </LazySection>
 
                 <section className="my-4">
                   <LazySection>
-                    <CarouselBannersSecundarios id='novos' filtros="order_by=recente" />
+                    <CarouselBannersSecundarios
+                      id='novos'
+                      filtros="order_by=recente"
+                      globalFilters={activeFilters}
+                      selectedCategoryId={sectionCategories['novos']}
+                    />
                   </LazySection>
                 </section>
               </section>
@@ -185,12 +247,21 @@ export function HomePage() {
                 </div>
 
                 <LazySection>
-                  <CarouselCategoria id="maisvendidos" onChange={() => { }} />
+                  <CarouselCategoria
+                    id="maisvendidos"
+                    onChange={(cat) => handleSectionCategoryClick('maisvendidos', cat)}
+                    selectedCategoryId={sectionCategories['maisvendidos']}
+                  />
                 </LazySection>
 
                 <section className="my-4">
                   <LazySection>
-                    <CarouselBannersSecundarios id='maisvendidos' filtros="maisvendidos" />
+                    <CarouselBannersSecundarios
+                      id='maisvendidos'
+                      filtros="maisvendidos"
+                      globalFilters={activeFilters}
+                      selectedCategoryId={sectionCategories['maisvendidos']}
+                    />
                   </LazySection>
                 </section>
               </section>
@@ -203,12 +274,10 @@ export function HomePage() {
 
       <Footer />
     </div>
-  );
+
+  )
 }
 
-// ===================================================================
-// 4. BANNER PRINCIPAL (REESCRITO COM SWIPER)
-// ===================================================================
 
 interface CarouselBannersPrincipaisProps {
   images: Banner[];
@@ -269,28 +338,26 @@ export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisP
 
 interface CategoriaCardProps {
   categoria: Categoria;
+  onClick?: (categoria: Categoria) => void;
+  isSelected?: boolean;
 }
 
-export function CategoriaCard({ categoria }: CategoriaCardProps) {
-  let navigate = useNavigate();
-
+export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardProps) {
   return (
     <div
-      className="border border-primary px-4 py-2 rounded-sm text-center w-auto cursor-pointer"
-      onClick={() => navigate('/categorias')}
+      className={`border px-4 py-2 rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
+      onClick={() => onClick && onClick(categoria)}
     >
       <p>{categoria.nome}</p>
     </div>
   );
 }
 
-export function CategoriaCardComImagem({ categoria }: CategoriaCardProps) {
-  let navigate = useNavigate();
-
+export function CategoriaCardComImagem({ categoria, onClick, isSelected }: CategoriaCardProps) {
   return (
     <div
-      className="border border-primary px-4 py-2 rounded-sm text-center w-auto cursor-pointer"
-      onClick={() => navigate('/categorias')}
+      className={`border px-4 py-2 rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
+      onClick={() => onClick && onClick(categoria)}
     >
       <img src="https://www.kabum.com.br/_next/image?url=https%3A%2F%2Fstatic.kabum.com.br%2Fconteudo%2Fcategorias%2FCOMPUTADORES_1731081639.png&w=256&q=75" />
       <p>{categoria.nome}</p>
@@ -298,13 +365,11 @@ export function CategoriaCardComImagem({ categoria }: CategoriaCardProps) {
   );
 }
 
-export function MarcaCardComImagem({ categoria }: CategoriaCardProps) {
-  let navigate = useNavigate();
-
+export function MarcaCardComImagem({ categoria, onClick, isSelected }: CategoriaCardProps) {
   return (
     <div
-      className="border border-primary px-4 py-2 rounded-sm text-center w-auto cursor-pointer"
-      onClick={() => navigate('/categorias')}
+      className={`border px-4 py-2 rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
+      onClick={() => onClick && onClick(categoria)}
     >
       <img src="https://www.kabum.com.br/_next/image?url=https%3A%2F%2Fthemes.kabum.com.br%2Fbrandpage%2F41749558360.png&w=384&q=75" />
       <p>{categoria.nome}</p>
@@ -316,111 +381,43 @@ export function MarcaCardComImagem({ categoria }: CategoriaCardProps) {
 // 5. CARD DE PRODUTO (Nenhuma mudança)
 // ===================================================================
 
-interface ProductCardProps {
-  produto: Produto;
-}
+// ... (imports)
+import { ProductCard } from "~/components/ProductCard";
 
-export function ProductCard({ produto }: ProductCardProps) {
-  let navigate = useNavigate();
-
-  return (
-    <div className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group" onClick={() => {
-      navigate(`/produto/${produto.id}/${gerarSlug(produto.atributos.nome)}`);
-    }}>
-      <div className="relative">
-        {/* {produto.estaDestacado && (
-          <span className="absolute top-2 left-2 bg-primary text-white text-medium-tiny font-bold px-2 py-1 rounded-xl">
-            MELHOR PREÇO
-          </span>
-        )} */}
-
-        <div className="absolute top-2 right-2 group-hover:opacity-0 opacity-100 transition-opacity p-1">
-          {produto.atributos.avaliacao !== undefined && (
-            <div className="flex items-center gap-0.5">
-              <RatingStars rating={produto.atributos.avaliacao} variant="tiny" />
-              <span className="text-tiny text-gray-400">({produto.atributos.avaliacao.toFixed(0)})</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex absolute top-2 right-2 group-hover:opacity-100 opacity-0 transition-opacity gap-2 p-1 z-10 cursor-auto">
-          <MdFavoriteBorder size={20} color="gray" className="cursor-pointer" />
-          <MdOutlineAddShoppingCart size={20} color="gray" className="cursor-pointer" />
-        </div>
-
-        {/* Mantive comentado conforme o original, mas adicionei loading="lazy" caso descomente */}
-        <img src={produto.atributos.fotos.m[0]} alt={produto.atributos.nome} className="w-full h-48 object-contain p-4" loading="lazy" />
-      </div>
-
-      <div className="flex-1 p-4 flex flex-col justify-between">
-        <div className="flex-1">
-          <h3 className="text-sm text-gray-600 font-bold mb-2 h-10 overflow-hidden text-ellipsis">
-            {produto.atributos.nome}
-          </h3>
-
-          <div className="flex justify-between">
-            {produto.atributos.precoAntigo && (
-              <span className="text-xs text-gray-500 line-through">
-                {currencyFormatter.format(produto.atributos.precoAntigo)}
-              </span>
-            )}
-            {produto.atributos.estoque <= 100 && (
-              <span className="text-tiny text-gray-600">
-                Restam {produto.atributos.estoque} unid.
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-xl font-bold text-primary">
-              {currencyFormatter.format(produto.atributos.preco)}
-            </span>
-            {produto.atributos.precoAntigo && (
-              <span className="text-xs font-bold text-terciary bg-green-100 px-1 py-0.5 rounded">
-                {Math.round(((produto.atributos.precoAntigo - produto.atributos.preco) / produto.atributos.precoAntigo) * 100)}% OFF
-              </span>
-            )}
-          </div>
-
-          <span className="text-xs text-gray-600 block">
-            À vista no PIX
-          </span>
-          {produto.atributos.parcelaMaxima && (
-            <span className="text-xs text-gray-600 mt-1 block">
-              ou até <span className="font-bold">{produto.atributos.parcelaMaxima}</span>
-            </span>
-          )}
-        </div>
-        <button className="mt-4 w-full bg-primary text-white font-bold text-xs py-2 rounded-sm flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer z-11">
-          <span className="flex items-center">
-            <span className="inline-block w-0 overflow-hidden opacity-0 group-hover:opacity-100 group-hover:w-5 group-hover:mr-2 transition-all">
-              <FaShoppingCart size={18} aria-hidden />
-            </span>
-            COMPRAR
-          </span>
-        </button>
-      </div>
-    </div>
-  );
-}
+// ... (rest of the file)
 
 // ===================================================================
 // 6. CARROSSEL SECUNDÁRIO (Swiper - Nenhuma mudança)
 // ===================================================================
 
-export function CarouselBannersSecundarios({ id, filtros }: { id: string, filtros: string }) {
+export function CarouselBannersSecundarios({ id, filtros, globalFilters, selectedCategoryId }: { id: string, filtros: string, globalFilters?: any, selectedCategoryId?: number | null }) {
   const prevButtonId = `${id}-produto-carousel-prev`;
   const nextButtonId = `${id}-produto-carousel-next`;
 
   let { listarProdutos, produtos } = useProduto();
   const bannerData = produtos.find((e) => e.id == id);
-  const isLoading = !bannerData;
 
   useEffect(() => {
-    if (isLoading) {
-      listarProdutos(id, filtros);
-    }
-  }, []);
+    const fetchWithFilters = async () => {
+      let finalFilters = globalFilters ? { ...globalFilters } : {};
+
+      // Apply local section filter if selected
+      if (selectedCategoryId) {
+        finalFilters = { ...finalFilters, categorias: [selectedCategoryId] };
+      }
+
+      // Generate token
+      const token = sign(finalFilters, 'secret');
+      const params = new URLSearchParams();
+      params.append('filtros', token);
+
+      await listarProdutos(id, params.toString());
+    };
+
+    fetchWithFilters();
+  }, [globalFilters, selectedCategoryId]);
+
+  const isLoading = !bannerData;
 
   if (isLoading) {
     return (
@@ -449,7 +446,7 @@ export function CarouselBannersSecundarios({ id, filtros }: { id: string, filtro
 
   if (!bannerData?.produtos || bannerData.produtos.length === 0) {
     return (
-      <div>
+      <div className="mx-12">
         <p>Não foi encontrado nenhum produto dispónivel</p>
       </div>
     );
@@ -499,14 +496,16 @@ export function CarouselBannersSecundarios({ id, filtros }: { id: string, filtro
 interface CarouselCategoriaProps {
   id: string;
   onChange: (category: Categoria) => void;
+  selectedCategoryId?: number | null;
 }
 
-export function CarouselCategoria({ id, onChange }: CarouselCategoriaProps) {
+export function CarouselCategoria({ id, onChange, selectedCategoryId }: CarouselCategoriaProps) {
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
 
   let { produtos } = useProduto();
   const bannerData = produtos.find((e) => e.id == id);
+  console.log(produtos);
   const isLoading = !bannerData;
 
   if (isLoading) {
@@ -536,7 +535,7 @@ export function CarouselCategoria({ id, onChange }: CarouselCategoriaProps) {
 
   if (!bannerData?.categorias || bannerData.categorias.length <= 0) {
     return (
-      <div>
+      <div className="mx-12">
         <p>Não foi encontrado nenhuma categoria dispónivel</p>
       </div>
     );
@@ -562,7 +561,11 @@ export function CarouselCategoria({ id, onChange }: CarouselCategoriaProps) {
       >
         {bannerData.categorias.map((categoria) => (
           <SwiperSlide key={`${id}-${categoria.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
-            <CategoriaCard categoria={categoria} />
+            <CategoriaCard
+              categoria={categoria}
+              onClick={onChange}
+              isSelected={selectedCategoryId === Number(categoria.id)}
+            />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -582,15 +585,14 @@ export function CarouselCategoria({ id, onChange }: CarouselCategoriaProps) {
   );
 };
 
-export function CarouselCategoriaComImagem({ id, onChange }: CarouselCategoriaProps) {
+export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }: CarouselCategoriaProps) {
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
 
-  let { produtos } = useProduto();
-  const bannerData = produtos.find((e) => e.id == id);
-  const isLoading = !bannerData;
+  const { filterOptions } = useHome();
+  const categorias = filterOptions.categorias;
 
-  if (isLoading) {
+  if (!categorias || categorias.length <= 0) {
     return (
       <div className="relative w-full mx-auto px-12">
         <Swiper
@@ -615,14 +617,6 @@ export function CarouselCategoriaComImagem({ id, onChange }: CarouselCategoriaPr
     );
   }
 
-  if (!bannerData?.categorias || bannerData.categorias.length <= 0) {
-    return (
-      <div>
-        <p>Não foi encontrado nenhuma categoria dispónivel</p>
-      </div>
-    );
-  }
-
   return (
     <div className="relative w-full mx-auto px-12">
       <Swiper
@@ -641,9 +635,13 @@ export function CarouselCategoriaComImagem({ id, onChange }: CarouselCategoriaPr
         }}
         className="select-none"
       >
-        {bannerData.categorias.map((categoria) => (
+        {categorias.map((categoria) => (
           <SwiperSlide key={`${id}-${categoria.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
-            <CategoriaCardComImagem categoria={categoria} />
+            <CategoriaCardComImagem
+              categoria={categoria as any} // Cast to any to avoid type mismatch with full Categoria interface
+              onClick={onChange}
+              isSelected={selectedCategoryId === Number(categoria.id)}
+            />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -663,15 +661,14 @@ export function CarouselCategoriaComImagem({ id, onChange }: CarouselCategoriaPr
   );
 };
 
-export function CarouselMarcaComImagem({ id, onChange }: CarouselCategoriaProps) {
+export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: CarouselCategoriaProps) {
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
 
-  let { produtos } = useProduto();
-  const bannerData = produtos.find((e) => e.id == id);
-  const isLoading = !bannerData;
+  const { filterOptions } = useHome();
+  const marcas = filterOptions.marcas;
 
-  if (isLoading) {
+  if (!marcas || marcas.length <= 0) {
     return (
       <div className="relative w-full mx-auto px-12">
         <Swiper
@@ -696,14 +693,6 @@ export function CarouselMarcaComImagem({ id, onChange }: CarouselCategoriaProps)
     );
   }
 
-  if (!bannerData?.categorias || bannerData.categorias.length <= 0) {
-    return (
-      <div>
-        <p>Não foi encontrado nenhuma categoria dispónivel</p>
-      </div>
-    );
-  }
-
   return (
     <div className="relative w-full mx-auto px-12">
       <Swiper
@@ -722,9 +711,13 @@ export function CarouselMarcaComImagem({ id, onChange }: CarouselCategoriaProps)
         }}
         className="select-none"
       >
-        {bannerData.categorias.map((categoria) => (
-          <SwiperSlide key={`${id}-${categoria.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
-            <MarcaCardComImagem categoria={categoria} />
+        {marcas.map((marca) => (
+          <SwiperSlide key={`${id}-${marca.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
+            <MarcaCardComImagem
+              categoria={marca as any} // Treat marca as categoria for the card
+              onClick={onChange}
+              isSelected={selectedCategoryId === Number(marca.id)}
+            />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -744,76 +737,138 @@ export function CarouselMarcaComImagem({ id, onChange }: CarouselCategoriaProps)
   );
 };
 
-const FilterToolbar = () => (
-  <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center mx-12">
-    <div className="flex items-center gap-4 mb-4 md:mb-0">
+const FilterToolbar = () => {
+  const { activeFilters, applyFilters } = useHome();
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    applyFilters({ ...activeFilters, ordenacao: e.target.value });
+  };
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center mx-12">
+      <div className="flex items-center gap-4 mb-4 md:mb-0">
+        <div className="flex items-center gap-2">
+          <label htmlFor="ordenar" className="text-sm font-medium text-gray-700">Ordenar:</label>
+          <select
+            id="ordenar"
+            value={activeFilters.ordenacao}
+            onChange={handleSortChange}
+            className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
+          >
+            <option value="mais_procurados">Mais procurados</option>
+            <option value="mais_recentes">Mais recentes</option>
+            <option value="menor_preco">Menor preço</option>
+            <option value="maior_preco">Maior preço</option>
+          </select>
+        </div>
+        <span className="text-sm text-gray-500">8259 produtos</span>
+      </div>
       <div className="flex items-center gap-2">
-        <label htmlFor="ordenar" className="text-sm font-medium text-gray-700">Ordenar:</label>
-        <select id="ordenar" className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500">
-          <option>Mais procurados</option>
-          <option>Mais recentes</option>
-          <option>Menor preço</option>
-          <option>Maior preço</option>
-        </select>
+        <button className="p-2 text-gray-600 hover:text-orange-600 bg-gray-100 rounded cursor-pointer">
+          <FaList size={16} />
+        </button>
+        <button className="p-2 text-orange-600 bg-gray-100 rounded cursor-pointer">
+          <FaTh size={16} />
+        </button>
       </div>
-
-      {/* <div className="flex items-center gap-2">
-                <label htmlFor="exibir" className="text-sm font-medium text-gray-700">Exibir:</label>
-                <select id="exibir" className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500">
-                    <option>20 por página</option>
-                    <option>40 por página</option>
-                    <option>60 por página</option>
-                </select>
-            </div> */}
-      <span className="text-sm text-gray-500">8259 produtos</span>
     </div>
-    <div className="flex items-center gap-2">
-      <button className="p-2 text-gray-600 hover:text-orange-600 bg-gray-100 rounded cursor-pointer">
-        <FaList size={16} />
-      </button>
-      <button className="p-2 text-orange-600 bg-gray-100 rounded cursor-pointer">
-        <FaTh size={16} />
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
-const Sidebar = () => (
-  <aside className="lg:col-span-1">
-    <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
-      <FilterSection title="Departamentos">
-        <CheckboxFilter items={mockMarcas} showSearch={true} />
-      </FilterSection>
+export function Sidebar() {
+  const { filterOptions, activeFilters, setActiveFilters, applyFilters } = useHome();
 
-      <FilterSection title="Marcas" defaultOpen={true}>
-        <CheckboxFilter items={mockMarcas} showSearch={true} />
-      </FilterSection>
+  const handleCheckboxChange = (type: keyof typeof activeFilters, value: any) => {
+    const currentValues = activeFilters[type] as any[];
+    let newValues;
+    if (currentValues.includes(value)) {
+      newValues = currentValues.filter((v: any) => v !== value);
+    } else {
+      newValues = [...currentValues, value];
+    }
+    const newFilters = { ...activeFilters, [type]: newValues };
+    applyFilters(newFilters);
+  };
 
-      <FilterSection title="Cores" defaultOpen={true}>
-        <CheckboxFilter items={mockMarcas} showSearch={true} />
-      </FilterSection>
+  const handleToggleChange = (type: 'freteGratis' | 'promocao') => {
+    const newFilters = { ...activeFilters, [type]: !activeFilters[type] };
+    applyFilters(newFilters);
+  };
 
-      <FilterSection title="Tamanhos" defaultOpen={true}>
-        <CheckboxFilter items={mockMarcas} showSearch={true} />
-      </FilterSection>
+  return (
+    <aside className="lg:col-span-1 w-64 min-w-[250px]">
+      <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
+        <FilterSection title="Departamentos">
+          <CheckboxFilter
+            items={filterOptions.categorias.map(c => ({ id: c.id, label: c.nome }))}
+            selectedValues={activeFilters.categorias}
+            onChange={(id) => handleCheckboxChange('categorias', id)}
+            showSearch={true}
+          />
+        </FilterSection>
 
-      <FilterSection title="" defaultOpen={true}>
-        <div>
-          Frete Grátis
-          <input type="checkbox" />
-        </div>
-        <div>
-          Promoções Ativa
-          <input type="checkbox" />
-        </div>
-      </FilterSection>
+        <FilterSection title="Marcas" defaultOpen={true}>
+          <CheckboxFilter
+            items={filterOptions.marcas.map(m => ({ id: m.id, label: m.nome }))}
+            selectedValues={activeFilters.marcas}
+            onChange={(id) => handleCheckboxChange('marcas', id)}
+            showSearch={true}
+          />
+        </FilterSection>
 
-      <FilterSection title="Preços" defaultOpen={true}>
-        <PriceRangeSlider />
-      </FilterSection>
-    </div>
-  </aside>
-);
+        <FilterSection title="Cores" defaultOpen={true}>
+          <CheckboxFilter
+            items={filterOptions.cores.map(c => ({ id: c.id, label: c.nome }))}
+            selectedValues={activeFilters.cores}
+            onChange={(id) => handleCheckboxChange('cores', id)}
+            showSearch={true}
+          />
+        </FilterSection>
+
+        <FilterSection title="Tamanhos" defaultOpen={true}>
+          <CheckboxFilter
+            items={filterOptions.tamanhos.map(t => ({ id: t, label: t }))}
+            selectedValues={activeFilters.tamanhos}
+            onChange={(id) => handleCheckboxChange('tamanhos', id)}
+            showSearch={true}
+          />
+        </FilterSection>
+
+        <FilterSection title="Opções" defaultOpen={true}>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm text-gray-700">Frete Grátis</label>
+            <input
+              type="checkbox"
+              checked={activeFilters.freteGratis}
+              onChange={() => handleToggleChange('freteGratis')}
+              className="rounded border-gray-300 text-primary focus:ring-orange-500"
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <label className="text-sm text-gray-700">Promoções</label>
+            <input
+              type="checkbox"
+              checked={activeFilters.promocao}
+              onChange={() => handleToggleChange('promocao')}
+              className="rounded border-gray-300 text-primary focus:ring-orange-500"
+            />
+          </div>
+        </FilterSection>
+
+        <FilterSection title="Preços" defaultOpen={true}>
+          <PriceRangeSlider
+            min={0}
+            max={10000}
+            onChange={(min, max) => {
+              const newFilters = { ...activeFilters, minPreco: min, maxPreco: max };
+              applyFilters(newFilters);
+            }}
+          />
+        </FilterSection>
+      </div>
+    </aside>
+  );
+};
 
 const FilterSection = ({ title, children, defaultOpen = true }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -836,27 +891,35 @@ const FilterSection = ({ title, children, defaultOpen = true }: { title: string,
   );
 };
 
-const PriceFilter = () => (
-  <PriceRangeSlider />
-);
+const CheckboxFilter = ({ items, selectedValues, onChange, showSearch = false }: { items: { id: any, label: string }[], selectedValues: any[], onChange: (id: any) => void, showSearch?: boolean }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const filteredItems = items.filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
 
-const CheckboxFilter = ({ items, showSearch = false }: { items: string[], showSearch?: boolean }) => (
-  <div className="space-y-3">
-    {showSearch && (
-      <input
-        type="search"
-        placeholder="Buscar"
-        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-      />
-    )}
-    <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
-      {items.map((item) => (
-        <label key={item} className="flex items-center gap-2 text-sm text-gray-700">
-          <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-orange-500" />
-          {item}
-        </label>
-      ))}
+  return (
+    <div className="space-y-3">
+      {showSearch && (
+        <input
+          type="search"
+          placeholder="Buscar"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+        />
+      )}
+      <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+        {filteredItems.map((item) => (
+          <label key={item.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={selectedValues.includes(item.id)}
+              onChange={() => onChange(item.id)}
+              className="rounded border-gray-300 text-primary focus:ring-orange-500"
+            />
+            {item.label}
+          </label>
+        ))}
+      </div>
+      {/* <button className="text-xs text-primary hover:text-orange-700">Ver mais</button> */}
     </div>
-    <button className="text-xs text-primary hover:text-orange-700">Ver mais</button>
-  </div>
-);
+  );
+};

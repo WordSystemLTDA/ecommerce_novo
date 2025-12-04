@@ -22,6 +22,8 @@ import swiperStyles from 'swiper/swiper-bundle.css?url';
 import appStyles from "./app.css?url";
 import { CarrinhoProvider } from "./features/carrinho/context/CarrinhoContext";
 import { ConfigProvider } from "./features/config/context/ConfigContext";
+import { HomeProvider } from "./features/home/context/HomeContext";
+import { HeaderProvider } from "./context/HeaderContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -82,12 +84,16 @@ export default function App() {
     <Suspense fallback={<Loader />}>
       <AuthProvider>
         <ConfigProvider>
-          <ProdutoProvider>
-            <CarrinhoProvider>
-              <Outlet />
-              <ToastContainer />
-            </CarrinhoProvider>
-          </ProdutoProvider>
+          <HomeProvider>
+            <ProdutoProvider>
+              <CarrinhoProvider>
+                <HeaderProvider>
+                  <Outlet />
+                  <ToastContainer />
+                </HeaderProvider>
+              </CarrinhoProvider>
+            </ProdutoProvider>
+          </HomeProvider>
         </ConfigProvider>
       </AuthProvider>
     </Suspense>

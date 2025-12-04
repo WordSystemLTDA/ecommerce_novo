@@ -26,7 +26,7 @@ import Footer from '~/components/footer'
 import RatingStars from '~/components/rating_stars'
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext'
 import { currencyFormatter, gerarSlug } from '~/utils/formatters'
-import type { Produto, ProdutoTamanho } from './types'
+import type { Produto } from './types'
 
 interface ProdutoProps {
     produto: Produto,
@@ -39,8 +39,8 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
 
     useEffect(() => {
         // Reset selected size when product changes
-        if (produto.atributos.listaTamanhos!.length > 0) {
-            setTamanhoSelecionado(produto.atributos.listaTamanhos![0]);
+        if ((produto.tamanhos ?? []).length > 0) {
+            setTamanhoSelecionado(produto.tamanhos![0]);
         } else {
             setTamanhoSelecionado(null);
         }
@@ -48,7 +48,7 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
 
     useEffect(() => {
         if (produto && produto.id) {
-            const slugCorreto = gerarSlug(produto.atributos.nome);
+            const slugCorreto = gerarSlug(produto.nome);
 
             // Se a URL atual não tem o slug ou o slug está errado
             if (slug !== slugCorreto) {
@@ -76,9 +76,9 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                         </div>
 
                         {/* Coluna 1: Galeria de Imagens (5/12) */}
-                        {produto.atributos.imagens != null &&
+                        {produto.imagens != null &&
                             <div className='lg:col-span-5'>
-                                <ProdutoGallery images={produto.atributos.imagens} />
+                                <ProdutoGallery images={produto.imagens} />
                             </div>
                         }
 
@@ -99,7 +99,7 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                                     <MdOutlineDescription className='text-terciary' size={24} />
                                     <h2 className="text-xl font-semibold">DESCRIÇÃO O PRODUTO</h2>
                                 </div>
-                                <p>{produto.atributos.descricaolonga1}<br /><br /> {produto.atributos.descricaolonga2}</p>
+                                <p>{produto.descricaolonga1}<br /><br /> {produto.descricaolonga2}</p>
                             </div>
                         </div>
 
@@ -210,13 +210,13 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                 </div>
 
                 {/* Colors */}
-                {produto.atributos.listaCores && produto.atributos.listaCores.length > 0 && (
+                {produto.cores && produto.cores.length > 0 && (
                     <div className="flex flex-col gap-2 mb-4">
                         <span className="text-sm font-semibold text-gray-700">
-                            Cor: <span className="font-normal text-gray-600">{produto.atributos.listaCores.find(c => c.id == produto.id)?.nome}</span>
+                            Cor: <span className="font-normal text-gray-600">{produto.cores.find(c => c.id == produto.id)?.nome}</span>
                         </span>
                         <div className="flex gap-2 flex-wrap">
-                            {produto.atributos.listaCores.map((cor) => (
+                            {produto.cores.map((cor) => (
                                 <a
                                     key={cor.id}
                                     onClick={() => {
@@ -241,11 +241,11 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                 )}
 
                 {/* Sizes */}
-                {produto.atributos.listaTamanhos && produto.atributos.listaTamanhos.length > 0 && (
+                {produto.tamanhos && produto.tamanhos.length > 0 && (
                     <div className="flex flex-col gap-2 mb-4">
                         <span className="text-sm font-semibold text-gray-700">Tamanhos:</span>
                         <div className="flex gap-2 flex-wrap">
-                            {produto.atributos.listaTamanhos.map((tamanho) => (
+                            {produto.tamanhos.map((tamanho) => (
                                 <div
                                     key={tamanho.id}
                                     onClick={() => {
@@ -280,8 +280,8 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
         <>
             {/* Ícone e Botões */}
             <div className="flex items-center justify-between">
-                {produto.atributos.marca != null &&
-                    <img src={produto.atributos.marca.img} className="text-gray-800" />
+                {produto.marca != null &&
+                    <img src={produto.marca.img} className="text-gray-800" />
                 }
                 <div className="flex gap-4">
                     <button className="text-gray-600 hover:text-red-600">
@@ -294,20 +294,20 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
             </div>
 
             {/* Título */}
-            <h1 className="text-2xl font-semibold leading-tight">{produto.atributos.nome}</h1>
+            <h1 className="text-2xl font-semibold leading-tight">{produto.nome}</h1>
 
             {/* Avaliações */}
             <div className="flex items-center gap-2">
-                <RatingStars rating={produto.atributos.avaliacao} variant='normal' />
+                <RatingStars rating={produto.avaliacao} variant='normal' />
                 <span className="text-sm text-gray-600">
-                    ({produto.atributos.quantidadeAvaliacoes} avaliações)
+                    ({produto.quantidadeAvaliacoes} avaliações)
                 </span>
             </div>
 
             {/* Vendido por */}
             <div className="text-sm text-gray-600">
                 Vendido e entregue por:{" "}
-                <span className="font-semibold text-terciary">{produto.atributos.vendidoPor}</span>
+                <span className="font-semibold text-terciary">{produto.vendidoPor}</span>
             </div>
         </>
     );
@@ -318,27 +318,25 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
     let { adicionarNovoProduto, verificarAdicionadoCarrinho, tamanhoSelecionado } = useCarrinho();
 
     // Calculate dynamic price
-    const precoBase = produto.atributos.preco;
+    const precoBase = parseFloat(produto.preco);
     const valorAdicional = tamanhoSelecionado ? parseFloat(tamanhoSelecionado.valorGrade) : 0;
     const precoFinal = precoBase + valorAdicional;
 
     // Create a modified product object for cart checks/addition
     const produtoComTamanho = {
         ...produto,
-        atributos: {
-            ...produto.atributos,
-            preco: precoFinal,
-            tamanhoSelecionado: tamanhoSelecionado!
-        }
+        quantidade: 1,
+        preco: precoFinal.toString(),
+        tamanhoSelecionado: tamanhoSelecionado!
     };
 
     return (
         <div className="flex flex-col gap-4 lg:sticky top-42">
             {/* Box de Preço */}
             <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                {produto.atributos.precoAntigo && (
+                {produto.precoAntigo && (
                     <span className="text-xs text-gray-500 line-through">
-                        {currencyFormatter.format(produto.atributos.precoAntigo)}
+                        {currencyFormatter.format(produto.precoAntigo)}
                     </span>
                 )}
                 <span className="text-3xl font-bold text-primary">
@@ -356,12 +354,12 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                     Ver mais opções de pagamento e parcelamento
                 </a>
 
-                {produto.atributos.estoque > 0 &&
+                {produto.estoque > 0 &&
                     <div className="my-2 text-xs font-semibold text-green-600">
                         Em estoque
                     </div>
                 }
-                {produto.atributos.estoque <= 0 &&
+                {produto.estoque <= 0 &&
                     <div className="my-2 text-xs font-semibold text-red-600">
                         Sem estoque
                     </div>

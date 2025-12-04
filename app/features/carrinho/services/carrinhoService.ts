@@ -19,11 +19,11 @@ export const carrinhoService = {
     adicionarNovoItem: async (id_cliente: number, produto: Produto) => {
         const response = await apiClient.post(`/carrinho/${produto.id}`, {
             id_cliente,
-            nome_do_produto: produto.atributos.nome,
-            valor: produto.atributos.preco,
+            nome_do_produto: produto.nome,
+            valor: produto.preco,
             quantidade: 1,
-            total: produto.atributos.preco,
-            id_grade: produto.atributos.tamanhoSelecionado?.id || 0
+            total: produto.preco,
+            id_grade: produto.tamanhoSelecionado?.id || 0
         });
         return response.data;
     },

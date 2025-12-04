@@ -251,9 +251,9 @@ export default function CheckoutLayout() {
                 cliente!,
                 produtos.map(p => ({
                     id: p.id,
-                    quantidade: p.atributos.quantidade,
+                    quantidade: p.quantidade,
                     habilTipo: p.tipo,
-                    idTamanho: (p.atributos.tamanhoSelecionado?.id ?? 0).toString(),
+                    idTamanho: (p.tamanhoSelecionado?.id ?? 0).toString(),
                 })),
                 pagamentoSelecionado!,
                 enderecoSelecionado!.id,

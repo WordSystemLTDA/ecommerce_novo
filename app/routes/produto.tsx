@@ -55,5 +55,5 @@ export default function Produto({ loaderData }: Route.ComponentProps) {
   // console.log(produto);
 
   return <ProductPage produto={produto.data} />;
-  // return <div>{produto.atributos.nome}</div>;
+  // return <div>{produto.nome}</div>;
 }

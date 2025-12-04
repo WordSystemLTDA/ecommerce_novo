@@ -42,12 +42,12 @@ const CartItem = ({ produto }: { produto: Produto }) => {
   return (
     <div className="bg-white p-4 border-b border-gray-200">
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="shrink-0"><img src={produto.atributos.fotos.m[0]} alt={produto.atributos.nome} className="w-24 h-24 object-contain rounded" /></div>
+        <div className="shrink-0"><img src={produto.fotos.m[0]} alt={produto.nome} className="w-24 h-24 object-contain rounded" /></div>
         <div className="grow">
-          <h3 className="text-sm text-gray-800 font-medium mb-1">{produto.atributos.nome}</h3>
-          <p className="text-xs text-gray-500">Vendido e entregue por: {produto.atributos.vendidoPor}</p>
-          {/* <p className="text-xs text-gray-500">Com desconto no PIX: <span className="text-gray-700">{currencyFormatter.format(produto.atributos.precoComDesconto)}</span></p> */}
-          {produto.atributos.tamanhoSelecionado != null && <p className="text-xs text-gray-500">Tamanho: <span className="text-gray-700">{produto.atributos.tamanhoSelecionado?.tamanho}</span></p>}
+          <h3 className="text-sm text-gray-800 font-medium mb-1">{produto.nome}</h3>
+          <p className="text-xs text-gray-500">Vendido e entregue por: {produto.vendidoPor}</p>
+          {/* <p className="text-xs text-gray-500">Com desconto no PIX: <span className="text-gray-700">{currencyFormatter.format(produto.precoComDesconto)}</span></p> */}
+          {produto.tamanhoSelecionado != null && <p className="text-xs text-gray-500">Tamanho: <span className="text-gray-700">{produto.tamanhoSelecionado?.tamanho}</span></p>}
           {/* <div className="flex gap-2 mt-2"><span className="flex items-center gap-1 text-xs text-primary"><FaTag size={12} /> OFERTA NINJA</span></div> */}
         </div>
         <div className="flex md:flex-col items-end md:items-end justify-between md:justify-start gap-2">
@@ -58,7 +58,7 @@ const CartItem = ({ produto }: { produto: Produto }) => {
           />
           <div className="text-right">
             <span className="text-xs text-gray-500">Preço à vista no PIX:</span>
-            <p className="text-lg font-bold text-primary">{currencyFormatter.format(produto.atributos.preco)}</p>
+            <p className="text-lg font-bold text-primary">{currencyFormatter.format(parseFloat(produto.preco))}</p>
           </div>
         </div>
       </div>

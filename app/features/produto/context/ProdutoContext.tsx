@@ -24,11 +24,25 @@ export function ProdutoProvider({ children }: { children: ReactNode }) {
             const responseCategorias = await categoriaService.listarCategorias();
 
             if (responseProdutos.sucesso) {
-                setProdutos((oldState) => [...oldState, {
-                    id: id,
-                    categorias: responseCategorias.data,
-                    produtos: responseProdutos.data.produtos as Produto[]
-                }]);
+                setProdutos((oldState) => {
+                    const index = oldState.findIndex((item) => item.id === id);
+                    const produtos = responseProdutos.data.produtos as Produto[];
+
+                    if (index !== -1) {
+                        const newState = [...oldState];
+                        newState[index] = {
+                            id: id,
+                            categorias: responseCategorias.data,
+                            produtos: produtos
+                        };
+                        return newState;
+                    }
+                    return [...oldState, {
+                        id: id,
+                        categorias: responseCategorias.data,
+                        produtos: produtos
+                    }];
+                });
             }
         } catch (error) {
             throw error;

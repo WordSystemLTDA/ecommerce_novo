@@ -21,4 +21,9 @@ export const produtoService = {
 
         return response.data;
     },
+
+    listarFiltros: async () => {
+        const { data } = await apiClient.get<any>('/produtos/filtros');
+        return data;
+    },
 };

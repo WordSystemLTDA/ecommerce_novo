@@ -3,34 +3,16 @@ import type { Categoria } from "../categoria/types";
 import type { TipoDeEntrega } from "~/types/TipoDeEntrega";
 
 export interface Produto extends DefaultResponse {
-    tipo: string,
     id: number,
     links: Links,
-    atributos: Atributos,
-}
-
-export interface ProdutosBanners {
-    id: string,
-    categorias: Categoria[],
-    produtos: Produto[],
-}
-
-export interface Links {
-    redirect?: string,
-    first?: string,
-    self: string,
-    last?: string,
-    next?: string,
-}
-
-export interface Atributos {
     menu: string,
+    categoriaId: number,
     nome: string,
     descricaolonga1: string,
     descricaolonga2: string,
     descricao: string,
     peso: number,
-    preco: number,
+    preco: string,
     quantidade: number,
     precoAntigo: number,
     descontoPorcentagem: number,
@@ -57,9 +39,23 @@ export interface Atributos {
     parcelaMaxima: string,
     linkProduto: string,
     vendidoPor: string,
-    listaCores?: ProdutoCor[],
-    listaTamanhos?: ProdutoTamanho[],
+    cores?: ProdutoCor[],
+    tamanhos?: ProdutoTamanho[],
     tamanhoSelecionado?: ProdutoTamanho,
+}
+
+export interface ProdutosBanners {
+    id: string,
+    categorias: Categoria[],
+    produtos: Produto[],
+}
+
+export interface Links {
+    redirect?: string,
+    first?: string,
+    self: string,
+    last?: string,
+    next?: string,
 }
 
 export interface ProdutoCor {

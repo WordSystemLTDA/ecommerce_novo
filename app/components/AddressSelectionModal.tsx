@@ -79,7 +79,7 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
                         <div className="text-center py-8">
                             <p className="text-gray-500 mb-4">Você não tem endereços cadastrados.</p>
                             <button
-                                onClick={() => { onClose(); navigate('/minhaconta/enderecos'); }}
+                                onClick={() => { onClose(); navigate('/minha-conta/enderecos'); }}
                                 className="bg-primary text-white px-4 py-2 rounded font-bold hover:bg-primary/90"
                             >
                                 Cadastrar Endereço
@@ -123,7 +123,7 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
                 {isAuthenticated && (
                     <div className="p-4 border-t bg-gray-50">
                         <button
-                            onClick={() => { onClose(); navigate('/minhaconta/enderecos'); }}
+                            onClick={() => { onClose(); navigate('/minha-conta/enderecos'); }}
                             className="w-full flex items-center justify-center gap-2 text-primary font-bold text-sm hover:underline"
                         >
                             <Plus size={16} />

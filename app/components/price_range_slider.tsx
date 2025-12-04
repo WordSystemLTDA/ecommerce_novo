@@ -3,22 +3,24 @@ import React, { useState } from 'react';
 import RangeSlider from 'react-range-slider-input';
 import { currencyFormatter } from '~/utils/formatters';
 
-// --- Constantes baseadas na sua imagem ---
-const MIN_PRICE = 2.87;
-const MAX_PRICE = 89093.72;
+interface PriceRangeSliderProps {
+  min?: number;
+  max?: number;
+  onChange?: (min: number, max: number) => void;
+}
 
-export function PriceRangeSlider() {
+export function PriceRangeSlider({ min = 2.87, max = 89093.72, onChange }: PriceRangeSliderProps) {
 
   // O estado 'values' guarda um array [min, max]
-  const [values, setValues] = useState<[number, number]>([MIN_PRICE, MAX_PRICE]);
+  const [values, setValues] = useState<[number, number]>([min, max]);
 
   // Handler para quando os inputs de texto mudam
   const handleMinInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let newMin = Number(event.target.value);
 
     // Validação
-    if (isNaN(newMin) || newMin < MIN_PRICE) {
-      newMin = MIN_PRICE;
+    if (isNaN(newMin) || newMin < min) {
+      newMin = min;
     }
     if (newMin >= values[1]) {
       newMin = values[1] - 1;
@@ -31,8 +33,8 @@ export function PriceRangeSlider() {
     let newMax = Number(event.target.value);
 
     // Validação
-    if (isNaN(newMax) || newMax > MAX_PRICE) {
-      newMax = MAX_PRICE;
+    if (isNaN(newMax) || newMax > max) {
+      newMax = max;
     }
     if (newMax <= values[0]) {
       newMax = values[0] + 1;
@@ -49,12 +51,15 @@ export function PriceRangeSlider() {
 
       {/* 5. O Componente Slider */}
       <RangeSlider
-        min={MIN_PRICE}
-        max={MAX_PRICE}
+        min={min}
+        max={max}
         step={0.01}
         value={values}
 
-        onInput={setValues} // 'onInput' atualiza o estado
+        onInput={(newValues: [number, number]) => {
+          setValues(newValues);
+          if (onChange) onChange(newValues[0], newValues[1]);
+        }}
 
         // Classe do container principal (para espaçamento)
         className="w-full h-4 mb-1"
@@ -71,7 +76,7 @@ export function PriceRangeSlider() {
       <div className="flex items-center gap-2">
         <input
           type="number"
-          placeholder={`Mínimo - R$ ${Math.floor(MIN_PRICE)}`}
+          placeholder={`Mínimo - R$ ${Math.floor(min)}`}
           value={values[0].toFixed(2)} // Controla o valor
           onChange={handleMinInputChange}
           className="w-full border border-gray-300 rounded-md p-2 text-sm"
@@ -81,7 +86,7 @@ export function PriceRangeSlider() {
 
         <input
           type="number"
-          placeholder={`Máximo - R$ ${Math.ceil(MAX_PRICE)}`}
+          placeholder={`Máximo - R$ ${Math.ceil(max)}`}
           value={values[1].toFixed(2)} // Controla o valor
           onChange={handleMaxInputChange}
           className="w-full border border-gray-300 rounded-md p-2 text-sm"
