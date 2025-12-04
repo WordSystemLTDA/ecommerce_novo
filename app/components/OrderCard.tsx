@@ -73,7 +73,7 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
 
                                 <div className="flex-1">
                                     <h5 className="font-medium text-gray-800 line-clamp-2">
-                                        {item.nome_do_produto || `Produto #${item.produto}`}
+                                        {item.nome_do_produto || `${item.nome} #${item.produto}`}
                                     </h5>
                                     <div className="text-sm text-gray-500 mt-1">
                                         {item.quantidade}x {currencyFormatter.format(Number(item.valor))}
