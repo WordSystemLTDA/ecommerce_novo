@@ -373,7 +373,7 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected }: Categ
         navigate('/categoria/' + categoria.id);
       }}
     >
-      <img src={categoria.imagem} className="h-33" />
+      <img src={categoria.imagem} className="h-33 w-53 object-contain" />
       <p>{categoria.nome}</p>
     </div>
   );
@@ -384,12 +384,13 @@ export function MarcaCardComImagem({ categoria, onClick, isSelected }: Categoria
 
   return (
     <div
-      className={`border px-4 py-2  rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
+      // className={`border px-4 py-2  rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
+      className="flex flex-col h-full border border-gray-200 text-center rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group"
       onClick={() => {
         navigate('/marcas/' + categoria.id);
       }}
     >
-      <img src={categoria.imagem} className="h-42" />
+      <img src={categoria.imagem} className="h-42 w-80 object-contain" />
       <p>{categoria.nome}</p>
     </div>
   );
