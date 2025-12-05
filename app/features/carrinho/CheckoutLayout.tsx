@@ -229,6 +229,24 @@ export default function CheckoutLayout() {
             return;
         }
 
+        if (tipoDeEntregaSelecionada == undefined) {
+            toast.error("Selecione um tipo de entrega", { position: 'top-center' });
+            navigate("/carrinho/entrega");
+            return;
+        }
+
+        if (enderecoSelecionado == undefined) {
+            toast.error("Selecione um endereço", { position: 'top-center' });
+            navigate("/carrinho/endereco");
+            return;
+        }
+
+        if (pagamentoSelecionado == undefined) {
+            toast.error("Selecione um pagamento", { position: 'top-center' });
+            navigate("/carrinho/pagamento");
+            return;
+        }
+
         if (nextStepIndex < stepsRoutes.length) {
             navigate(`/carrinho/${stepsRoutes[nextStepIndex]}`);
         } else {

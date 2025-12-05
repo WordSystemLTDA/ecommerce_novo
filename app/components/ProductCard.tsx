@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
-import { MdFavoriteBorder, MdOutlineAddShoppingCart } from "react-icons/md";
-import { FaShoppingCart } from "react-icons/fa";
+import { MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout } from "react-icons/md";
+import { FaShoppingCart, FaTrash } from "react-icons/fa";
+import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
 import RatingStars from "~/components/rating_stars";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
 import type { Produto } from "~/features/produto/types";
@@ -11,6 +12,18 @@ interface ProductCardProps {
 
 export function ProductCard({ produto }: ProductCardProps) {
     let navigate = useNavigate();
+    const { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
+    const estaNoCarrinho = verificarAdicionadoCarrinho(produto);
+
+    const handleComprar = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (estaNoCarrinho) {
+            navigate("/carrinho");
+        } else {
+            adicionarNovoProduto(produto);
+            navigate("/carrinho");
+        }
+    };
 
     return (
         <div className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group" onClick={() => {
@@ -28,7 +41,11 @@ export function ProductCard({ produto }: ProductCardProps) {
 
                 <div className="flex absolute top-2 right-2 group-hover:opacity-100 opacity-0 transition-opacity gap-2 p-1 z-10 cursor-auto">
                     <MdFavoriteBorder size={20} color="gray" className="cursor-pointer" />
-                    <MdOutlineAddShoppingCart size={20} color="gray" className="cursor-pointer" />
+                    {estaNoCarrinho ? (
+                        <MdShoppingCartCheckout size={20} color="green" className="cursor-pointer" onClick={handleComprar} />
+                    ) : (
+                        <MdOutlineAddShoppingCart size={20} color="gray" className="cursor-pointer" onClick={handleComprar} />
+                    )}
                 </div>
 
 
@@ -74,7 +91,7 @@ export function ProductCard({ produto }: ProductCardProps) {
                         </span>
                     )}
                 </div>
-                <button className="mt-4 w-full bg-primary text-white font-bold text-xs py-2 rounded-sm flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer z-11">
+                <button className="mt-4 w-full bg-primary text-white font-bold text-xs py-2 rounded-sm flex items-center justify-center hover:bg-secondary transition-colors cursor-pointer z-11" onClick={handleComprar}>
                     <span className="flex items-center">
                         <span className="inline-block w-0 overflow-hidden opacity-0 group-hover:opacity-100 group-hover:w-5 group-hover:mr-2 transition-all">
                             <FaShoppingCart size={18} aria-hidden />

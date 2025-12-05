@@ -506,11 +506,19 @@ interface CarouselCategoriaProps {
 export function CarouselCategoria({ id, onChange, selectedCategoryId }: CarouselCategoriaProps) {
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
+  const [navState, setNavState] = useState({ isBeginning: true, isEnd: false, isLocked: false });
 
   let { produtos } = useProduto();
   const bannerData = produtos.find((e) => e.id == id);
-  console.log(produtos);
   const isLoading = !bannerData;
+
+  const updateNavState = (swiper: any) => {
+    setNavState({
+      isBeginning: swiper.isBeginning,
+      isEnd: swiper.isEnd,
+      isLocked: swiper.isLocked,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -553,7 +561,7 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
           prevEl: `.${prevButtonId}`,
           nextEl: `.${nextButtonId}`,
         }}
-        loop={true}
+        loop={false}
         spaceBetween={16}
         slidesPerView={"auto"}
         breakpoints={{
@@ -562,6 +570,9 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
           1024: { spaceBetween: 8 }
         }}
         className="select-none"
+        onInit={updateNavState}
+        onSlideChange={updateNavState}
+        onResize={updateNavState}
       >
         {bannerData.categorias.map((categoria) => (
           <SwiperSlide key={`${id}-${categoria.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
@@ -575,12 +586,12 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
       </Swiper>
 
       <div
-        className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100 ${navState.isBeginning || navState.isLocked ? 'hidden!' : ''}`}
       >
         <SlArrowLeft color="black" size={16} />
       </div>
       <div
-        className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100 ${navState.isEnd || navState.isLocked ? 'hidden!' : ''}`}
       >
         <SlArrowRight color="black" size={16} />
       </div>
