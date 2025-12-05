@@ -20,30 +20,24 @@ import { useProduto } from "~/features/produto/context/ProdutoContext";
 import type { Categoria } from "../categoria/types";
 import type { Banner } from "../produto/types";
 import { useHome } from "./context/HomeContext";
-
-const mockBanners: Banner[] = [
-  {
-    id: 1,
-    imagemUrl: "/1762447412.webp",
-    corHex: "#f05802"
-  },
-  {
-    id: 2,
-    imagemUrl: "/1762949636.gif",
-    corHex: "#060709"
-  },
-  {
-    id: 3,
-    imagemUrl: "/1762948553.webp",
-    corHex: "#000000"
-  }
-];
+import { getBanners } from "~/services/bannerService";
 
 export function HomePage() {
-  const { isFiltering, filteredProducts, activeFilters, applyFilters } = useHome();
+  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions } = useHome();
   const navigate = useNavigate();
 
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [secondaryBanners, setSecondaryBanners] = useState<Banner[]>([]);
   const [sectionCategories, setSectionCategories] = useState<Record<string, number | null>>({});
+
+  useEffect(() => {
+    getBanners('Principal').then(setBanners);
+    getBanners('Secundario').then(setSecondaryBanners);
+  }, []);
+
+  const pos0Banners = secondaryBanners.filter(b => b.tipo_de_banner === 2);
+  const pos1Banners = secondaryBanners.filter(b => b.tipo_de_banner === 3);
+  const pos2Banners = secondaryBanners.filter(b => b.tipo_de_banner === 4);
 
   const handleSectionCategoryClick = (sectionId: string, category: Categoria) => {
     const catId = Number(category.id);
@@ -64,7 +58,7 @@ export function HomePage() {
       <main className="flex items-center justify-center pt-0 pb-0">
         <div className={`flex-1 flex flex-col items-center gap-0 min-h-0 w-full`}>
           <CarouselBannersPrincipais
-            images={mockBanners}
+            images={banners}
           />
 
           <div className="flex mt-5 ml-10 mb-10">
@@ -99,13 +93,37 @@ export function HomePage() {
 
 
               <div className="flex gap-10 mx-12">
-                <div>
-                  <img src="https://themes.kabum.com.br/banners/71764580388.jpeg" />
-                </div>
+                <Swiper
+                  modules={[EffectFade, Navigation, Autoplay]}
+                  spaceBetween={40}
+                  slidesPerView={2}
+                  loop={true}
+                  effect="fade"
+                  autoplay={{ delay: 5000 }}
+                  className="w-full"
+                >
+                  {pos0Banners.map((banner, index) => (
+                    <SwiperSlide key={index}>
+                      <img src={banner.imagemUrl} className="w-full" />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
 
-                <div>
-                  <img src="https://themes.kabum.com.br/banners/41764581461.jpeg" />
-                </div>
+                <Swiper
+                  modules={[EffectFade, Navigation, Autoplay]}
+                  spaceBetween={40}
+                  slidesPerView={2}
+                  loop={true}
+                  effect="fade"
+                  autoplay={{ delay: 5000 }}
+                  className="w-full"
+                >
+                  {pos1Banners.map((banner, index) => (
+                    <SwiperSlide key={index}>
+                      <img src={banner.imagemUrl} className="w-full" />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
               </div>
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
@@ -159,9 +177,21 @@ export function HomePage() {
               </LazySection>
 
               <div className="flex gap-10 mx-12 my-10">
-                <div>
-                  <img src="https://cdn.newtail.com.br/retail_media/ads/2025/11/28/54e18de836d78bedd5a4ea74bf6b9b8c.raw.jpeg" />
-                </div>
+                <Swiper
+                  modules={[EffectFade, Navigation, Autoplay]}
+                  spaceBetween={10}
+                  slidesPerView={1}
+                  loop={true}
+                  effect="fade"
+                  autoplay={{ delay: 5000 }}
+                  className="w-full"
+                >
+                  {pos2Banners.map((banner, index) => (
+                    <SwiperSlide key={index}>
+                      <img src={banner.imagemUrl} className="w-full" />
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
               </div>
 
               <hr className="my-2 border-gray-200" />
@@ -334,24 +364,32 @@ export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardP
 }
 
 export function CategoriaCardComImagem({ categoria, onClick, isSelected }: CategoriaCardProps) {
+  let navigate = useNavigate();
+
   return (
     <div
       className={`border px-4 py-2 rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
-      onClick={() => onClick && onClick(categoria)}
+      onClick={() => {
+        navigate('/categoria/' + categoria.id);
+      }}
     >
-      <img src="https://www.kabum.com.br/_next/image?url=https%3A%2F%2Fstatic.kabum.com.br%2Fconteudo%2Fcategorias%2FCOMPUTADORES_1731081639.png&w=256&q=75" />
+      <img src={categoria.imagem} className="h-33" />
       <p>{categoria.nome}</p>
     </div>
   );
 }
 
 export function MarcaCardComImagem({ categoria, onClick, isSelected }: CategoriaCardProps) {
+  let navigate = useNavigate();
+
   return (
     <div
-      className={`border px-4 py-2 rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
-      onClick={() => onClick && onClick(categoria)}
+      className={`border px-4 py-2  rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
+      onClick={() => {
+        navigate('/marcas/' + categoria.id);
+      }}
     >
-      <img src="https://www.kabum.com.br/_next/image?url=https%3A%2F%2Fthemes.kabum.com.br%2Fbrandpage%2F41749558360.png&w=384&q=75" />
+      <img src={categoria.imagem} className="h-42" />
       <p>{categoria.nome}</p>
     </div>
   );
@@ -798,90 +836,117 @@ export function Sidebar() {
 
         <FilterSection title="Opções" defaultOpen={true}>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-gray-700">Frete Grátis</label>
-            <input
-              type="checkbox"
+            <span className="text-sm text-gray-700">Frete Grátis</span>
+            <ToggleSwitch
               checked={activeFilters.freteGratis}
               onChange={() => handleToggleChange('freteGratis')}
-              className="rounded border-gray-300 text-primary focus:ring-orange-500"
             />
           </div>
           <div className="flex items-center justify-between">
-            <label className="text-sm text-gray-700">Promoções</label>
-            <input
-              type="checkbox"
+            <span className="text-sm text-gray-700">Promoção</span>
+            <ToggleSwitch
               checked={activeFilters.promocao}
               onChange={() => handleToggleChange('promocao')}
-              className="rounded border-gray-300 text-primary focus:ring-orange-500"
             />
           </div>
         </FilterSection>
 
-        <FilterSection title="Preços" defaultOpen={true}>
-          <PriceRangeSlider
-            min={0}
-            max={10000}
-            onChange={(min, max) => {
-              const newFilters = { ...activeFilters, minPreco: min, maxPreco: max };
-              applyFilters(newFilters);
-            }}
-          />
+        <FilterSection title="Preço" defaultOpen={true}>
+          {filterOptions.maxPrice != undefined &&
+            <PriceRangeSlider
+              min={0}
+              max={filterOptions.maxPrice || 5000}
+              minVal={activeFilters.minPreco}
+              maxVal={activeFilters.maxPreco}
+              onChange={(min, max) => applyFilters({ ...activeFilters, minPreco: min, maxPreco: max })}
+            />
+          }
         </FilterSection>
       </div>
     </aside>
   );
 };
 
-const FilterSection = ({ title, children, defaultOpen = true }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) => {
+interface FilterSectionProps {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}
+
+const FilterSection = ({ title, children, defaultOpen = false }: FilterSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-gray-200 py-4">
-      <button
-        className="flex justify-between items-center w-full"
+    <div className="border-b border-gray-200 py-4 last:border-0">
+      <div
+        className="flex items-center justify-between cursor-pointer mb-2"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h4 className="text-sm font-bold text-gray-800 uppercase">{title}</h4>
-        {isOpen ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
-      </button>
-      {isOpen && (
-        <div className="mt-4">
-          {children}
-        </div>
-      )}
+        <h3 className="font-medium text-gray-900">{title}</h3>
+        {isOpen ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+      </div>
+      {isOpen && <div className="mt-2">{children}</div>}
     </div>
   );
 };
 
-const CheckboxFilter = ({ items, selectedValues, onChange, showSearch = false }: { items: { id: any, label: string }[], selectedValues: any[], onChange: (id: any) => void, showSearch?: boolean }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const filteredItems = items.filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
+interface CheckboxFilterProps {
+  items: { id: number | string; label: string }[];
+  selectedValues: (number | string)[];
+  onChange: (id: number | string) => void;
+  showSearch?: boolean;
+}
+
+const CheckboxFilter = ({ items, selectedValues, onChange, showSearch }: CheckboxFilterProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredItems = items.filter(item =>
+    item.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
       {showSearch && (
         <input
-          type="search"
-          placeholder="Buscar"
+          type="text"
+          placeholder="Buscar..."
+          className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2 focus:outline-none focus:border-orange-500"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
         />
       )}
-      <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
-        {filteredItems.map((item) => (
-          <label key={item.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={selectedValues.includes(item.id)}
-              onChange={() => onChange(item.id)}
-              className="rounded border-gray-300 text-primary focus:ring-orange-500"
-            />
-            {item.label}
-          </label>
-        ))}
-      </div>
-      {/* <button className="text-xs text-primary hover:text-orange-700">Ver mais</button> */}
+      {filteredItems.map((item) => (
+        <label key={item.id} className="flex items-center gap-2 cursor-pointer group">
+          <div className={`w-4 h-4 border rounded flex items-center justify-center ${selectedValues.includes(item.id) ? 'bg-orange-600 border-orange-600' : 'border-gray-300 group-hover:border-orange-500'}`}>
+            {selectedValues.includes(item.id) && <div className="w-2 h-2 bg-white rounded-sm" />}
+          </div>
+          <span className="text-sm text-gray-600 group-hover:text-gray-900">{item.label}</span>
+          <input
+            type="checkbox"
+            className="hidden"
+            checked={selectedValues.includes(item.id)}
+            onChange={() => onChange(item.id)}
+          />
+        </label>
+      ))}
+    </div>
+  );
+};
+
+interface ToggleSwitchProps {
+  checked: boolean;
+  onChange: () => void;
+}
+
+const ToggleSwitch = ({ checked, onChange }: ToggleSwitchProps) => {
+  return (
+    <div
+      className={`w-10 h-5 rounded-full cursor-pointer relative transition-colors ${checked ? 'bg-orange-600' : 'bg-gray-300'}`}
+      onClick={onChange}
+    >
+      <div
+        className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${checked ? 'left-5.5' : 'left-0.5'}`}
+      />
     </div>
   );
 };

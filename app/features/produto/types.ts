@@ -137,6 +137,7 @@ export interface Banner {
     id: number | string;
     imagemUrl: string;
     corHex: string;
+    tipo_de_banner?: number;
 }
 
 export interface ProdutoResponse extends DefaultResponse {

@@ -23,6 +23,7 @@ export interface FilterOptions {
     categorias: { id: number; nome: string }[];
     cores: { id: number; nome: string }[];
     tamanhos: string[];
+    maxPrice?: number;
 }
 
 export interface ActiveFilters {

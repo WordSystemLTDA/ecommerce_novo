@@ -1,6 +1,8 @@
 const config = {
+    // API: 'http://127.0.0.1/sistema/apis_restaurantes/api_e_commerce/api1',
     API: 'https://eadsagestart.com.br/sistema/apis_restaurantes/api_e_commerce/api1',
     EMPRESAS: [
+        // '32', // TESTE
         '166', // TESTE
         // '3', // PRIETO KOUROS
     ],

@@ -1,41 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RangeSlider from 'react-range-slider-input';
 import { currencyFormatter } from '~/utils/formatters';
 
 interface PriceRangeSliderProps {
   min?: number;
   max?: number;
+  minVal?: number;
+  maxVal?: number;
   onChange?: (min: number, max: number) => void;
 }
 
-export function PriceRangeSlider({ min = 2.87, max = 89093.72, onChange }: PriceRangeSliderProps) {
+export function PriceRangeSlider({ min = 2.87, max = 89093.72, minVal, maxVal, onChange }: PriceRangeSliderProps) {
 
-  const [values, setValues] = useState<[number, number]>([min, max]);
+  const [values, setValues] = useState<[number, number]>([minVal ?? min, maxVal ?? max]);
+
+  useEffect(() => {
+    if (minVal !== undefined && maxVal !== undefined) {
+      setValues([minVal, maxVal]);
+    }
+  }, [minVal, maxVal]);
 
   const handleMinInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let newMin = Number(event.target.value);
-
-    if (isNaN(newMin) || newMin < min) {
-      newMin = min;
-    }
-    if (newMin >= values[1]) {
-      newMin = values[1] - 1;
-    }
-
-    setValues([newMin, values[1]]);
+    // Allow typing, validation happens on commit
+    const newValues: [number, number] = [newMin, values[1]];
+    setValues(newValues);
   };
 
   const handleMaxInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let newMax = Number(event.target.value);
+    // Allow typing, validation happens on commit
+    const newValues: [number, number] = [values[0], newMax];
+    setValues(newValues);
+  };
 
-    if (isNaN(newMax) || newMax > max) {
-      newMax = max;
-    }
-    if (newMax <= values[0]) {
-      newMax = values[0] + 1;
+  const commitChanges = () => {
+    let [newMin, newMax] = values;
+
+    // Validation logic
+    if (isNaN(newMin) || newMin < min) newMin = min;
+    if (isNaN(newMax) || newMax > max) newMax = max;
+
+    // Ensure min <= max
+    if (newMin > newMax) {
+      // If they crossed, swap or clamp? 
+      // Usually clamp min to max or max to min.
+      // Let's just ensure they are valid bounds.
+      // If user typed min > max, maybe swap?
+      // Simple approach: clamp min to max-1 or similar if strictly enforced, 
+      // but here we just want to ensure valid range.
+      // Let's just pass what we have if valid numbers, 
+      // but the slider might behave weirdly if min > max.
+      // Let's enforce min <= max.
+      if (newMin > newMax) newMin = newMax;
     }
 
-    setValues([values[0], newMax]);
+    // Update state with validated values
+    setValues([newMin, newMax]);
+
+    // Notify parent
+    if (onChange) onChange(newMin, newMax);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      commitChanges();
+    }
   };
 
   return (
@@ -51,7 +81,10 @@ export function PriceRangeSlider({ min = 2.87, max = 89093.72, onChange }: Price
 
         onInput={(newValues: [number, number]) => {
           setValues(newValues);
-          if (onChange) onChange(newValues[0], newValues[1]);
+        }}
+
+        onThumbDragEnd={() => {
+          if (onChange) onChange(values[0], values[1]);
         }}
 
         className="w-full h-4 mb-1"
@@ -67,8 +100,10 @@ export function PriceRangeSlider({ min = 2.87, max = 89093.72, onChange }: Price
         <input
           type="number"
           placeholder={`Mínimo - R$ ${Math.floor(min)}`}
-          value={values[0].toFixed(2)}
+          value={values[0]}
           onChange={handleMinInputChange}
+          onBlur={commitChanges}
+          onKeyDown={handleKeyDown}
           className="w-full border border-gray-300 rounded-md p-2 text-sm"
         />
 
@@ -77,8 +112,10 @@ export function PriceRangeSlider({ min = 2.87, max = 89093.72, onChange }: Price
         <input
           type="number"
           placeholder={`Máximo - R$ ${Math.ceil(max)}`}
-          value={values[1].toFixed(2)}
+          value={values[1]}
           onChange={handleMaxInputChange}
+          onBlur={commitChanges}
+          onKeyDown={handleKeyDown}
           className="w-full border border-gray-300 rounded-md p-2 text-sm"
         />
       </div>
