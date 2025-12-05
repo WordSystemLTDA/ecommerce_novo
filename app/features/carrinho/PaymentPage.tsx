@@ -25,10 +25,10 @@ export default function PaymentPage() {
             <div className="space-y-3">
               {pagamentos.map((pagamento) => {
                 return (
-                  <label className={`block border rounded-md p-4 cursor-pointer ${pagamento?.id === pagamentoSelecionado?.id ? 'border-orange-500 ring-2 ring-orange-500' : 'border-gray-300'}`}>
+                  <label className={`block border rounded-md p-4 cursor-pointer ${pagamento?.id === pagamentoSelecionado?.id ? 'border-primary ring-2 ring-primary' : 'border-gray-300'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <input type="radio" name="payment" value="pix" checked={pagamento?.id === pagamentoSelecionado?.id} onChange={() => setPagamentoSelecionado(pagamento)} className="w-4 h-4 accent-orange-500" />
+                        <input type="radio" name="payment" value="pix" checked={pagamento?.id === pagamentoSelecionado?.id} onChange={() => setPagamentoSelecionado(pagamento)} className="w-4 h-4 accent-primary" />
                         <div className="ml-3 text-sm">
                           <span className="font-bold">PIX</span>
                         </div>
@@ -43,7 +43,7 @@ export default function PaymentPage() {
                 )
               })}
               {tipoDeEntregaSelecionada?.id == 0 && (
-                <label className={`block border rounded-md p-4 cursor-pointer ${0 === pagamentoSelecionado?.id ? 'border-orange-500 ring-2 ring-orange-500' : 'border-gray-300'}`}>
+                <label className={`block border rounded-md p-4 cursor-pointer ${0 === pagamentoSelecionado?.id ? 'border-primary ring-2 ring-primary' : 'border-gray-300'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <input
@@ -57,7 +57,7 @@ export default function PaymentPage() {
                           nome_banco: '',
                           pix_dinamico: '',
                         })}
-                        className="w-4 h-4 accent-orange-500"
+                        className="w-4 h-4 accent-primary"
                       />
                       <div className="ml-3 text-sm">
                         <span className="font-bold">Pagar depois</span>

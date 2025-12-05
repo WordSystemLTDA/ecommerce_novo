@@ -53,7 +53,7 @@ body {
 }
 
 .main-banner-carousel .swiper-pagination-bullet-active {
-  background-color: #FF6600;
+  background-color: var(--dynamic-primary);
   opacity: 1;
 }
 

@@ -753,7 +753,7 @@ const FilterToolbar = () => {
             id="ordenar"
             value={activeFilters.ordenacao}
             onChange={handleSortChange}
-            className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="mais_procurados">Mais procurados</option>
             <option value="mais_recentes">Mais recentes</option>
@@ -764,10 +764,10 @@ const FilterToolbar = () => {
         <span className="text-sm text-gray-500">8259 produtos</span>
       </div>
       <div className="flex items-center gap-2">
-        <button className="p-2 text-gray-600 hover:text-orange-600 bg-gray-100 rounded cursor-pointer">
+        <button className="p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
           <FaList size={16} />
         </button>
-        <button className="p-2 text-orange-600 bg-gray-100 rounded cursor-pointer">
+        <button className="p-2 text-terciary bg-gray-100 rounded cursor-pointer">
           <FaTh size={16} />
         </button>
       </div>
@@ -910,14 +910,14 @@ const CheckboxFilter = ({ items, selectedValues, onChange, showSearch }: Checkbo
         <input
           type="text"
           placeholder="Buscar..."
-          className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2 focus:outline-none focus:border-orange-500"
+          className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2 focus:outline-none focus:border-primary"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       )}
       {filteredItems.map((item) => (
         <label key={item.id} className="flex items-center gap-2 cursor-pointer group">
-          <div className={`w-4 h-4 border rounded flex items-center justify-center ${selectedValues.includes(item.id) ? 'bg-orange-600 border-orange-600' : 'border-gray-300 group-hover:border-orange-500'}`}>
+          <div className={`w-4 h-4 border rounded flex items-center justify-center ${selectedValues.includes(item.id) ? 'bg-terciary border-terciary' : 'border-gray-300 group-hover:border-primary'}`}>
             {selectedValues.includes(item.id) && <div className="w-2 h-2 bg-white rounded-sm" />}
           </div>
           <span className="text-sm text-gray-600 group-hover:text-gray-900">{item.label}</span>
@@ -941,7 +941,7 @@ interface ToggleSwitchProps {
 const ToggleSwitch = ({ checked, onChange }: ToggleSwitchProps) => {
   return (
     <div
-      className={`w-10 h-5 rounded-full cursor-pointer relative transition-colors ${checked ? 'bg-orange-600' : 'bg-gray-300'}`}
+      className={`w-10 h-5 rounded-full cursor-pointer relative transition-colors ${checked ? 'bg-terciary' : 'bg-gray-300'}`}
       onClick={onChange}
     >
       <div

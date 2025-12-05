@@ -67,7 +67,7 @@ const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao
                 <label htmlFor="ordenar" className="text-sm font-medium text-gray-700">Ordenar:</label>
                 <select
                     id="ordenar"
-                    className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                     onChange={(e) => onSortChange(e.target.value)}
                     value={ordenacao}
                 >
@@ -82,7 +82,7 @@ const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao
                 <label htmlFor="exibir" className="text-sm font-medium text-gray-700">Exibir:</label>
                 <select
                     id="exibir"
-                    className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                     onChange={(e) => onPerPageChange(Number(e.target.value.split(' ')[0]))}
                 >
                     <option>20 por página</option>
@@ -93,10 +93,10 @@ const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao
             <span className="text-sm text-gray-500">{totalProdutos} produtos</span>
         </div>
         <div className="flex items-center gap-2">
-            <button className="p-2 text-gray-600 hover:text-orange-600 bg-gray-100 rounded cursor-pointer">
+            <button className="p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
                 <FaList size={16} />
             </button>
-            <button className="p-2 text-orange-600 bg-gray-100 rounded cursor-pointer">
+            <button className="p-2 text-terciary bg-gray-100 rounded cursor-pointer">
                 <FaTh size={16} />
             </button>
         </div>
@@ -146,7 +146,7 @@ const CheckboxFilter = ({ items, selectedValues, onChange, showSearch = false }:
                             type="checkbox"
                             checked={selectedValues.includes(item.id)}
                             onChange={() => onChange(item.id)}
-                            className="rounded border-gray-300 text-primary focus:ring-orange-500"
+                            className="rounded border-gray-300 text-primary focus:ring-primary"
                         />
                         {item.label}
                     </label>
@@ -260,7 +260,7 @@ const Pagination = ({ pagination, onPageChange }: { pagination: Paginacao, onPag
                 <button
                     key={p}
                     onClick={() => onPageChange(p)}
-                    className={`px-3 py-1 rounded ${p === pagina ? 'bg-orange-600 text-white' : 'hover:bg-gray-200'}`}
+                    className={`px-3 py-1 rounded ${p === pagina ? 'bg-terciary text-white' : 'hover:bg-gray-200'}`}
                 >
                     {p}
                 </button>

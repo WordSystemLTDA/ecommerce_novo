@@ -59,14 +59,14 @@ export default function DeliveryPage() {
               {tipoDeEntregas.filter((t) => t.error == null).map((tipoDeEntrega) => (
                 (
                   <label
-                    className="block border border-orange-500 ring-2 ring-orange-500 rounded-md p-4 cursor-pointer"
+                    className="block border border-primary ring-2 ring-primary rounded-md p-4 cursor-pointer"
                     onClick={() => {
                       setTipoDeEntregaSelecionada(tipoDeEntrega);
                     }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <input type="radio" name="delivery" checked={tipoDeEntregaSelecionada?.id == tipoDeEntrega.id} className="w-4 h-4 accent-orange-500" />
+                        <input type="radio" name="delivery" checked={tipoDeEntregaSelecionada?.id == tipoDeEntrega.id} className="w-4 h-4 accent-primary" />
                         <div className="ml-3 text-sm">
                           <div className='flex flex-row items-center gap-2'>
 
@@ -87,7 +87,7 @@ export default function DeliveryPage() {
               ))}
 
               <label
-                className="block border border-orange-500 ring-2 ring-orange-500 rounded-md p-4 cursor-pointer"
+                className="block border border-primary ring-2 ring-primary rounded-md p-4 cursor-pointer"
                 onClick={() => {
                   setTipoDeEntregaSelecionada({
                     id: 0,
@@ -104,7 +104,7 @@ export default function DeliveryPage() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <input type="radio" name="delivery" checked={tipoDeEntregaSelecionada?.id == 0} className="w-4 h-4 accent-orange-500" />
+                    <input type="radio" name="delivery" checked={tipoDeEntregaSelecionada?.id == 0} className="w-4 h-4 accent-primary" />
                     <div className="ml-3 text-sm">
                       <div className='flex flex-row items-center gap-2'>
 

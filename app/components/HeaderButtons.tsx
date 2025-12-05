@@ -72,7 +72,7 @@ export function ButtonCarrinho() {
 
 export function ButtonMaisVendidos() {
     return (
-        <div className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 rounded text-xs font-bold cursor-pointer transition-colors whitespace-nowrap">
+        <div className="bg-primary hover:bg-terciary text-white px-4 py-1.5 rounded text-xs font-bold cursor-pointer transition-colors whitespace-nowrap">
             Mais Vendidos
         </div>
     );

@@ -39,8 +39,8 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                 <div
                   className={`
                     w-10 h-10 rounded-full flex items-center justify-center border-2 
-                    ${isActive ? 'border-orange-500 bg-orange-500 text-white' : ''}
-                    ${isCompleted ? 'border-orange-500 bg-white text-orange-500' : ''}
+                    ${isActive ? 'border-primary bg-primary text-white' : ''}
+                    ${isCompleted ? 'border-primary bg-white text-primary' : ''}
                     ${!isActive && !isCompleted ? 'border-gray-300 text-gray-400' : ''}
                   `}
                 >
@@ -49,14 +49,14 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                 <span
                   className={`
                     mt-2 text-xs font-medium 
-                    ${(isActive || isCompleted) ? 'text-orange-500' : 'text-gray-400'}
+                    ${(isActive || isCompleted) ? 'text-primary' : 'text-gray-400'}
                   `}
                 >
                   {step.name}
                 </span>
               </div>
               {index < steps.length - 1 && (
-                <div className={`flex-auto h-0.5 mx-2 ${(isCompleted || isActive) ? 'bg-orange-500' : 'bg-gray-300'}`}></div>
+                <div className={`flex-auto h-0.5 mx-2 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
               )}
             </React.Fragment>
           );
@@ -85,7 +85,7 @@ const Step6_Success = () => {
           </div>
 
           <button
-            className="mt-4 w-64 bg-orange-500 text-white font-bold py-3 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+            className="mt-4 w-64 bg-primary text-white font-bold py-3 rounded-md hover:bg-terciary transition-colors flex items-center justify-center gap-2"
             onClick={() => {
               navigator.clipboard.writeText('asdoskaodksakodsaoidoi1j23u12932199asdasijdjadojsadoijasdoi1oi23joi12j3i21o3i21io')
             }}
@@ -113,9 +113,9 @@ const Step6_Success = () => {
 
           <h3 className="font-bold text-lg text-gray-800 mb-3">Como pagar seu Pix</h3>
           <div className="space-y-3 text-sm text-gray-700">
-            <p className="flex items-center gap-2"><FaQrcode className="text-xl text-orange-500" /> Utilize o aplicativo do seu banco copiando o código PIX ou escaneando o QR-Code.</p>
-            <p className="flex items-center gap-2"><FaCheckCircle className="text-sm text-orange-500" /> Confirme os dados de pagamento e o valor do seu pedido.</p>
-            <p className="flex items-center gap-2"><FaCheckCircle className="text-xl text-orange-500" /> Seu pagamento será processado e debitado do valor disponível em sua conta-corrente.</p>
+            <p className="flex items-center gap-2"><FaQrcode className="text-xl text-primary" /> Utilize o aplicativo do seu banco copiando o código PIX ou escaneando o QR-Code.</p>
+            <p className="flex items-center gap-2"><FaCheckCircle className="text-sm text-primary" /> Confirme os dados de pagamento e o valor do seu pedido.</p>
+            <p className="flex items-center gap-2"><FaCheckCircle className="text-xl text-primary" /> Seu pagamento será processado e debitado do valor disponível em sua conta-corrente.</p>
           </div>
         </div>
       </div>

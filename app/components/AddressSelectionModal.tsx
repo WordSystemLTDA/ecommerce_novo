@@ -92,14 +92,14 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
                                     className={`
                                         border rounded-lg p-3 cursor-pointer transition-all hover:shadow-md
                                         ${selectedAddressId === endereco.id
-                                            ? 'border-orange-500 ring-1 ring-orange-500 bg-orange-50'
-                                            : 'border-gray-200 hover:border-orange-300'
+                                            ? 'border-primary ring-1 ring-primary bg-black-50'
+                                            : 'border-gray-200 hover:border-primary'
                                         }
                                     `}
                                 >
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className={`font-bold text-sm ${selectedAddressId === endereco.id ? 'text-orange-600' : 'text-gray-800'}`}>
+                                            <h3 className={`font-bold text-sm ${selectedAddressId === endereco.id ? 'text-terciary' : 'text-gray-800'}`}>
                                                 {endereco.padrao === 'S' ? 'Padrão' : 'Endereço'}
                                             </h3>
                                             <p className="text-sm text-gray-600 mt-1">

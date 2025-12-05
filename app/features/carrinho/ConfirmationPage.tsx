@@ -54,7 +54,7 @@ export default function ConfirmationPage() {
               <div className="text-right">
                 <p className="text-xs text-gray-500">Quant: {produto.quantidade}</p>
                 <p className="text-sm text-gray-500">Preço à vista no PIX:</p>
-                <p className="text-lg font-bold text-orange-500">{currencyFormatter.format(parseFloat(produto.preco))}</p>
+                <p className="text-lg font-bold text-primary">{currencyFormatter.format(parseFloat(produto.preco))}</p>
               </div>
             </div>
           )
