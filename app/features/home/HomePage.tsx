@@ -61,13 +61,13 @@ export function HomePage() {
             images={banners}
           />
 
-          <div className="flex mt-5 ml-10 mb-10">
+          <div className="flex flex-col lg:flex-row mt-4 lg:mt-5 mx-0 lg:ml-10 mb-10 w-full">
             <Sidebar />
 
-            <main className="max-w-387 mx-auto w-full bg-background-dark">
+            <main className="flex-1 w-full bg-background-dark min-w-0">
               <FilterToolbar />
 
-              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
+              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">PROMOÇÕES</p>
                 <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
               </div>
@@ -92,7 +92,7 @@ export function HomePage() {
               </section>
 
 
-              <div className="flex gap-10 mx-12">
+              <div className="flex flex-col md:flex-row gap-4 lg:gap-10 mx-4 lg:mx-12">
                 <Swiper
                   modules={[EffectFade, Navigation, Autoplay]}
                   spaceBetween={40}
@@ -126,7 +126,7 @@ export function HomePage() {
                 </Swiper>
               </div>
 
-              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
+              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">DEPARTAMENTOS</p>
                 <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
               </div>
@@ -150,7 +150,7 @@ export function HomePage() {
                 </LazySection>
               </section>
 
-              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
+              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">DEPARTAMENTOS</p>
                 <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
               </div>
@@ -163,7 +163,7 @@ export function HomePage() {
                 />
               </LazySection>
 
-              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2 mt-4">
+              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">MARCAS</p>
                 <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
               </div>
@@ -176,7 +176,7 @@ export function HomePage() {
                 />
               </LazySection>
 
-              <div className="flex gap-10 mx-12 my-10">
+              <div className="flex gap-4 lg:gap-10 mx-4 lg:mx-12 my-10">
                 <Swiper
                   modules={[EffectFade, Navigation, Autoplay]}
                   spaceBetween={10}
@@ -197,7 +197,7 @@ export function HomePage() {
               <hr className="my-2 border-gray-200" />
 
               <section className="my-8">
-                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
+                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
                   <p className="text-xl font-bold">MAIS PROCURADOS</p>
                   <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
                 </div>
@@ -225,7 +225,7 @@ export function HomePage() {
               <hr className="my-2 border-gray-200" />
 
               <section className="my-8">
-                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
+                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
                   <p className="text-xl font-bold">ACABARAM DE CHEGAR</p>
                   <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
                 </div>
@@ -253,7 +253,7 @@ export function HomePage() {
               <hr className="my-2 border-gray-200" />
 
               <section className="my-8">
-                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-12 mb-2">
+                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
                   <p className="text-xl font-bold">MAIS VENDIDOS</p>
                 </div>
 
@@ -426,7 +426,7 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
 
   if (isLoading) {
     return (
-      <div className="relative w-full mx-auto px-12">
+      <div className="relative w-full mx-auto px-4 lg:px-12">
         <Swiper
           modules={[Navigation]}
           loop={false}
@@ -451,14 +451,14 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
 
   if (!bannerData?.produtos || bannerData.produtos.length === 0) {
     return (
-      <div className="mx-12">
+      <div className="mx-4 lg:mx-12">
         <p>Não foi encontrado nenhum produto dispónivel</p>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full mx-auto px-12">
+    <div className="relative w-full mx-auto px-4 lg:px-12">
       <Swiper
         modules={[Navigation]}
         navigation={{
@@ -522,7 +522,7 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
 
   if (isLoading) {
     return (
-      <div className="relative w-full mx-auto px-12">
+      <div className="relative w-full mx-auto px-4 lg:px-12">
         <Swiper
           modules={[Navigation]}
           loop={false}
@@ -547,14 +547,14 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
 
   if (!bannerData?.categorias || bannerData.categorias.length <= 0) {
     return (
-      <div className="mx-12">
+      <div className="mx-4 lg:mx-12">
         <p>Não foi encontrado nenhuma categoria dispónivel</p>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full mx-auto px-12">
+    <div className="relative w-full mx-auto px-4 lg:px-12">
       <Swiper
         modules={[Navigation]}
         navigation={{
@@ -608,7 +608,7 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }:
 
   if (!categorias || categorias.length <= 0) {
     return (
-      <div className="relative w-full mx-auto px-12">
+      <div className="relative w-full mx-auto px-4 lg:px-12">
         <Swiper
           modules={[Navigation]}
           loop={false}
@@ -632,7 +632,7 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }:
   }
 
   return (
-    <div className="relative w-full mx-auto px-12">
+    <div className="relative w-full mx-auto px-4 lg:px-12">
       <Swiper
         modules={[Navigation]}
         navigation={{
@@ -683,7 +683,7 @@ export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: Car
 
   if (!marcas || marcas.length <= 0) {
     return (
-      <div className="relative w-full mx-auto px-12">
+      <div className="relative w-full mx-auto px-4 lg:px-12">
         <Swiper
           modules={[Navigation]}
           loop={false}
@@ -707,7 +707,7 @@ export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: Car
   }
 
   return (
-    <div className="relative w-full mx-auto px-12">
+    <div className="relative w-full mx-auto px-4 lg:px-12">
       <Swiper
         modules={[Navigation]}
         navigation={{
@@ -757,7 +757,7 @@ const FilterToolbar = () => {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center mx-12">
+    <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center mx-4 lg:mx-12">
       <div className="flex items-center gap-4 mb-4 md:mb-0">
         <div className="flex items-center gap-2">
           <label htmlFor="ordenar" className="text-sm font-medium text-gray-700">Ordenar:</label>
@@ -808,7 +808,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="lg:col-span-1 w-64 min-w-[250px]">
+    <aside className="lg:col-span-1 w-full lg:w-64 min-w-[250px]">
       <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
         <FilterSection title="Departamentos">
           <CheckboxFilter
