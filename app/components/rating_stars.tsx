@@ -17,7 +17,7 @@ export default function RatingStars({ variant, rating }: RatingStarsProps) {
     const emptyStars = 5 - fullStars - halfStar
 
     return (
-        <div className={`flex text-primary ${variant == 'normal' ? '' : 'text-tiny'}`}>
+        <div className={`flex text-blue-500 ${variant == 'normal' ? '' : 'text-tiny'}`}>
             {Array(fullStars)
                 .fill(0)
                 .map((_, i) => (

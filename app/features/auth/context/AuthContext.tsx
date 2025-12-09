@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (response.sucesso) {
                 setCliente(response.data.cliente);
-                toast.success('Bem-vindo de volta!', { position: 'top-center' });
+                // toast.success('Bem-vindo de volta!', { position: 'top-center' });
             }
         } catch (error) {
             toast.error('Erro ao fazer login', { position: 'top-center' });

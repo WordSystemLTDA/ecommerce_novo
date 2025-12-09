@@ -185,10 +185,10 @@ export default function NovoEnderecoPage() {
 
         if (isEditing) {
           await minhacontaService.editarEndereco(Number(id), payload);
-          toast.success('Endereço atualizado com sucesso!', { position: 'top-center' });
+          // toast.success('Endereço atualizado com sucesso!', { position: 'top-center' });
         } else {
           await minhacontaService.cadastrarEndereco(payload);
-          toast.success('Endereço cadastrado com sucesso!', { position: 'top-center' });
+          // toast.success('Endereço cadastrado com sucesso!', { position: 'top-center' });
         }
 
         navigate('/minha-conta/enderecos');

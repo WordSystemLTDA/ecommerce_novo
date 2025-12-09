@@ -29,6 +29,7 @@ interface CarrinhoContextType {
 
     adicionarNovoProduto: (produto: Produto) => Promise<boolean>;
     removerTodosProdutos: () => Promise<void>;
+    removerProduto: (produto: Produto) => Promise<void>;
     resetarCarrinho: () => Promise<void>;
     listarTipoDeEntregas: (cepDestino: string) => Promise<void>;
     listarEnderecos: () => Promise<void>;
@@ -218,7 +219,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
                 } else {
                     setProdutos((oldState) => oldState.filter((value) => value.id !== produto.id));
                 }
-                toast.info("Produto removido do carrinho.", { position: 'top-center' });
+                // toast.info("Produto removido do carrinho.", { position: 'top-center' });
                 return true;
             } else {
                 if (cliente?.id) {
@@ -228,7 +229,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
                 } else {
                     setProdutos((oldState) => [...oldState, produto]);
                 }
-                toast.success("Produto adicionado ao carrinho!", { position: 'top-center' });
+                // toast.success("Produto adicionado ao carrinho!", { position: 'top-center' });
                 return true;
             }
         } catch (error) {
@@ -249,6 +250,20 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             }
         } catch (error) {
             console.error("Erro ao remover todos os produtos:", error);
+        }
+    }
+
+    const removerProduto = async (produto: Produto) => {
+        try {
+            setProdutos((oldState) => oldState.filter((value) => value.id !== produto.id));
+
+            if (cliente?.id) {
+                await carrinhoService.removerItem(cliente.id, produto.id);
+            } else {
+                localStorage.removeItem('carrinho_guest');
+            }
+        } catch (error) {
+            console.error("Erro ao remover produto:", error);
         }
     }
 
@@ -296,6 +311,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
 
             adicionarNovoProduto,
             removerTodosProdutos,
+            removerProduto,
             listarTipoDeEntregas,
             listarEnderecos,
             listarPagamentos,

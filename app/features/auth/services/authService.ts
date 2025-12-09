@@ -21,7 +21,7 @@ export const authService = {
         const { data } = await apiClient.post<EntrarResponse>('/auth/entrar', credentials);
 
         if (data.sucesso) {
-            toast.success(data.mensagem, { position: 'top-center' });
+            // toast.success(data.mensagem, { position: 'top-center' });
             window.location.href = "/";
         }
 

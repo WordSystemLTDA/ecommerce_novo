@@ -20,10 +20,10 @@ import rangeSliderStyles from 'react-range-slider-input/dist/style.css?url';
 import toastStyles from "react-toastify/dist/ReactToastify.css?url";
 import swiperStyles from 'swiper/swiper-bundle.css?url';
 import appStyles from "./app.css?url";
+import { HeaderProvider } from "./context/HeaderContext";
 import { CarrinhoProvider } from "./features/carrinho/context/CarrinhoContext";
 import { ConfigProvider } from "./features/config/context/ConfigContext";
 import { HomeProvider } from "./features/home/context/HomeContext";
-import { HeaderProvider } from "./context/HeaderContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -50,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html lang="pt-br">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
         <Meta />
         <Links />
       </head>

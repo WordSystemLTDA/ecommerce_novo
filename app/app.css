@@ -17,6 +17,8 @@
   --color-primary: var(--dynamic-primary);
   --color-secondary: var(--dynamic-secondary);
   --color-terciary: var(--dynamic-terciary);
+
+  --color-pix: #008531;
 }
 
 @layer utilities {
@@ -108,4 +110,13 @@ video {
 
 #range-slider-custom .range-slider__range[data-active] {
   height: 10px;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+
+  select,
+  textarea,
+  input {
+    font-size: 16px;
+  }
 }

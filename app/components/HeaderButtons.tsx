@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { MdPerson, MdOutlineFavorite, MdKeyboardArrowDown } from "react-icons/md";
+import { MdPerson, MdOutlineFavorite, MdKeyboardArrowDown, MdOutlineSearch } from "react-icons/md";
 import { FaShoppingCart } from "react-icons/fa";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
 import type { Categoria } from "~/features/categoria/types";
+import { GoPerson, GoPersonAdd } from "react-icons/go";
+import { BsPersonFill, BsPersonFillCheck } from "react-icons/bs";
 
 export function ButtonEntreOuCadastrese() {
     let navigate = useNavigate();
@@ -12,7 +14,7 @@ export function ButtonEntreOuCadastrese() {
 
     return (
         <div
-            className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity max-lg:hidden"
             onClick={() => {
                 if (isAuthenticated) {
                     navigate('/minha-conta');
@@ -51,6 +53,47 @@ export function ButtonFavoritos() {
     );
 }
 
+interface ButtonBuscarProps {
+    aoClicar: () => void;
+}
+
+export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
+    return (
+        <div
+            className="cursor-pointer hover:text-gray-200 transition-colors relative"
+            onClick={aoClicar}
+        >
+            <MdOutlineSearch size={24} />
+        </div>
+    );
+}
+
+
+export function ButtonConta() {
+    let navigate = useNavigate();
+    let { isAuthenticated } = useAuth();
+
+    return (
+        <div
+            className="cursor-pointer hover:text-gray-200 transition-colors relative"
+            onClick={() => {
+                if (isAuthenticated) {
+                    navigate('/minha-conta');
+                } else {
+                    navigate('/entrar');
+                }
+            }}
+        >
+            {isAuthenticated ?
+                <BsPersonFillCheck size={24} />
+                :
+                <BsPersonFill size={24} />
+            }
+
+        </div>
+    );
+}
+
 export function ButtonCarrinho() {
     let navigate = useNavigate();
     let { produtos } = useCarrinho();
@@ -60,7 +103,9 @@ export function ButtonCarrinho() {
             className="cursor-pointer hover:text-gray-200 transition-colors relative"
             onClick={() => navigate('/carrinho')}
         >
-            <FaShoppingCart size={24} />
+            <FaShoppingCart size={20} className="max-lg:hidden" />
+            <FaShoppingCart size={18} className="hidden max-lg:block" />
+
             {produtos.length > 0 && (
                 <span className="absolute -top-1 -right-2 inline-flex items-center justify-center px-1 py-0 text-xs font-medium text-white bg-red-500 rounded-full">
                     {produtos.length}

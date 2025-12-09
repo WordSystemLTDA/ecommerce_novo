@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { FaList, FaTh } from "react-icons/fa";
 
 import sign from 'jwt-encode';
+import { IoFilter } from "react-icons/io5"; // Importing filter icon
 import { useNavigate } from "react-router";
 import Footer from "~/components/footer";
 import LazySection from "~/components/lazy_section";
@@ -16,13 +17,12 @@ import { ProductCard } from "~/components/ProductCard";
 import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
 import { SkeletonProductCard } from "~/components/skeleton_product_card";
 import { useProduto } from "~/features/produto/context/ProdutoContext";
+import { getBanners } from "~/services/bannerService";
 import type { Categoria } from "../categoria/types";
 import type { Banner } from "../produto/types";
-import { useHome } from "./context/HomeContext";
-import { getBanners } from "~/services/bannerService";
 import { FilterContent } from "./components/FilterContent";
 import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
-import { IoFilter } from "react-icons/io5"; // Importing filter icon
+import { useHome } from "./context/HomeContext";
 
 export function HomePage() {
   const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions } = useHome();
@@ -71,8 +71,8 @@ export function HomePage() {
               <FilterToolbar onOpenMobileFilter={() => setIsMobileFilterOpen(true)} />
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-                <p className="text-xl font-bold">PROMOÇÕES</p>
-                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
+                <p className="text-lg max-lg:text-base font-semibold">Promoção</p>
+                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
               </div>
 
               <LazySection>
@@ -83,7 +83,7 @@ export function HomePage() {
                 />
               </LazySection>
 
-              <section className="my-8">
+              <section className="my-4">
                 <LazySection>
                   <CarouselBannersSecundarios
                     id="promocoes"
@@ -130,8 +130,8 @@ export function HomePage() {
               </div>
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-                <p className="text-xl font-bold">DEPARTAMENTOS</p>
-                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
+                <p className="text-lg max-lg:text-base font-semibold">Departamentos</p>
+                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
               </div>
 
               <LazySection>
@@ -142,7 +142,7 @@ export function HomePage() {
                 />
               </LazySection>
 
-              <section className="my-8">
+              <section className="my-4">
                 <LazySection>
                   <CarouselBannersSecundarios
                     id="maisprocurados"
@@ -154,8 +154,8 @@ export function HomePage() {
               </section>
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-                <p className="text-xl font-bold">DEPARTAMENTOS</p>
-                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
+                <p className="text-lg max-lg:text-base font-semibold">Departamentos</p>
+                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
               </div>
 
               <LazySection>
@@ -167,8 +167,8 @@ export function HomePage() {
               </LazySection>
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-                <p className="text-xl font-bold">MARCAS</p>
-                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
+                <p className="text-lg max-lg:text-base font-semibold">Marcas</p>
+                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
               </div>
 
               <LazySection>
@@ -197,12 +197,12 @@ export function HomePage() {
                 </Swiper>
               </div>
 
-              <hr className="my-2 border-gray-200" />
+              <hr className="my-2 max-lg:my-0 border-gray-200" />
 
-              <section className="my-8">
+              <section className="my-4">
                 <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
-                  <p className="text-xl font-bold">MAIS PROCURADOS</p>
-                  <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
+                  <p className="text-lg max-lg:text-base font-semibold">Mais procurados</p>
+                  <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
                 </div>
 
                 <LazySection>
@@ -225,12 +225,12 @@ export function HomePage() {
                 </section>
               </section>
 
-              <hr className="my-2 border-gray-200" />
+              <hr className="my-2 max-lg:my-0 border-gray-200" />
 
-              <section className="my-8">
+              <section className="my-4">
                 <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
-                  <p className="text-xl font-bold">ACABARAM DE CHEGAR</p>
-                  <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>VER TODOS</p>
+                  <p className="text-lg max-lg:text-base font-semibold">Acabaram de chegar</p>
+                  <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
                 </div>
 
                 <LazySection>
@@ -253,11 +253,11 @@ export function HomePage() {
                 </section>
               </section>
 
-              <hr className="my-2 border-gray-200" />
+              <hr className="my-2 max-lg:my-0 border-gray-200" />
 
-              <section className="my-8">
+              <section className="my-4">
                 <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
-                  <p className="text-xl font-bold">MAIS VENDIDOS</p>
+                  <p className="text-lg max-lg:text-base font-semibold">Mais vendidos</p>
                 </div>
 
                 <LazySection>
@@ -333,7 +333,7 @@ export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisP
           <SwiperSlide key={index}>
             <img
               src={image.imagemUrl}
-              className="w-full object-cover h-[200px] md:h-[300px] lg:h-[450px]"
+              className="w-full object-cover min-h-[200px] h-[200px] md:h-[300px] lg:h-[450px]"
               loading={index === 0 ? "eager" : "lazy"}
               decoding="async"
               alt={`Banner principal ${index + 1}`}
@@ -368,7 +368,7 @@ export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardP
       className={`border px-4 py-2 rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
       onClick={() => onClick && onClick(categoria)}
     >
-      <p>{categoria.nome}</p>
+      <p className="max-lg:text-sm lg:text-sm">{categoria.nome}</p>
     </div>
   );
 }
@@ -383,7 +383,7 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected }: Categ
         navigate('/categoria/' + categoria.id);
       }}
     >
-      <img src={categoria.imagem} className="h-33 w-53 object-contain" />
+      <img src={categoria.imagem} className="max-h-33 min-w-53 max-w-53 object-contain" />
       <p>{categoria.nome}</p>
     </div>
   );
@@ -400,7 +400,7 @@ export function MarcaCardComImagem({ categoria, onClick, isSelected }: Categoria
         navigate('/marcas/' + categoria.id);
       }}
     >
-      <img src={categoria.imagem} className="h-42 w-80 object-contain" />
+      <img src={categoria.imagem} className="max-h-42 min-w-80 max-w-80 object-contain" />
       <p>{categoria.nome}</p>
     </div>
   );
@@ -437,24 +437,34 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
   if (isLoading) {
     return (
       <div className="relative w-full mx-auto px-4 lg:px-12">
-        <Swiper
-          modules={[Navigation]}
-          loop={false}
-          spaceBetween={16}
-          slidesPerView={5}
-          breakpoints={{
-            320: { slidesPerView: 2, spaceBetween: 10 },
-            768: { slidesPerView: 3, spaceBetween: 10 },
-            1024: { slidesPerView: 5, spaceBetween: 8 }
-          }}
-          className="select-none"
-        >
-          {Array.from({ length: 5 }).map((_, index) => (
-            <SwiperSlide key={index} style={{ height: 'auto' }}>
-              <SkeletonProductCard />
-            </SwiperSlide>
+        {/* Mobile Grid Skeleton */}
+        <div className="grid grid-cols-2 gap-4 lg:hidden">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <SkeletonProductCard key={index} />
           ))}
-        </Swiper>
+        </div>
+
+        {/* Desktop Swiper Skeleton */}
+        <div className="hidden lg:block">
+          <Swiper
+            modules={[Navigation]}
+            loop={false}
+            spaceBetween={16}
+            slidesPerView={5}
+            breakpoints={{
+              320: { slidesPerView: 2, spaceBetween: 10 },
+              768: { slidesPerView: 3, spaceBetween: 10 },
+              1024: { slidesPerView: 5, spaceBetween: 8 }
+            }}
+            className="select-none"
+          >
+            {Array.from({ length: 5 }).map((_, index) => (
+              <SwiperSlide key={index} style={{ height: 'auto' }}>
+                <SkeletonProductCard />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
       </div>
     );
   }
@@ -468,39 +478,49 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
   }
 
   return (
-    <div className="relative w-full mx-auto px-4 lg:px-12">
-      <Swiper
-        modules={[Navigation]}
-        navigation={{
-          prevEl: `.${prevButtonId}`,
-          nextEl: `.${nextButtonId}`,
-        }}
-        loop={true}
-        spaceBetween={16}
-        slidesPerView={5}
-        breakpoints={{
-          320: { slidesPerView: 2, spaceBetween: 10 },
-          768: { slidesPerView: 3, spaceBetween: 10 },
-          1024: { slidesPerView: 5, spaceBetween: 8 }
-        }}
-        className="select-none"
-      >
+    <div className="relative w-full mx-auto px-2 lg:px-12">
+      {/* Mobile Grid */}
+      <div className="grid grid-cols-2 gap-0.5 lg:hidden">
         {bannerData.produtos.map((produto) => (
-          <SwiperSlide key={produto.id} style={{ height: 'auto' }}>
-            <ProductCard produto={produto} />
-          </SwiperSlide>
+          <ProductCard key={produto.id} produto={produto} />
         ))}
-      </Swiper>
-
-      <div
-        className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
-      >
-        <SlArrowLeft color="black" size={16} />
       </div>
-      <div
-        className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
-      >
-        <SlArrowRight color="black" size={16} />
+
+      {/* Desktop Swiper */}
+      <div className="hidden lg:block">
+        <Swiper
+          modules={[Navigation]}
+          navigation={{
+            prevEl: `.${prevButtonId}`,
+            nextEl: `.${nextButtonId}`,
+          }}
+          loop={true}
+          spaceBetween={16}
+          slidesPerView={5}
+          breakpoints={{
+            320: { slidesPerView: 2, spaceBetween: 10 },
+            768: { slidesPerView: 3, spaceBetween: 10 },
+            1024: { slidesPerView: 5, spaceBetween: 8 }
+          }}
+          className="select-none"
+        >
+          {bannerData.produtos.map((produto) => (
+            <SwiperSlide key={produto.id} style={{ height: 'auto' }}>
+              <ProductCard produto={produto} />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+
+        <div
+          className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        >
+          <SlArrowLeft color="black" size={16} />
+        </div>
+        <div
+          className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        >
+          <SlArrowRight color="black" size={16} />
+        </div>
       </div>
     </div>
   );
@@ -572,7 +592,7 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
           nextEl: `.${nextButtonId}`,
         }}
         loop={false}
-        spaceBetween={16}
+        spaceBetween={6}
         slidesPerView={"auto"}
         breakpoints={{
           320: { spaceBetween: 10 },
@@ -596,12 +616,12 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
       </Swiper>
 
       <div
-        className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100 ${navState.isBeginning || navState.isLocked ? 'hidden!' : ''}`}
+        className={`max-lg:hidden ${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100 ${navState.isBeginning || navState.isLocked ? 'hidden!' : ''}`}
       >
         <SlArrowLeft color="black" size={16} />
       </div>
       <div
-        className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100 ${navState.isEnd || navState.isLocked ? 'hidden!' : ''}`}
+        className={`max-lg:hidden ${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100 ${navState.isEnd || navState.isLocked ? 'hidden!' : ''}`}
       >
         <SlArrowRight color="black" size={16} />
       </div>
@@ -671,12 +691,12 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }:
       </Swiper>
 
       <div
-        className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`max-lg:hidden ${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
         <SlArrowLeft color="black" size={16} />
       </div>
       <div
-        className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`max-lg:hidden ${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
         <SlArrowRight color="black" size={16} />
       </div>
@@ -746,12 +766,12 @@ export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: Car
       </Swiper>
 
       <div
-        className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`max-lg:hidden ${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
         <SlArrowLeft color="black" size={16} />
       </div>
       <div
-        className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`max-lg:hidden ${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
         <SlArrowRight color="black" size={16} />
       </div>
@@ -767,15 +787,15 @@ const FilterToolbar = ({ onOpenMobileFilter }: { onOpenMobileFilter: () => void 
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center mx-4 lg:mx-12">
-      <div className="flex items-center gap-4 mb-4 md:mb-0">
+    <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-row justify-between items-center mx-4 lg:mx-12">
+      <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <label htmlFor="ordenar" className="text-sm font-medium text-gray-700">Ordenar:</label>
+          <label htmlFor="ordenar" className="text-sm font-medium text-gray-700 hidden md:block">Ordenar:</label>
           <select
             id="ordenar"
             value={activeFilters.ordenacao}
             onChange={handleSortChange}
-            className="appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+            className="lg:appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm max-lg:text-xs focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="mais_procurados">Mais procurados</option>
             <option value="mais_recentes">Mais recentes</option>
@@ -783,8 +803,9 @@ const FilterToolbar = ({ onOpenMobileFilter }: { onOpenMobileFilter: () => void 
             <option value="maior_preco">Maior preço</option>
           </select>
         </div>
-        <span className="text-sm text-gray-500">8259 produtos</span>
+        <span className="text-sm text-gray-500 hidden md:block">8259 produtos</span>
       </div>
+
       <div className="flex items-center gap-2">
         <button
           className="lg:hidden p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer flex items-center gap-2"
@@ -796,7 +817,7 @@ const FilterToolbar = ({ onOpenMobileFilter }: { onOpenMobileFilter: () => void 
         <button className="hidden lg:block p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
           <FaList size={16} />
         </button>
-        <button className="p-2 text-terciary bg-gray-100 rounded cursor-pointer">
+        <button className="hidden lg:block p-2 text-terciary bg-gray-100 rounded cursor-pointer">
           <FaTh size={16} />
         </button>
       </div>

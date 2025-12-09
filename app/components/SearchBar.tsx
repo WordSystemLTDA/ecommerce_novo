@@ -4,8 +4,9 @@ import { MdOutlineSearch } from "react-icons/md";
 import type { Produto } from "~/features/produto/types";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
 import { produtoService } from "~/features/produto/services/produtoService";
+import { IoMdClose } from "react-icons/io";
 
-export function SearchBar() {
+export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | null> }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [searchResults, setSearchResults] = useState<Produto[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -66,6 +67,7 @@ export function SearchBar() {
                 id="busca"
                 autoComplete="off"
                 value={searchTerm}
+                ref={ref}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onFocus={() => {
                     if (searchResults.length > 0) setShowResults(true);
@@ -74,8 +76,10 @@ export function SearchBar() {
                 placeholder="Busque na Loja!"
             />
             <button className="absolute right-0 top-0 h-full px-4 bg-transparent text-primary hover:text-secondary transition-colors">
-                <MdOutlineSearch size={24} />
+                <MdOutlineSearch size={24} className="max-lg:hidden" />
+                <IoMdClose size={24} className="hidden max-lg:block" />
             </button>
+
 
             {showResults && (
                 <div className="absolute top-full left-0 w-full bg-white rounded-b-md shadow-xl border-t border-gray-100 z-50 max-h-96 overflow-y-auto mt-1">

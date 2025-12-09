@@ -47,7 +47,7 @@ export default function EnderecosPage() {
     try {
       setIsDeleting(true);
       await minhacontaService.excluirEndereco(addressToDelete, cliente.id);
-      toast.success("Endereço excluído com sucesso!", { position: 'top-center' });
+      // toast.success("Endereço excluído com sucesso!", { position: 'top-center' });
 
       setEnderecos(enderecos.filter(e => e.id !== addressToDelete));
       setIsDeleteModalOpen(false);

@@ -3,7 +3,7 @@ import type { Swiper as SwiperInstance } from 'swiper'
 
 import Header from '~/components/header'
 
-import { FreeMode, Navigation, Thumbs } from 'swiper/modules'
+import { FreeMode, Navigation, Pagination, Thumbs } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
 
 import {
@@ -12,7 +12,8 @@ import {
 
 import {
     IoHeartOutline,
-    IoShareOutline
+    IoShareOutline,
+    IoShareSocialOutline
 } from 'react-icons/io5'
 
 import { AiFillInfoCircle } from "react-icons/ai"
@@ -59,11 +60,14 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
             <Header />
 
             <div className="flex flex-col items-center bg-white text-gray-900 pb-8">
-                <div className="w-full px-10 py-0">
-                    <Breadcrumb />
+                <div className="w-full px-4 lg:px-10 py-0">
+                    <div className='lg:hidden flex justify-between items-center pt-5 pb-2'>
+                        <Breadcrumb />
+                        <Avalicoes produto={produto} />
+                    </div>
 
-                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 relative">
-                        <div className='lg:hidden flex flex-col gap-4'>
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 relative lg:pt-5">
+                        <div className='lg:hidden flex flex-col gap-2'>
                             <ProdutoNameInfo produto={produto} />
                         </div>
 
@@ -79,11 +83,11 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                             />
                         </div>
 
-                        <div className="flex flex-col max-w-full relative lg:col-span-9 lg:col-start-1 lg:row-start-2">
+                        <div className="flex flex-col max-w-full relative lg:col-span-9 lg:col-start-1 lg:row-start-2 max-lg:hidden">
                             <div className='mt-8'>
-                                <div className='flex gap-2 items-center'>
+                                <div className='flex gap-2 items-center '>
                                     <MdOutlineDescription className='text-terciary' size={24} />
-                                    <h2 className="text-xl font-semibold">DESCRIÇÃO O PRODUTO</h2>
+                                    <h2 className="text-xl font-semibold">DESCRIÇÃO DO PRODUTO</h2>
                                 </div>
                                 <p>{produto.descricaolonga1}<br /><br /> {produto.descricaolonga2}</p>
                             </div>
@@ -91,6 +95,21 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
 
                         <div className="lg:col-span-3 lg:col-start-10 lg:row-start-1 lg:row-span-2">
                             <PurchaseSidebar produto={produto} />
+                        </div>
+                    </div>
+
+                    <div className='flex flex-row gap-2 items-center text-terciary mt-6 lg:hidden'>
+                        <AiFillInfoCircle />
+                        <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
+                    </div>
+
+                    <div className="flex flex-col max-w-full relative max-lg:block lg:hidden">
+                        <div className='mt-6'>
+                            <div className='flex gap-2 items-center '>
+                                <MdOutlineDescription className='text-terciary' size={24} />
+                                <h2 className="text-xl font-semibold">DESCRIÇÃO DO PRODUTO</h2>
+                            </div>
+                            <p>{produto.descricaolonga1}<br /><br /> {produto.descricaolonga2}</p>
                         </div>
                     </div>
                 </div>
@@ -101,40 +120,81 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
     )
 }
 
+interface AvalicoesProps {
+    produto: Produto,
+}
+
+function Avalicoes({ produto }: AvalicoesProps) {
+    return (
+        <div className="flex items-center gap-1">
+            <span className="text-tiny text-gray-600">
+                {produto.avaliacao ?? 0}
+            </span>
+            <RatingStars rating={produto.avaliacao} variant='tiny' />
+            <span className="text-tiny text-gray-600">
+                ({produto.quantidadeAvaliacoes ?? 0})
+            </span>
+        </div>
+    )
+}
+
 interface ProdutoGalleryProps {
     images: string[]
 }
+
 
 function ProdutoGallery({ images }: ProdutoGalleryProps) {
     const [thumbsSwiper, setThumbsSwiper] =
         useState<SwiperInstance | null>(null)
 
+    const [currentSlide, setCurrentSlide] = useState(0)
+
     return (
-        <div className="flex flex-col gap-4 max-w-full">
-            <div className="overflow-hidden rounded-lg border border-gray-200">
+        <div className="flex flex-col gap-2 max-w-full relative">
+
+            <div className="overflow-hidden rounded-lg lg:border lg:border-gray-400 relative">
+                <div className="flex items-center gap-2 absolute left-2 lg:left-4 top-3 bg-white z-30 px-0 rounded-sm text-xs font-semibold">
+                    <span>{currentSlide + 1} / {images.length}</span>
+                </div>
+
+                <div className="flex items-center gap-2 absolute right-2 lg:right-4 top-3 bg-white z-30 px-0 rounded-sm text-xs font-semibold">
+                    <button className="text-gray-600 hover:text-red-600">
+                        <IoHeartOutline size={22} />
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-2 absolute right-2 lg:right-4 bottom-3 bg-white z-30 px-0 rounded-sm text-xs font-semibold">
+                    <button className="text-gray-600 hover:text-red-600">
+                        <IoShareSocialOutline size={22} />
+                    </button>
+                </div>
+
                 <Swiper
                     modules={[FreeMode, Navigation, Thumbs]}
                     spaceBetween={10}
-                    navigation={true}
+                    navigation={false}
                     thumbs={{
                         swiper:
                             thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
                     }}
-                    className="h-96 w-full"
+                    onSlideChange={(swiper) => {
+                        setCurrentSlide(swiper.realIndex)
+                    }}
+                    className="lg:max-h-130! max-lg:min-h-96! lg:w-full!"
                 >
                     {images.map((img, index) => (
-                        <SwiperSlide key={index}>
+                        <SwiperSlide key={index} className='lg:h-130! max-lg:min-h-96!'>
                             <img
                                 src={img}
                                 alt={`Imagem ${index + 1} do produto`}
-                                className="h-full w-full object-contain"
+                                className="lg:h-130! max-lg:min-h-96! lg:w-full! lg:object-contain! max-lg:object-cover!"
                             />
                         </SwiperSlide>
                     ))}
                 </Swiper>
             </div>
 
-            <div className="h-24">
+            <div className="h-24 max-lg:hidden">
                 <Swiper
                     modules={[FreeMode, Navigation, Thumbs]}
                     onSwiper={setThumbsSwiper}
@@ -148,7 +208,7 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
                     {images.map((img, index) => (
                         <SwiperSlide
                             key={index}
-                            className="cursor-pointer overflow-hidden rounded-md border border-gray-300"
+                            className="cursor-pointer overflow-hidden rounded-md border border-gray-400"
                         >
                             <img
                                 src={img}
@@ -158,6 +218,12 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
                         </SwiperSlide>
                     ))}
                 </Swiper>
+            </div>
+
+            <div className='lg:hidden flex gap-1 items-center justify-center'>
+                {images.map((img, index) => (
+                    <div className='rounded-full bg-gray-600 w-1.5 h-1.5'></div>
+                ))}
             </div>
         </div>
     )
@@ -173,14 +239,9 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                 <ProdutoNameInfo produto={produto} />
             </div>
 
-            <hr className="my-2 border-gray-200" />
+            <hr className="my-2 border-gray-200 max-lg:hidden" />
 
             <div className="flex flex-col gap-3">
-                <div className='flex gap-2 items-center text-terciary'>
-                    <AiFillInfoCircle />
-                    <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
-                </div>
-
                 {produto.cores && produto.cores.length > 0 && (
                     <div className="flex flex-col gap-2 mb-4">
                         <span className="text-sm font-semibold text-gray-700">
@@ -193,10 +254,11 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                                     onClick={() => {
                                         navigate(`/produto/${cor.id}/${gerarSlug(cor.nome)}`);
                                     }}
-                                    className="group relative w-10 h-10 cursor-pointer"
+                                    className="group relative w-24 min-h-24 max-h-32 cursor-pointer"
                                 >
-                                    <div className={`w-full h-full rounded-full border-2 overflow-hidden ${cor.id == produto.id ? 'border-terciary' : 'border-gray-200 group-hover:border-gray-400'}`}>
-                                        <img src={cor.imagem} alt={cor.nome} className="w-full h-full object-cover" />
+                                    <div className={`p-1 w-full h-full rounded-lg border overflow-hidden ${cor.id == produto.id ? 'border-terciary' : 'border-gray-400 group-hover:border-gray-400'}`}>
+                                        <img src={cor.imagem} alt={cor.nome} className="w-full max-h-20 object-cover" />
+                                        <p className="text-tiny text-center mt-1">{cor.nome}</p>
                                     </div>
 
                                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
@@ -211,7 +273,7 @@ function ProdutoInfo({ produto }: ProdutoProps) {
 
                 {produto.tamanhos && produto.tamanhos.length > 0 && (
                     <div className="flex flex-col gap-2 mb-4">
-                        <span className="text-sm font-semibold text-gray-700">Tamanhos:</span>
+                        <span className="text-sm text-gray-700">Tamanho: <span className='font-semibold'>{tamanhoSelecionado?.tamanho}</span></span>
                         <div className="flex gap-2 flex-wrap">
                             {produto.tamanhos.map((tamanho) => (
                                 <div
@@ -222,8 +284,8 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                                         }
                                     }}
                                     className={`relative px-3 py-1 border rounded-md text-sm cursor-pointer overflow-hidden ${tamanhoSelecionado?.id === tamanho.id
-                                        ? 'border-terciary bg-terciary text-white'
-                                        : ((tamanho.tipodeestoque == '2' || tamanho.estoque > 0) ? 'border-gray-300 text-gray-700 hover:border-terciary' : 'border-gray-200 text-gray-400 bg-gray-200 cursor-not-allowed')
+                                        ? 'border-terciary'
+                                        : ((tamanho.tipodeestoque == '2' || tamanho.estoque > 0) ? 'border-gray-300 text-gray-700 hover:border-terciary' : 'border-gray-400 text-gray-400 bg-gray-200 cursor-not-allowed')
                                         }`}
                                     title={`Estoque: ${tamanho.estoque}`}
                                 >
@@ -238,6 +300,11 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                         </div>
                     </div>
                 )}
+
+                <div className='flex gap-2 items-center text-terciary max-lg:hidden'>
+                    <AiFillInfoCircle />
+                    <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
+                </div>
             </div>
         </div>
     )
@@ -245,35 +312,23 @@ function ProdutoInfo({ produto }: ProdutoProps) {
 
 function ProdutoNameInfo({ produto }: ProdutoProps) {
     return (
-        <>
-            <div className="flex items-center justify-between">
-                {produto.marca != null &&
-                    <img src={produto.marca.img} className="text-gray-800" />
-                }
-                <div className="flex gap-4">
-                    <button className="text-gray-600 hover:text-red-600">
-                        <IoShareOutline size={22} />
-                    </button>
-                    <button className="text-gray-600 hover:text-red-600">
-                        <IoHeartOutline size={22} />
-                    </button>
-                </div>
+        <div className='lg:pt-5 flex flex-col gap-2'>
+
+            <div className="flex justify-between items-center max-lg:hidden">
+                <Breadcrumb />
+
+                <Avalicoes produto={produto} />
             </div>
 
-            <h1 className="text-2xl font-semibold leading-tight">{produto.nome}</h1>
+            <h1 className="text-base font-normal leading-tight">{produto.nome}</h1>
 
-            <div className="flex items-center gap-2">
-                <RatingStars rating={produto.avaliacao} variant='normal' />
-                <span className="text-sm text-gray-600">
-                    ({produto.quantidadeAvaliacoes} avaliações)
-                </span>
-            </div>
 
-            <div className="text-sm text-gray-600">
+
+            {/* <div className="text-sm text-gray-600">
                 Vendido e entregue por:{" "}
                 <span className="font-semibold text-terciary">{produto.vendidoPor}</span>
-            </div>
-        </>
+            </div> */}
+        </div>
     );
 }
 
@@ -293,7 +348,7 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
     };
 
     return (
-        <div className="flex flex-col gap-4 lg:sticky top-42">
+        <div className="flex flex-col gap-4 lg:sticky top-24">
             <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
                 {produto.precoAntigo && (
                     <span className="text-xs text-gray-500 line-through">

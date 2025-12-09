@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { MdMenu, MdLocationOn, MdHeadsetMic, MdKeyboardArrowDown, MdClose } from "react-icons/md";
+import { useRef, useState } from "react";
+import { MdClose, MdHeadsetMic, MdKeyboardArrowDown, MdLocationOn, MdMenu } from "react-icons/md";
 import { useNavigate } from "react-router";
-import DepartmentMenu from "./departament";
+import { useHeader } from "~/context/HeaderContext";
 import { useAuth } from "~/features/auth/context/AuthContext";
-import { AddressSelectionModal } from "./AddressSelectionModal";
 import type { Endereco } from "~/features/minhaconta/types";
 import { gerarSlug } from "~/utils/formatters";
-import { useHeader } from "~/context/HeaderContext";
+import { AddressSelectionModal } from "./AddressSelectionModal";
+import DepartmentMenu from "./departament";
+import { ButtonBuscar, ButtonCarrinho, ButtonConta, ButtonEntreOuCadastrese, ButtonFavoritos, ButtonMaisVendidos, ButtonMore } from "./HeaderButtons";
 import { SearchBar } from "./SearchBar";
-import { ButtonEntreOuCadastrese, ButtonFavoritos, ButtonCarrinho, ButtonMaisVendidos, ButtonMore } from "./HeaderButtons";
 
 export default function Header() {
     let navigate = useNavigate();
@@ -17,6 +17,9 @@ export default function Header() {
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSearchBarOpen, setIsSearchBarOpen] = useState(false);
+
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
     const onAddressSelect = async (address: Endereco) => {
         await handleAddressSelect(address);
@@ -24,9 +27,12 @@ export default function Header() {
     };
 
     return (
-        <header className="w-full bg-primary sticky top-0 z-50 flex flex-col relative">
-            <div className="flex flex-row items-center w-full">
-                <div className="w-auto px-4 lg:px-0 lg:w-55 flex items-center justify-center">
+        <header className="w-full bg-primary sticky top-0 z-50 flex flex-col">
+            <div className="flex flex-row items-center w-full relative">
+                <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1 text-white ml-2">
+                    <MdMenu size={28} className="cursor-pointer" />
+                </button>
+                <div className="w-auto px-4 lg:px-0 lg:w-55 flex items-center justify-center absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
                     <img
                         onClick={() => {
                             const currentParams = new URLSearchParams(window.location.search);
@@ -58,21 +64,36 @@ export default function Header() {
                         </div>
 
                         <div className="hidden lg:block flex-1 w-full max-w-2xl">
-                            <SearchBar />
+                            <SearchBar ref={inputRef} />
                         </div>
 
-                        <div className="flex items-center gap-2 lg:gap-6 text-white shrink-0">
+                        <div className="flex items-center gap-4 lg:gap-6 max-lg:pr-2 text-white shrink-0">
                             <ButtonEntreOuCadastrese />
+
+                            <div className="lg:hidden">
+                                <ButtonBuscar
+                                    aoClicar={() => {
+                                        if (inputRef.current) {
+                                            inputRef.current.focus();
+                                        }
+                                        setIsSearchBarOpen(isSearchBarOpen => !isSearchBarOpen);
+                                    }}
+                                />
+                            </div>
+
+                            <div className="lg:hidden">
+                                <ButtonConta />
+                            </div>
+
+                            <div className="lg:hidden">
+                                <ButtonCarrinho />
+                            </div>
 
                             <div className="hidden lg:flex items-center gap-4">
                                 <MdHeadsetMic size={24} className="cursor-pointer hover:text-gray-200" title="Atendimento" />
                                 <ButtonFavoritos />
                                 <ButtonCarrinho />
                             </div>
-
-                            <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1">
-                                <MdMenu size={28} className="cursor-pointer" />
-                            </button>
                         </div>
                     </div>
 
@@ -108,8 +129,8 @@ export default function Header() {
                 </div>
             </div>
 
-            <div className="lg:hidden px-4 pb-3 w-full">
-                <SearchBar />
+            <div className={`lg:hidden px-4 pb-3 w-full ${isSearchBarOpen ? 'block' : 'hidden'} transition-all duration-300`}>
+                <SearchBar ref={inputRef} />
             </div>
 
             {/* Mobile Menu Overlay */}

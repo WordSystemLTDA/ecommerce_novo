@@ -229,15 +229,15 @@ export default function CheckoutLayout() {
             return;
         }
 
-        if (tipoDeEntregaSelecionada == undefined) {
-            toast.error("Selecione um tipo de entrega", { position: 'top-center' });
-            navigate("/carrinho/entrega");
-            return;
-        }
-
         if (enderecoSelecionado == undefined) {
             toast.error("Selecione um endereço", { position: 'top-center' });
             navigate("/carrinho/endereco");
+            return;
+        }
+
+        if (tipoDeEntregaSelecionada == undefined) {
+            toast.error("Selecione um tipo de entrega", { position: 'top-center' });
+            navigate("/carrinho/entrega");
             return;
         }
 

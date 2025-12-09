@@ -17,7 +17,7 @@ export function ProdutoProvider({ children }: { children: ReactNode }) {
     const listarProdutos = async (id: string, filtros: string) => {
         setIsLoading(true);
         try {
-            const responseProdutos = await produtoService.listarProdutos(filtros);
+            const responseProdutos = await produtoService.listarProdutos(`${filtros}&por_pagina=6`);
             const responseCategorias = await categoriaService.listarCategorias();
 
             if (responseProdutos.sucesso) {
