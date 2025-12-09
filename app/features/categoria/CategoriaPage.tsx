@@ -5,6 +5,9 @@ import {
     FaList,
     FaTh
 } from 'react-icons/fa';
+import { IoFilter } from "react-icons/io5";
+import { FilterContent } from '~/features/home/components/FilterContent';
+import { MobileFilterDrawer } from '~/features/home/components/MobileFilterDrawer';
 import { useParams, useSearchParams } from 'react-router';
 import sign from 'jwt-encode';
 import Breadcrumb from '~/components/breadcrumb';
@@ -60,7 +63,7 @@ function decodeJwt(token: string): any {
     }
 }
 
-const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao }: { totalProdutos: number, onSortChange: (val: string) => void, onPerPageChange: (val: number) => void, ordenacao: string }) => (
+const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao, onOpenMobileFilter }: { totalProdutos: number, onSortChange: (val: string) => void, onPerPageChange: (val: number) => void, ordenacao: string, onOpenMobileFilter: () => void }) => (
     <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-col md:flex-row justify-between items-center">
         <div className="flex items-center gap-4 mb-4 md:mb-0">
             <div className="flex items-center gap-2">
@@ -93,7 +96,14 @@ const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao
             <span className="text-sm text-gray-500">{totalProdutos} produtos</span>
         </div>
         <div className="flex items-center gap-2">
-            <button className="p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
+            <button
+                className="lg:hidden p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer flex items-center gap-2"
+                onClick={onOpenMobileFilter}
+            >
+                <IoFilter size={18} />
+                <span className="font-medium">Filtrar</span>
+            </button>
+            <button className="hidden lg:block p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
                 <FaList size={16} />
             </button>
             <button className="p-2 text-terciary bg-gray-100 rounded cursor-pointer">
@@ -103,101 +113,17 @@ const FilterToolbar = ({ totalProdutos, onSortChange, onPerPageChange, ordenacao
     </div>
 );
 
-const FilterSection = ({ title, children, defaultOpen = true }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) => {
-    const [isOpen, setIsOpen] = useState(defaultOpen);
 
-    return (
-        <div className="border-b border-gray-200 py-4">
-            <button
-                className="flex justify-between items-center w-full"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                <h4 className="text-sm font-bold text-gray-800 uppercase">{title}</h4>
-                {isOpen ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
-            </button>
-            {isOpen && (
-                <div className="mt-4">
-                    {children}
-                </div>
-            )}
-        </div>
-    );
-};
-
-const CheckboxFilter = ({ items, selectedValues, onChange, showSearch = false }: { items: { id: any, label: string }[], selectedValues: any[], onChange: (id: any) => void, showSearch?: boolean }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const filteredItems = items.filter(item => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    return (
-        <div className="space-y-3">
-            {showSearch && (
-                <input
-                    type="search"
-                    placeholder="Buscar"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                />
-            )}
-            <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
-                {filteredItems.map((item) => (
-                    <label key={item.id} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={selectedValues.includes(item.id)}
-                            onChange={() => onChange(item.id)}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                        {item.label}
-                    </label>
-                ))}
-            </div>
-        </div>
-    );
-};
 
 const Sidebar = ({ filterOptions, activeFilters, onFilterChange }: { filterOptions: FilterOptions, activeFilters: ActiveFilters, onFilterChange: (newFilters: ActiveFilters) => void }) => {
-
-    const handleCheckboxChange = (type: keyof ActiveFilters, value: any) => {
-        const currentValues = activeFilters[type] as any[];
-        let newValues;
-        if (currentValues.includes(value)) {
-            newValues = currentValues.filter((v: any) => v !== value);
-        } else {
-            newValues = [...currentValues, value];
-        }
-        onFilterChange({ ...activeFilters, [type]: newValues });
-    };
-
     return (
-        <aside className="lg:col-span-1">
+        <aside className="hidden lg:block lg:col-span-1">
             <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
-                <FilterSection title="Preço">
-                    <PriceRangeSlider
-                        min={0}
-                        max={10000}
-                        onChange={(min, max) => {
-                            onFilterChange({ ...activeFilters, minPreco: min, maxPreco: max });
-                        }}
-                    />
-                </FilterSection>
-
-                <FilterSection title="Marcas" defaultOpen={true}>
-                    <CheckboxFilter
-                        items={filterOptions.marcas.map(m => ({ id: m.id, label: m.nome }))}
-                        selectedValues={activeFilters.marcas}
-                        onChange={(id) => handleCheckboxChange('marcas', id)}
-                        showSearch={true}
-                    />
-                </FilterSection>
-
-                <FilterSection title="Cores" defaultOpen={true}>
-                    <CheckboxFilter
-                        items={filterOptions.cores.map(c => ({ id: c.id, label: c.nome }))}
-                        selectedValues={activeFilters.cores}
-                        onChange={(id) => handleCheckboxChange('cores', id)}
-                    />
-                </FilterSection>
+                <FilterContent
+                    activeFilters={activeFilters}
+                    filterOptions={filterOptions}
+                    onFilterChange={onFilterChange}
+                />
             </div>
         </aside>
     );
@@ -293,6 +219,7 @@ export default function CategoryPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [categoryName, setCategoryName] = useState('CATEGORIA');
     const [porPagina, setPorPagina] = useState(20);
+    const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         marcas: [],
@@ -464,6 +391,7 @@ export default function CategoryPage() {
                             onSortChange={(val) => handleFilterChange({ ...activeFilters, ordenacao: val })}
                             onPerPageChange={setPorPagina}
                             ordenacao={activeFilters.ordenacao}
+                            onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
                         />
 
                         <div className="mb-4">
@@ -479,6 +407,13 @@ export default function CategoryPage() {
             </div>
 
             <Footer />
+            <MobileFilterDrawer
+                isOpen={isMobileFilterOpen}
+                onClose={() => setIsMobileFilterOpen(false)}
+                activeFilters={activeFilters}
+                filterOptions={filterOptions}
+                onApply={handleFilterChange}
+            />
         </div>
     );
 }

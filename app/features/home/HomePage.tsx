@@ -6,13 +6,12 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 
 import { useEffect, useState } from 'react';
 
-import { FaChevronDown, FaChevronUp, FaList, FaTh } from "react-icons/fa";
+import { FaList, FaTh } from "react-icons/fa";
 
 import sign from 'jwt-encode';
 import { useNavigate } from "react-router";
 import Footer from "~/components/footer";
 import LazySection from "~/components/lazy_section";
-import { PriceRangeSlider } from "~/components/price_range_slider";
 import { ProductCard } from "~/components/ProductCard";
 import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
 import { SkeletonProductCard } from "~/components/skeleton_product_card";
@@ -21,6 +20,9 @@ import type { Categoria } from "../categoria/types";
 import type { Banner } from "../produto/types";
 import { useHome } from "./context/HomeContext";
 import { getBanners } from "~/services/bannerService";
+import { FilterContent } from "./components/FilterContent";
+import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
+import { IoFilter } from "react-icons/io5"; // Importing filter icon
 
 export function HomePage() {
   const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions } = useHome();
@@ -29,6 +31,7 @@ export function HomePage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [secondaryBanners, setSecondaryBanners] = useState<Banner[]>([]);
   const [sectionCategories, setSectionCategories] = useState<Record<string, number | null>>({});
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   useEffect(() => {
     getBanners('Principal').then(setBanners);
@@ -65,7 +68,7 @@ export function HomePage() {
             <Sidebar />
 
             <main className="flex-1 w-full bg-background-dark min-w-0">
-              <FilterToolbar />
+              <FilterToolbar onOpenMobileFilter={() => setIsMobileFilterOpen(true)} />
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
                 <p className="text-xl font-bold">PROMOÇÕES</p>
@@ -284,6 +287,13 @@ export function HomePage() {
       </main>
 
       <Footer />
+      <MobileFilterDrawer
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
+        activeFilters={activeFilters}
+        filterOptions={filterOptions}
+        onApply={applyFilters}
+      />
     </div>
 
   )
@@ -749,7 +759,7 @@ export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: Car
   );
 };
 
-const FilterToolbar = () => {
+const FilterToolbar = ({ onOpenMobileFilter }: { onOpenMobileFilter: () => void }) => {
   const { activeFilters, applyFilters } = useHome();
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -776,7 +786,14 @@ const FilterToolbar = () => {
         <span className="text-sm text-gray-500">8259 produtos</span>
       </div>
       <div className="flex items-center gap-2">
-        <button className="p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
+        <button
+          className="lg:hidden p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer flex items-center gap-2"
+          onClick={onOpenMobileFilter}
+        >
+          <IoFilter size={18} />
+          <span className="font-medium">Filtrar</span>
+        </button>
+        <button className="hidden lg:block p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
           <FaList size={16} />
         </button>
         <button className="p-2 text-terciary bg-gray-100 rounded cursor-pointer">
@@ -788,177 +805,18 @@ const FilterToolbar = () => {
 };
 
 export function Sidebar() {
-  const { filterOptions, activeFilters, setActiveFilters, applyFilters } = useHome();
-
-  const handleCheckboxChange = (type: keyof typeof activeFilters, value: any) => {
-    const currentValues = activeFilters[type] as any[];
-    let newValues;
-    if (currentValues.includes(value)) {
-      newValues = currentValues.filter((v: any) => v !== value);
-    } else {
-      newValues = [...currentValues, value];
-    }
-    const newFilters = { ...activeFilters, [type]: newValues };
-    applyFilters(newFilters);
-  };
-
-  const handleToggleChange = (type: 'freteGratis' | 'promocao') => {
-    const newFilters = { ...activeFilters, [type]: !activeFilters[type] };
-    applyFilters(newFilters);
-  };
+  const { filterOptions, activeFilters, applyFilters } = useHome();
 
   return (
-    <aside className="lg:col-span-1 w-full lg:w-64 min-w-[250px]">
+    <aside className="hidden lg:block lg:col-span-1 w-full lg:w-64 min-w-[250px]">
       <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
-        <FilterSection title="Departamentos">
-          <CheckboxFilter
-            items={filterOptions.categorias.map(c => ({ id: c.id, label: c.nome }))}
-            selectedValues={activeFilters.categorias}
-            onChange={(id) => handleCheckboxChange('categorias', id)}
-            showSearch={true}
-          />
-        </FilterSection>
-
-        <FilterSection title="Marcas" defaultOpen={true}>
-          <CheckboxFilter
-            items={filterOptions.marcas.map(m => ({ id: m.id, label: m.nome }))}
-            selectedValues={activeFilters.marcas}
-            onChange={(id) => handleCheckboxChange('marcas', id)}
-            showSearch={true}
-          />
-        </FilterSection>
-
-        <FilterSection title="Cores" defaultOpen={true}>
-          <CheckboxFilter
-            items={filterOptions.cores.map(c => ({ id: c.id, label: c.nome }))}
-            selectedValues={activeFilters.cores}
-            onChange={(id) => handleCheckboxChange('cores', id)}
-            showSearch={true}
-          />
-        </FilterSection>
-
-        <FilterSection title="Tamanhos" defaultOpen={true}>
-          <CheckboxFilter
-            items={filterOptions.tamanhos.map(t => ({ id: t, label: t }))}
-            selectedValues={activeFilters.tamanhos}
-            onChange={(id) => handleCheckboxChange('tamanhos', id)}
-            showSearch={true}
-          />
-        </FilterSection>
-
-        <FilterSection title="Opções" defaultOpen={true}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-700">Frete Grátis</span>
-            <ToggleSwitch
-              checked={activeFilters.freteGratis}
-              onChange={() => handleToggleChange('freteGratis')}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700">Promoção</span>
-            <ToggleSwitch
-              checked={activeFilters.promocao}
-              onChange={() => handleToggleChange('promocao')}
-            />
-          </div>
-        </FilterSection>
-
-        <FilterSection title="Preço" defaultOpen={true}>
-          {filterOptions.maxPrice != undefined &&
-            <PriceRangeSlider
-              min={0}
-              max={filterOptions.maxPrice || 5000}
-              minVal={activeFilters.minPreco}
-              maxVal={activeFilters.maxPreco}
-              onChange={(min, max) => applyFilters({ ...activeFilters, minPreco: min, maxPreco: max })}
-            />
-          }
-        </FilterSection>
+        <FilterContent
+          activeFilters={activeFilters}
+          filterOptions={filterOptions}
+          onFilterChange={applyFilters}
+        />
       </div>
     </aside>
   );
 };
 
-interface FilterSectionProps {
-  title: string;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-}
-
-const FilterSection = ({ title, children, defaultOpen = false }: FilterSectionProps) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  return (
-    <div className="border-b border-gray-200 py-4 last:border-0">
-      <div
-        className="flex items-center justify-between cursor-pointer mb-2"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <h3 className="font-medium text-gray-900">{title}</h3>
-        {isOpen ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
-      </div>
-      {isOpen && <div className="mt-2">{children}</div>}
-    </div>
-  );
-};
-
-interface CheckboxFilterProps {
-  items: { id: number | string; label: string }[];
-  selectedValues: (number | string)[];
-  onChange: (id: number | string) => void;
-  showSearch?: boolean;
-}
-
-const CheckboxFilter = ({ items, selectedValues, onChange, showSearch }: CheckboxFilterProps) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredItems = items.filter(item =>
-    item.label.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  return (
-    <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
-      {showSearch && (
-        <input
-          type="text"
-          placeholder="Buscar..."
-          className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2 focus:outline-none focus:border-primary"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      )}
-      {filteredItems.map((item) => (
-        <label key={item.id} className="flex items-center gap-2 cursor-pointer group">
-          <div className={`w-4 h-4 border rounded flex items-center justify-center ${selectedValues.includes(item.id) ? 'bg-terciary border-terciary' : 'border-gray-300 group-hover:border-primary'}`}>
-            {selectedValues.includes(item.id) && <div className="w-2 h-2 bg-white rounded-sm" />}
-          </div>
-          <span className="text-sm text-gray-600 group-hover:text-gray-900">{item.label}</span>
-          <input
-            type="checkbox"
-            className="hidden"
-            checked={selectedValues.includes(item.id)}
-            onChange={() => onChange(item.id)}
-          />
-        </label>
-      ))}
-    </div>
-  );
-};
-
-interface ToggleSwitchProps {
-  checked: boolean;
-  onChange: () => void;
-}
-
-const ToggleSwitch = ({ checked, onChange }: ToggleSwitchProps) => {
-  return (
-    <div
-      className={`w-10 h-5 rounded-full cursor-pointer relative transition-colors ${checked ? 'bg-terciary' : 'bg-gray-300'}`}
-      onClick={onChange}
-    >
-      <div
-        className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${checked ? 'left-5.5' : 'left-0.5'}`}
-      />
-    </div>
-  );
-};
