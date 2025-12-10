@@ -23,6 +23,7 @@ export const carrinhoService = {
             valor: produto.preco,
             quantidade: 1,
             total: produto.preco,
+            idPromocoesEcommerce: produto.idPromocoesEcommerce,
             id_grade: produto.tamanhoSelecionado?.id || 0
         });
         return response.data;

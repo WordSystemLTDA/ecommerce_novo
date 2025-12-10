@@ -14,7 +14,6 @@ import LazySection from "~/components/lazy_section";
 import { ProductCard } from "~/components/ProductCard";
 import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
 import { SkeletonProductCard } from "~/components/skeleton_product_card";
-import { useProduto } from "~/features/produto/context/ProdutoContext";
 import { getBanners } from "~/services/bannerService";
 import { gerarSlug } from "~/utils/formatters";
 import type { Categoria } from "../categoria/types";
@@ -79,30 +78,25 @@ export function HomePage() {
             <main className="flex-1 w-full bg-background-dark min-w-0">
               <FilterToolbar totalProdutos={produtos?.length ?? 0} onOpenMobileFilter={() => setIsMobileFilterOpen(true)} />
 
-              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-                <p className="text-lg max-lg:text-base font-semibold">Promoção</p>
-                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
-              </div>
+              <ProductSection
+                id="promocoes"
+                title="Promoção"
+                filtros="promocoes"
 
-              <LazySection forceVisible={!!produtos.find(p => p.id === 'promocoes')}>
-                <CarouselCategoria
-                  id='promocoes'
-                  onChange={(cat) => handleSectionCategoryClick('promocoes', cat)}
-                  selectedCategoryId={sectionCategories['promocoes']}
-                />
-              </LazySection>
+                selectedCategoryId={sectionCategories['promocoes']}
+                onCategoryChange={handleSectionCategoryClick}
+                onLinkClick={handleVerTodosClick}
+              />
 
-              <section className="my-4">
-                <LazySection forceVisible={!!produtos.find(p => p.id === 'promocoes')}>
-                  <CarouselBannersSecundarios
-                    id="promocoes"
-                    filtros="blackfriday"
-                    globalFilters={activeFilters}
-                    selectedCategoryId={sectionCategories['promocoes']}
-                  />
-                </LazySection>
-              </section>
+              <ProductSection
+                id="maisprocurados"
+                title="Departamentos"
+                filtros="maisprocurados"
 
+                selectedCategoryId={sectionCategories['maisprocurados']}
+                onCategoryChange={handleSectionCategoryClick}
+                onLinkClick={handleVerTodosClick}
+              />
 
               <div className="flex flex-col md:flex-row gap-4 lg:gap-10 mx-4 lg:mx-12">
                 <Swiper
@@ -137,30 +131,6 @@ export function HomePage() {
                   ))}
                 </Swiper>
               </div>
-
-              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-                <p className="text-lg max-lg:text-base font-semibold">Departamentos</p>
-                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
-              </div>
-
-              <LazySection forceVisible={!!produtos.find(p => p.id === 'maisprocurados')}>
-                <CarouselCategoria
-                  id='maisprocurados'
-                  onChange={(cat) => handleSectionCategoryClick('maisprocurados', cat)}
-                  selectedCategoryId={sectionCategories['maisprocurados']}
-                />
-              </LazySection>
-
-              <section className="my-4">
-                <LazySection forceVisible={!!produtos.find(p => p.id === 'maisprocurados')}>
-                  <CarouselBannersSecundarios
-                    id="maisprocurados"
-                    filtros="maisprocurados"
-                    globalFilters={activeFilters}
-                    selectedCategoryId={sectionCategories['maisprocurados']}
-                  />
-                </LazySection>
-              </section>
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
                 <p className="text-lg max-lg:text-base font-semibold">Departamentos</p>
@@ -204,90 +174,43 @@ export function HomePage() {
                     </SwiperSlide>
                   ))}
                 </Swiper>
+
               </div>
 
               <hr className="my-2 max-lg:my-0 border-gray-200" />
 
-              <section className="my-4">
-                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
-                  <p className="text-lg max-lg:text-base font-semibold">Mais procurados</p>
-                  <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
-                </div>
+              <ProductSection
+                id="maisprocurados_bottom"
+                title="Mais procurados"
+                filtros="maisprocurados"
 
-                <LazySection forceVisible={!!produtos.find(p => p.id === 'maisprocurados_bottom')}>
-                  <CarouselCategoria
-                    id='maisprocurados_bottom'
-                    onChange={(cat) => handleSectionCategoryClick('maisprocurados_bottom', cat)}
-                    selectedCategoryId={sectionCategories['maisprocurados_bottom']}
-                  />
-                </LazySection>
-
-                <section className="my-4">
-                  <LazySection forceVisible={!!produtos.find(p => p.id === 'maisprocurados_bottom')}>
-                    <CarouselBannersSecundarios
-                      id="maisprocurados_bottom"
-                      filtros="maisprocurados"
-                      globalFilters={activeFilters}
-                      selectedCategoryId={sectionCategories['maisprocurados_bottom']}
-                    />
-                  </LazySection>
-                </section>
-              </section>
+                selectedCategoryId={sectionCategories['maisprocurados_bottom']}
+                onCategoryChange={handleSectionCategoryClick}
+                onLinkClick={handleVerTodosClick}
+              />
 
               <hr className="my-2 max-lg:my-0 border-gray-200" />
 
-              <section className="my-4">
-                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
-                  <p className="text-lg max-lg:text-base font-semibold">Acabaram de chegar</p>
-                  <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
-                </div>
+              <ProductSection
+                id="novos"
+                title="Acabaram de chegar"
+                filtros="order_by=recente"
 
-                <LazySection forceVisible={!!produtos.find(p => p.id === 'novos')}>
-                  <CarouselCategoria
-                    id="novos"
-                    onChange={(cat) => handleSectionCategoryClick('novos', cat)}
-                    selectedCategoryId={sectionCategories['novos']}
-                  />
-                </LazySection>
-
-                <section className="my-4">
-                  <LazySection forceVisible={!!produtos.find(p => p.id === 'novos')}>
-                    <CarouselBannersSecundarios
-                      id='novos'
-                      filtros="order_by=recente"
-                      globalFilters={activeFilters}
-                      selectedCategoryId={sectionCategories['novos']}
-                    />
-                  </LazySection>
-                </section>
-              </section>
+                selectedCategoryId={sectionCategories['novos']}
+                onCategoryChange={handleSectionCategoryClick}
+                onLinkClick={handleVerTodosClick}
+              />
 
               <hr className="my-2 max-lg:my-0 border-gray-200" />
 
-              <section className="my-4">
-                <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2">
-                  <p className="text-lg max-lg:text-base font-semibold">Mais vendidos</p>
-                </div>
+              <ProductSection
+                id="maisvendidos"
+                title="Mais vendidos"
+                filtros="maisvendidos"
 
-                <LazySection forceVisible={!!produtos.find(p => p.id === 'maisvendidos')}>
-                  <CarouselCategoria
-                    id="maisvendidos"
-                    onChange={(cat) => handleSectionCategoryClick('maisvendidos', cat)}
-                    selectedCategoryId={sectionCategories['maisvendidos']}
-                  />
-                </LazySection>
-
-                <section className="my-4">
-                  <LazySection forceVisible={!!produtos.find(p => p.id === 'maisvendidos')}>
-                    <CarouselBannersSecundarios
-                      id='maisvendidos'
-                      filtros="maisvendidos"
-                      globalFilters={activeFilters}
-                      selectedCategoryId={sectionCategories['maisvendidos']}
-                    />
-                  </LazySection>
-                </section>
-              </section>
+                selectedCategoryId={sectionCategories['maisvendidos']}
+                onCategoryChange={handleSectionCategoryClick}
+              />
             </main>
 
           </div>
@@ -307,7 +230,6 @@ export function HomePage() {
 
   )
 }
-
 
 interface CarouselBannersPrincipaisProps {
   images: Banner[];
@@ -365,6 +287,109 @@ export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisP
   );
 };
 
+interface ProductSectionProps {
+  id: string;
+  title: string;
+  filtros: string;
+  globalFilters?: any;
+  selectedCategoryId?: number | null;
+  onCategoryChange: (id: string, category: Categoria) => void;
+  onLinkClick?: () => void;
+  showCategoryCarousel?: boolean;
+}
+
+function ProductSection({
+  id,
+  title,
+  filtros,
+  globalFilters,
+  selectedCategoryId,
+  onCategoryChange,
+  onLinkClick,
+  showCategoryCarousel = true
+}: ProductSectionProps) {
+  let { listarProdutos, produtos } = useHome();
+  const bannerData = produtos.find((e) => e.id == id);
+
+  useEffect(() => {
+    const fetchWithFilters = async () => {
+      let finalFilters = globalFilters ? { ...globalFilters } : {};
+
+      // Ensure we ignore global sorting for these curated sections
+      delete finalFilters['ordenacao'];
+      delete finalFilters['order_by'];
+
+      if (filtros === 'promocoes') {
+        finalFilters['promocao'] = 'true';
+      } else if (filtros === 'maisvendidos') {
+        finalFilters['order_by'] = 'mais_vendidos';
+      } else if (filtros === 'maisprocurados') {
+        finalFilters['order_by'] = 'mais_procurados';
+      } else if (filtros.includes('order_by=')) {
+        const parts = filtros.split('=');
+        if (parts[1] === 'recente') {
+          finalFilters['order_by'] = 'mais_recentes';
+        }
+      }
+
+      if (selectedCategoryId) {
+        finalFilters = { ...finalFilters, categorias: [selectedCategoryId] };
+      }
+
+      const token = sign(finalFilters, 'secret');
+      const params = new URLSearchParams();
+      params.append('filtros', token);
+
+      await listarProdutos(id, params.toString());
+    };
+
+    fetchWithFilters();
+  }, [globalFilters, selectedCategoryId, filtros]); // Added filtros to deps
+
+  // If data is LOADED and EMPTY, return null.
+  if (bannerData && (!bannerData.produtos || bannerData.produtos.length === 0)) {
+    return null;
+  }
+
+  // If loading or has data, render.
+  return (
+    <section className="my-4">
+      <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
+        <p className="text-lg max-lg:text-base font-semibold">{title}</p>
+        {onLinkClick && <p className="text-sm cursor-pointer hover:underline" onClick={onLinkClick}>Ver todos</p>}
+      </div>
+
+      <LazySection forceVisible={!!bannerData}>
+        {showCategoryCarousel && (
+          <CarouselCategoria
+            id={id}
+            onChange={(cat) => onCategoryChange(id, cat)}
+            selectedCategoryId={selectedCategoryId}
+          />
+        )}
+      </LazySection>
+
+      <section className="my-4">
+        <LazySection forceVisible={!!bannerData}>
+          <CarouselBannersSecundarios
+            id={id}
+            filtros={filtros} // Pass filtros even though we fetched? Yes, for identifying inside if needed, but fetch logic moved here?
+            // Actually CarouselBannersSecundarios duplicates the fetch logic currently.
+            // We should make CarouselBannersSecundarios NOT fetch if we fetch here.
+            // Or just let it render the data from store since we populated it.
+            // If we remove fetch from CarouselBannersSecundarios, we break other usages?
+            // Let's rely on the fact that if data is already there, generic fetch might just overwrite same data.
+            // Optimized approach: Pass a flag or just modify CarouselBannersSecundarios to not fetch if 'noFetch' prop?
+            // But for now, keeping compat, I will pass `skipFetch={true}` if I modify it.
+            // Let's modify CarouselBannersSecundarios to accept skipFetch.
+            skipFetch={true}
+          />
+        </LazySection>
+      </section>
+    </section>
+  );
+}
+
 interface CategoriaCardProps {
   categoria: Categoria;
   onClick?: (categoria: Categoria) => void;
@@ -421,7 +446,7 @@ export function MarcaCardComImagem({ marca, onClick, isSelected }: MarcaCardProp
 }
 
 
-export function CarouselBannersSecundarios({ id, filtros, globalFilters, selectedCategoryId }: { id: string, filtros: string, globalFilters?: any, selectedCategoryId?: number | null }) {
+export function CarouselBannersSecundarios({ id, filtros, globalFilters, selectedCategoryId, skipFetch }: { id: string, filtros: string, globalFilters?: any, selectedCategoryId?: number | null, skipFetch?: boolean }) {
   const prevButtonId = `${id}-produto-carousel-prev`;
   const nextButtonId = `${id}-produto-carousel-next`;
 
@@ -429,8 +454,23 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
   const bannerData = produtos.find((e) => e.id == id);
 
   useEffect(() => {
+    if (skipFetch) return; // Added skipFetch
+
     const fetchWithFilters = async () => {
       let finalFilters = globalFilters ? { ...globalFilters } : {};
+
+      if (filtros === 'promocoes') {
+        finalFilters['promocao'] = 'true';
+      } else if (filtros === 'maisvendidos') {
+        finalFilters['order_by'] = 'mais_vendidos';
+      } else if (filtros === 'maisprocurados') {
+        finalFilters['order_by'] = 'mais_procurados';
+      } else if (filtros.includes('order_by=')) {
+        const parts = filtros.split('=');
+        if (parts[1] === 'recente') {
+          finalFilters['order_by'] = 'mais_recentes';
+        }
+      }
 
       if (selectedCategoryId) {
         finalFilters = { ...finalFilters, categorias: [selectedCategoryId] };
@@ -444,7 +484,7 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
     };
 
     fetchWithFilters();
-  }, [globalFilters, selectedCategoryId]);
+  }, [globalFilters, selectedCategoryId, skipFetch]); // Added skipFetch to deps
 
   const isLoading = !bannerData;
 

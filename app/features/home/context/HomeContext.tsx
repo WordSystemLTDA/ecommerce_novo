@@ -120,6 +120,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             params.append('filtros', token);
 
             const queryString = params.toString();
+
             const response = await produtoService.listarProdutos(queryString);
 
             if (response.sucesso) {

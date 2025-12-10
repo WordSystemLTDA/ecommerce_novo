@@ -43,6 +43,13 @@ export interface Produto extends DefaultResponse {
     cores?: ProdutoCor[],
     tamanhos?: ProdutoTamanho[],
     tamanhoSelecionado?: ProdutoTamanho,
+    dataLimitePromocao: string,
+    horaLimitePromocao: string,
+    tipoDeDesconto: string,
+    tipoDaPromocao: number,
+    quantidadeDesconto: string,
+    idPromocoesEcommerce: string,
+    tipodeestoque: string,
 }
 
 export interface ProdutosBanners {
