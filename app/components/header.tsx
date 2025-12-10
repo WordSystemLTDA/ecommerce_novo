@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { MdClose, MdHeadsetMic, MdKeyboardArrowDown, MdLocationOn, MdMenu } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { useHeader } from "~/context/HeaderContext";
-import { useAuth } from "~/features/auth/context/AuthContext";
 import type { Endereco } from "~/features/minhaconta/types";
 import { gerarSlug } from "~/utils/formatters";
 import { AddressSelectionModal } from "./AddressSelectionModal";
@@ -12,7 +11,6 @@ import { SearchBar } from "./SearchBar";
 
 export default function Header() {
     let navigate = useNavigate();
-    const { cliente, isAuthenticated } = useAuth();
     const { categorias, categoriasMenu, selectedAddress, handleAddressSelect } = useHeader();
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -32,6 +30,7 @@ export default function Header() {
                 <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1 text-white ml-2">
                     <MdMenu size={28} className="cursor-pointer" />
                 </button>
+
                 <div className="w-auto px-4 lg:px-0 lg:w-55 flex items-center justify-center absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
                     <img
                         onClick={() => {
@@ -63,7 +62,7 @@ export default function Header() {
                             </div>
                         </div>
 
-                        <div className="hidden lg:block flex-1 w-full max-w-2xl">
+                        <div className="hidden lg:block flex-1 w-full">
                             <SearchBar ref={inputRef} />
                         </div>
 

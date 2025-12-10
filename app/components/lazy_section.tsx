@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function LazySection({ children }: { children: React.ReactNode }) {
-    const [isVisible, setIsVisible] = useState(false);
+export default function LazySection({ children, forceVisible = false }: { children: React.ReactNode, forceVisible?: boolean }) {
+    const [isVisible, setIsVisible] = useState(forceVisible);
     const domRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        if (forceVisible) {
+            setIsVisible(true);
+            return;
+        }
+
         const observer = new IntersectionObserver(entries => {
             if (entries[0].isIntersecting) {
                 setIsVisible(true);
@@ -19,7 +24,7 @@ export default function LazySection({ children }: { children: React.ReactNode })
         }
 
         return () => observer.disconnect();
-    }, []);
+    }, [forceVisible]);
 
     return (
         <div ref={domRef} className=" transition-opacity duration-500">

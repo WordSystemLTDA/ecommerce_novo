@@ -38,6 +38,14 @@ export const carrinhoService = {
         return response.data;
     },
 
+    editarQuantidadeItem: async (id_cliente: number, id_produto: number, quantidade: number) => {
+        const response = await apiClient.put(`/carrinho/${id_produto}`, {
+            id_cliente,
+            quantidade
+        });
+        return response.data;
+    },
+
     limparCarrinho: async (id_cliente: number) => {
         const response = await apiClient.delete(`/carrinho/limpar/${id_cliente}`);
         return response.data;

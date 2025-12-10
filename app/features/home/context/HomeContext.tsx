@@ -4,6 +4,8 @@ import { categoriaService } from '~/features/categoria/services/categoriaService
 import { produtoService } from '~/features/produto/services/produtoService';
 import type { Produto, ProdutosBanners } from '~/features/produto/types';
 import sign from 'jwt-encode';
+import type { Marca } from '~/features/marca/types';
+import type { Categoria } from '~/features/categoria/types';
 
 interface HomeContextType {
     produtos: ProdutosBanners[];
@@ -19,8 +21,8 @@ interface HomeContextType {
 }
 
 export interface FilterOptions {
-    marcas: { id: number; nome: string }[];
-    categorias: { id: number; nome: string }[];
+    marcas: Marca[];
+    categorias: Categoria[];
     cores: { id: number; nome: string }[];
     tamanhos: string[];
     maxPrice?: number;
@@ -155,6 +157,12 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     };
 
     const listarProdutos = async (id: string, filtros: string) => {
+        // Check if we already have data for this ID with the same filters
+        const existingData = produtos.find(p => p.id === id);
+        if (existingData && existingData.filtros === filtros) {
+            return; // Data already exists and filters match, no need to fetch
+        }
+
         setIsLoading(true);
         try {
             const responseProdutos = await produtoService.listarProdutos(filtros);
@@ -167,13 +175,15 @@ export function HomeProvider({ children }: { children: ReactNode }) {
                         return oldState.map(p => p.id === id ? {
                             id: id,
                             categorias: responseCategorias.data,
-                            produtos: responseProdutos.data.produtos as Produto[]
+                            produtos: responseProdutos.data.produtos as Produto[],
+                            filtros: filtros
                         } : p);
                     }
                     return [...oldState, {
                         id: id,
                         categorias: responseCategorias.data,
-                        produtos: responseProdutos.data.produtos as Produto[]
+                        produtos: responseProdutos.data.produtos as Produto[],
+                        filtros: filtros
                     }];
                 });
             }

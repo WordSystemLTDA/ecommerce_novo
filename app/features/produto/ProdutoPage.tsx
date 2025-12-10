@@ -203,7 +203,7 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
                     freeMode={true}
                     watchSlidesProgress={true}
 
-                    className="h-full w-full"
+                    className="h-full! w-full!"
                 >
                     {images.map((img, index) => (
                         <SwiperSlide
@@ -213,7 +213,7 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
                             <img
                                 src={img}
                                 alt={`Miniatura ${index + 1}`}
-                                className="h-full w-full object-contain"
+                                className="h-full! w-full! object-contain!"
                             />
                         </SwiperSlide>
                     ))}
@@ -321,13 +321,6 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
             </div>
 
             <h1 className="text-base font-normal leading-tight">{produto.nome}</h1>
-
-
-
-            {/* <div className="text-sm text-gray-600">
-                Vendido e entregue por:{" "}
-                <span className="font-semibold text-terciary">{produto.vendidoPor}</span>
-            </div> */}
         </div>
     );
 }

@@ -6,11 +6,9 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 
 import { useEffect, useState } from 'react';
 
-import { FaList, FaTh } from "react-icons/fa";
-
 import sign from 'jwt-encode';
-import { IoFilter } from "react-icons/io5"; // Importing filter icon
 import { useNavigate } from "react-router";
+import FilterToolbar from "~/components/filter_toolbar";
 import Footer from "~/components/footer";
 import LazySection from "~/components/lazy_section";
 import { ProductCard } from "~/components/ProductCard";
@@ -18,19 +16,22 @@ import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
 import { SkeletonProductCard } from "~/components/skeleton_product_card";
 import { useProduto } from "~/features/produto/context/ProdutoContext";
 import { getBanners } from "~/services/bannerService";
+import { gerarSlug } from "~/utils/formatters";
 import type { Categoria } from "../categoria/types";
+import type { Marca } from "../marca/types";
 import type { Banner } from "../produto/types";
 import { FilterContent } from "./components/FilterContent";
 import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 import { useHome } from "./context/HomeContext";
 
 export function HomePage() {
-  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions } = useHome();
+  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos } = useHome();
   const navigate = useNavigate();
 
   const [banners, setBanners] = useState<Banner[]>([]);
   const [secondaryBanners, setSecondaryBanners] = useState<Banner[]>([]);
   const [sectionCategories, setSectionCategories] = useState<Record<string, number | null>>({});
+  const [sectionMarcas, setSectionMarcas] = useState<Record<string, number | null>>({});
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   useEffect(() => {
@@ -50,6 +51,14 @@ export function HomePage() {
     });
   };
 
+  const handleSectionMarcaClick = (sectionId: string, marca: Marca) => {
+    const catId = Number(marca.id);
+    setSectionMarcas(prev => {
+      const current = prev[sectionId];
+      return { ...prev, [sectionId]: current === catId ? null : catId };
+    });
+  };
+
   const handleVerTodosClick = () => {
     navigate('/categoria/1/hardware');
   };
@@ -64,18 +73,18 @@ export function HomePage() {
             images={banners}
           />
 
-          <div className="flex flex-col lg:flex-row mt-4 lg:mt-5 mx-0 lg:ml-10 mb-10 w-full">
+          <div className="flex flex-col lg:flex-row mt-4 lg:mt-5 mx-0 lg:pl-10 mb-10 w-full">
             <Sidebar />
 
             <main className="flex-1 w-full bg-background-dark min-w-0">
-              <FilterToolbar onOpenMobileFilter={() => setIsMobileFilterOpen(true)} />
+              <FilterToolbar totalProdutos={produtos?.length ?? 0} onOpenMobileFilter={() => setIsMobileFilterOpen(true)} />
 
               <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
                 <p className="text-lg max-lg:text-base font-semibold">Promoção</p>
                 <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
               </div>
 
-              <LazySection>
+              <LazySection forceVisible={!!produtos.find(p => p.id === 'promocoes')}>
                 <CarouselCategoria
                   id='promocoes'
                   onChange={(cat) => handleSectionCategoryClick('promocoes', cat)}
@@ -84,7 +93,7 @@ export function HomePage() {
               </LazySection>
 
               <section className="my-4">
-                <LazySection>
+                <LazySection forceVisible={!!produtos.find(p => p.id === 'promocoes')}>
                   <CarouselBannersSecundarios
                     id="promocoes"
                     filtros="blackfriday"
@@ -134,7 +143,7 @@ export function HomePage() {
                 <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
               </div>
 
-              <LazySection>
+              <LazySection forceVisible={!!produtos.find(p => p.id === 'maisprocurados')}>
                 <CarouselCategoria
                   id='maisprocurados'
                   onChange={(cat) => handleSectionCategoryClick('maisprocurados', cat)}
@@ -143,7 +152,7 @@ export function HomePage() {
               </LazySection>
 
               <section className="my-4">
-                <LazySection>
+                <LazySection forceVisible={!!produtos.find(p => p.id === 'maisprocurados')}>
                   <CarouselBannersSecundarios
                     id="maisprocurados"
                     filtros="maisprocurados"
@@ -158,7 +167,7 @@ export function HomePage() {
                 <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
               </div>
 
-              <LazySection>
+              <LazySection forceVisible={true}>
                 <CarouselCategoriaComImagem
                   id='maisprocurados_img'
                   onChange={(cat) => handleSectionCategoryClick('maisprocurados_img', cat)}
@@ -171,11 +180,11 @@ export function HomePage() {
                 <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
               </div>
 
-              <LazySection>
+              <LazySection forceVisible={true}>
                 <CarouselMarcaComImagem
                   id='marcas'
-                  onChange={(cat) => handleSectionCategoryClick('marcas', cat)}
-                  selectedCategoryId={sectionCategories['marcas']}
+                  onChange={(marca) => handleSectionMarcaClick('marcas', marca)}
+                  selectedMarcaId={sectionCategories['marcas']}
                 />
               </LazySection>
 
@@ -205,7 +214,7 @@ export function HomePage() {
                   <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
                 </div>
 
-                <LazySection>
+                <LazySection forceVisible={!!produtos.find(p => p.id === 'maisprocurados_bottom')}>
                   <CarouselCategoria
                     id='maisprocurados_bottom'
                     onChange={(cat) => handleSectionCategoryClick('maisprocurados_bottom', cat)}
@@ -214,7 +223,7 @@ export function HomePage() {
                 </LazySection>
 
                 <section className="my-4">
-                  <LazySection>
+                  <LazySection forceVisible={!!produtos.find(p => p.id === 'maisprocurados_bottom')}>
                     <CarouselBannersSecundarios
                       id="maisprocurados_bottom"
                       filtros="maisprocurados"
@@ -233,7 +242,7 @@ export function HomePage() {
                   <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
                 </div>
 
-                <LazySection>
+                <LazySection forceVisible={!!produtos.find(p => p.id === 'novos')}>
                   <CarouselCategoria
                     id="novos"
                     onChange={(cat) => handleSectionCategoryClick('novos', cat)}
@@ -242,7 +251,7 @@ export function HomePage() {
                 </LazySection>
 
                 <section className="my-4">
-                  <LazySection>
+                  <LazySection forceVisible={!!produtos.find(p => p.id === 'novos')}>
                     <CarouselBannersSecundarios
                       id='novos'
                       filtros="order_by=recente"
@@ -260,7 +269,7 @@ export function HomePage() {
                   <p className="text-lg max-lg:text-base font-semibold">Mais vendidos</p>
                 </div>
 
-                <LazySection>
+                <LazySection forceVisible={!!produtos.find(p => p.id === 'maisvendidos')}>
                   <CarouselCategoria
                     id="maisvendidos"
                     onChange={(cat) => handleSectionCategoryClick('maisvendidos', cat)}
@@ -269,7 +278,7 @@ export function HomePage() {
                 </LazySection>
 
                 <section className="my-4">
-                  <LazySection>
+                  <LazySection forceVisible={!!produtos.find(p => p.id === 'maisvendidos')}>
                     <CarouselBannersSecundarios
                       id='maisvendidos'
                       filtros="maisvendidos"
@@ -389,19 +398,24 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected }: Categ
   );
 }
 
-export function MarcaCardComImagem({ categoria, onClick, isSelected }: CategoriaCardProps) {
+interface MarcaCardProps {
+  marca: Marca;
+  onClick?: (marca: Marca) => void;
+  isSelected?: boolean;
+}
+
+export function MarcaCardComImagem({ marca, onClick, isSelected }: MarcaCardProps) {
   let navigate = useNavigate();
 
   return (
     <div
-      // className={`border px-4 py-2  rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
       className="flex flex-col h-full border border-gray-200 text-center rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group"
       onClick={() => {
-        navigate('/marcas/' + categoria.id);
+        navigate(`/marca/${marca.id}/${gerarSlug(marca.nome)}`);
       }}
     >
-      <img src={categoria.imagem} className="max-h-42 min-w-80 max-w-80 object-contain" />
-      <p>{categoria.nome}</p>
+      <img src={marca.imagem} className="max-h-42 min-w-80 max-w-80 object-contain" />
+      <p>{marca.nome}</p>
     </div>
   );
 }
@@ -411,7 +425,7 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
   const prevButtonId = `${id}-produto-carousel-prev`;
   const nextButtonId = `${id}-produto-carousel-next`;
 
-  let { listarProdutos, produtos } = useProduto();
+  let { listarProdutos, produtos } = useHome();
   const bannerData = produtos.find((e) => e.id == id);
 
   useEffect(() => {
@@ -538,7 +552,7 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
   const nextButtonId = `${id}-category-carousel-next`;
   const [navState, setNavState] = useState({ isBeginning: true, isEnd: false, isLocked: false });
 
-  let { produtos } = useProduto();
+  let { produtos } = useHome();
   const bannerData = produtos.find((e) => e.id == id);
   const isLoading = !bannerData;
 
@@ -704,7 +718,13 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }:
   );
 };
 
-export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: CarouselCategoriaProps) {
+interface CarouselMarcaProps {
+  id: string;
+  onChange: (marca: Marca) => void;
+  selectedMarcaId?: number | null;
+}
+
+export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId }: CarouselMarcaProps) {
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
 
@@ -757,9 +777,9 @@ export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: Car
         {marcas.map((marca) => (
           <SwiperSlide key={`${id}-${marca.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
             <MarcaCardComImagem
-              categoria={marca as any}
+              marca={marca as any}
               onClick={onChange}
-              isSelected={selectedCategoryId === Number(marca.id)}
+              isSelected={selectedMarcaId === Number(marca.id)}
             />
           </SwiperSlide>
         ))}
@@ -774,52 +794,6 @@ export function CarouselMarcaComImagem({ id, onChange, selectedCategoryId }: Car
         className={`max-lg:hidden ${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
       >
         <SlArrowRight color="black" size={16} />
-      </div>
-    </div>
-  );
-};
-
-const FilterToolbar = ({ onOpenMobileFilter }: { onOpenMobileFilter: () => void }) => {
-  const { activeFilters, applyFilters } = useHome();
-
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    applyFilters({ ...activeFilters, ordenacao: e.target.value });
-  };
-
-  return (
-    <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-row justify-between items-center mx-4 lg:mx-12">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label htmlFor="ordenar" className="text-sm font-medium text-gray-700 hidden md:block">Ordenar:</label>
-          <select
-            id="ordenar"
-            value={activeFilters.ordenacao}
-            onChange={handleSortChange}
-            className="lg:appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm max-lg:text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-          >
-            <option value="mais_procurados">Mais procurados</option>
-            <option value="mais_recentes">Mais recentes</option>
-            <option value="menor_preco">Menor preço</option>
-            <option value="maior_preco">Maior preço</option>
-          </select>
-        </div>
-        <span className="text-sm text-gray-500 hidden md:block">8259 produtos</span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <button
-          className="lg:hidden p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer flex items-center gap-2"
-          onClick={onOpenMobileFilter}
-        >
-          <IoFilter size={18} />
-          <span className="font-medium">Filtrar</span>
-        </button>
-        <button className="hidden lg:block p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
-          <FaList size={16} />
-        </button>
-        <button className="hidden lg:block p-2 text-terciary bg-gray-100 rounded cursor-pointer">
-          <FaTh size={16} />
-        </button>
       </div>
     </div>
   );

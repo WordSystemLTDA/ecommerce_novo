@@ -224,25 +224,29 @@ export default function CheckoutLayout() {
         const nextStepIndex = activeStep;
 
         if (activeStep === 1 && !cliente?.id) {
-            toast.info("Faça login para continuar.", { position: 'top-center' });
+            // toast.dismiss();
+            // toast.info("Faça login para continuar.", { position: 'top-center' });
             navigate("/entrar");
             return;
         }
 
         if (enderecoSelecionado == undefined) {
-            toast.error("Selecione um endereço", { position: 'top-center' });
+            // toast.dismiss();
+            // toast.error("Selecione um endereço", { position: 'top-center' });
             navigate("/carrinho/endereco");
             return;
         }
 
         if (tipoDeEntregaSelecionada == undefined) {
-            toast.error("Selecione um tipo de entrega", { position: 'top-center' });
+            // toast.dismiss();
+            // toast.error("Selecione um tipo de entrega", { position: 'top-center' });
             navigate("/carrinho/entrega");
             return;
         }
 
         if (pagamentoSelecionado == undefined) {
-            toast.error("Selecione um pagamento", { position: 'top-center' });
+            // toast.dismiss();
+            // toast.error("Selecione um pagamento", { position: 'top-center' });
             navigate("/carrinho/pagamento");
             return;
         }

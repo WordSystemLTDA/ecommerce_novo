@@ -6,6 +6,7 @@ export default [
     route("registrar", "routes/registrar.tsx"),
     route("produto/:id/:slug?", "routes/produto.tsx"),
     route("categoria/:id/:slug?", "routes/categorias.tsx"),
+    route("marca/:id/:slug?", "routes/marca.tsx"),
 
     route("carrinho", "routes/checkout.layout.tsx", [
         index("routes/checkout.cart.tsx"),

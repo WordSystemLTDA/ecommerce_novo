@@ -1,6 +1,7 @@
 import type { DefaultResponse } from "~/types/DefaultResponse";
 import type { Categoria } from "../categoria/types";
 import type { TipoDeEntrega } from "~/types/TipoDeEntrega";
+import type { Marca } from "../marca/types";
 
 export interface Produto extends DefaultResponse {
     id: number,
@@ -48,6 +49,7 @@ export interface ProdutosBanners {
     id: string,
     categorias: Categoria[],
     produtos: Produto[],
+    filtros: string,
 }
 
 export interface Links {
@@ -85,11 +87,6 @@ export interface Oferta {
     usuarioPrecisaEstarLogado: boolean,
 }
 
-export interface Marca {
-    id: string,
-    nome: string,
-    img: string,
-}
 
 export interface Fotos {
     p: string[],

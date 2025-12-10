@@ -30,6 +30,7 @@ interface CarrinhoContextType {
     adicionarNovoProduto: (produto: Produto) => Promise<boolean>;
     removerTodosProdutos: () => Promise<void>;
     removerProduto: (produto: Produto) => Promise<void>;
+    editarQuantidadeProduto: (produto: Produto) => Promise<void>;
     resetarCarrinho: () => Promise<void>;
     listarTipoDeEntregas: (cepDestino: string) => Promise<void>;
     listarEnderecos: () => Promise<void>;
@@ -143,7 +144,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
 
     const retornarValorProdutos = () => {
         return produtos.reduce((accumulator: number, currentItem) => {
-            return accumulator + Number(currentItem.preco);
+            return accumulator + (Number(currentItem.preco) * Number(currentItem.quantidade));
         }, 0);
     }
 
@@ -267,6 +268,26 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         }
     }
 
+    const editarQuantidadeProduto = async (produto: Produto) => {
+        try {
+            setProdutos((oldState) => {
+                const newState = oldState.map((value) => value.id === produto.id ? { ...value, quantidade: produto.quantidade } : value);
+                if (!cliente?.id) {
+                    localStorage.setItem('carrinho_guest', JSON.stringify(newState));
+                }
+                return newState;
+            });
+
+            if (cliente?.id) {
+                await carrinhoService.editarQuantidadeItem(cliente.id, produto.id, produto.quantidade);
+                // Optionally reload from DB to be sure of stock etc, but optimistic is faster.
+                // await loadCartFromDb(); 
+            }
+        } catch (error) {
+            console.error("Erro ao editar produto:", error);
+        }
+    }
+
     const resetarCarrinho = async () => {
         try {
             setProdutos([]);
@@ -312,6 +333,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             adicionarNovoProduto,
             removerTodosProdutos,
             removerProduto,
+            editarQuantidadeProduto,
             listarTipoDeEntregas,
             listarEnderecos,
             listarPagamentos,

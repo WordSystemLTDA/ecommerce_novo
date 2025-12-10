@@ -1,12 +1,10 @@
-import { useNavigate } from "react-router";
-import { MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout } from "react-icons/md";
-import { FaShoppingCart, FaTrash } from "react-icons/fa";
-import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
-import RatingStars from "~/components/rating_stars";
-import { currencyFormatter, gerarSlug } from "~/utils/formatters";
-import type { Produto } from "~/features/produto/types";
-import { HiOutlineShoppingCart } from "react-icons/hi";
 import { BsCartPlus } from "react-icons/bs";
+import { MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout } from "react-icons/md";
+import { useNavigate } from "react-router";
+import RatingStars from "~/components/rating_stars";
+import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
+import type { Produto } from "~/features/produto/types";
+import { currencyFormatter, gerarSlug } from "~/utils/formatters";
 
 interface ProductCardProps {
     produto: Produto;

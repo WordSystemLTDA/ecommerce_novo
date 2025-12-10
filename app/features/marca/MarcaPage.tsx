@@ -5,13 +5,13 @@ import FilterToolbar from '~/components/filter_toolbar';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
 import { ProductCard } from '~/components/ProductCard';
-import { categoriaService } from '~/features/categoria/services/categoriaService';
-import type { Categoria } from '~/features/categoria/types';
 import { FilterContent } from '~/features/home/components/FilterContent';
 import { MobileFilterDrawer } from '~/features/home/components/MobileFilterDrawer';
 import { produtoService } from '~/features/produto/services/produtoService';
 import type { Paginacao, Produto } from '~/features/produto/types';
 import { gerarSlug } from '~/utils/formatters';
+import { marcaService } from './services/marcaService';
+import type { Marca } from './types';
 
 interface FilterOptions {
     marcas: { id: number; nome: string }[];
@@ -75,7 +75,7 @@ const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: 
     }
 
     if (products.length === 0) {
-        return <div className="p-8 text-center">Nenhum produto encontrado nesta categoria.</div>;
+        return <div className="p-8 text-center">Nenhum produto encontrado nesta marca.</div>;
     }
 
     return (
@@ -150,14 +150,14 @@ const Pagination = ({ pagination, onPageChange }: { pagination: Paginacao, onPag
     );
 };
 
-export default function CategoryPage() {
+export default function MarcaPage() {
     const { id, slug } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [products, setProducts] = useState<Produto[]>([]);
     const [pagination, setPagination] = useState<Paginacao>({ pagina: 1, por_pagina: 20, total: 0, total_paginas: 0 });
     const [isLoading, setIsLoading] = useState(true);
-    const [categoryName, setCategoryName] = useState('CATEGORIA');
+    const [brandName, setBrandName] = useState('MARCA');
     const [porPagina, setPorPagina] = useState(20);
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -186,43 +186,31 @@ export default function CategoryPage() {
     }, []);
 
     useEffect(() => {
-        const fetchCategoryName = async () => {
+        const fetchBrandName = async () => {
             if (!id) return;
             try {
-                const { data } = await categoriaService.listarCategoriasComSubCategorias();
-
-                const findCategory = (cats: Categoria[]): Categoria | undefined => {
-                    for (const cat of cats) {
-                        if (String(cat.id) === id) return cat;
-                        if (cat.subCategorias) {
-                            const found = findCategory(cat.subCategorias);
-                            if (found) return found;
-                        }
-                    }
-                    return undefined;
-                };
-
+                const { data } = await marcaService.listarMarcas();
                 if (data) {
-                    const found = findCategory(data);
-                    if (found) setCategoryName(found.nome.toUpperCase());
+                    const found = data.find((m: Marca) => String(m.id) === id);
+                    if (found) setBrandName(found.nome.toUpperCase());
                 }
             } catch (error) {
-                console.error("Erro ao buscar nome da categoria", error);
+                console.error("Erro ao buscar nome da marca", error);
             }
         };
-        fetchCategoryName();
+        fetchBrandName();
     }, [id]);
 
     useEffect(() => {
-        if (categoryName && categoryName !== 'CATEGORIA' && id) {
-            const expectedSlug = gerarSlug(categoryName);
-            if (!slug) {
-                const newPath = `/categoria/${id}/${expectedSlug}`;
+        if (brandName && brandName !== 'MARCA' && id) {
+            const expectedSlug = gerarSlug(brandName);
+            if (!slug || slug !== expectedSlug) {
+                const newPath = `/marca/${id}/${expectedSlug}`;
                 const currentSearch = window.location.search;
                 window.history.replaceState(null, '', newPath + currentSearch);
             }
         }
-    }, [categoryName, id, slug]);
+    }, [brandName, id, slug]);
 
     useEffect(() => {
         const token = searchParams.get('filtros');
@@ -231,14 +219,15 @@ export default function CategoryPage() {
             if (decodedPartial) {
                 const mergedFilters = { ...defaultFilters, ...decodedPartial };
 
-                if (!mergedFilters.categorias.includes(Number(id))) {
-                    mergedFilters.categorias = [Number(id)];
+                // Force current brand ID
+                if (!mergedFilters.marcas.includes(Number(id))) {
+                    mergedFilters.marcas = [Number(id)];
                 }
 
                 setActiveFilters(mergedFilters);
             }
         } else {
-            setActiveFilters({ ...defaultFilters, categorias: [Number(id)] });
+            setActiveFilters({ ...defaultFilters, marcas: [Number(id)] });
         }
     }, [searchParams, id]);
 
@@ -250,7 +239,7 @@ export default function CategoryPage() {
             try {
                 const filtersToApply = {
                     ...activeFilters,
-                    categorias: [Number(id)],
+                    marcas: [Number(id)],
                     pagina: page,
                     por_pagina: porPagina,
                 };
@@ -292,8 +281,9 @@ export default function CategoryPage() {
 
         if (newFilters.ordenacao !== 'mais_procurados') payload.ordenacao = newFilters.ordenacao;
 
-        if (!payload.categorias || payload.categorias.length === 0) {
-            payload.categorias = [Number(id)];
+        // Ensure current brand is always applied
+        if (!payload.marcas || payload.marcas.length === 0) {
+            payload.marcas = [Number(id)];
         }
 
         const token = sign(payload, 'secret');
@@ -330,7 +320,7 @@ export default function CategoryPage() {
                         />
 
                         <div className="mb-4 px-4">
-                            <p className="text-lg max-lg:text-base font-semibold">{categoryName}</p>
+                            <p className="text-lg max-lg:text-base font-semibold">{brandName}</p>
                         </div>
 
                         <ProductGrid products={products} isLoading={isLoading} />

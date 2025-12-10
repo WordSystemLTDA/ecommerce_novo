@@ -53,6 +53,7 @@ export default function PaymentPage() {
                         checked={0 === pagamentoSelecionado?.id}
                         onChange={() => setPagamentoSelecionado({
                           id: 0,
+                          tipo: 'DINHEIRO',
                           nome: "Receber na loja",
                           nome_banco: '',
                           pix_dinamico: '',

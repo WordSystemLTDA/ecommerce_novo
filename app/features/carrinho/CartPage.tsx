@@ -7,8 +7,8 @@ import {
 } from 'react-icons/fa';
 
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
-import type { Produto } from '../produto/types';
 import { currencyFormatter } from '~/utils/formatters';
+import type { Produto } from '../produto/types';
 
 
 // const TimerMessage = () => (
@@ -30,8 +30,13 @@ const QuantityInput = ({ quantity, onDecrease, onIncrease }: { quantity: number,
 );
 
 const CartItem = ({ produto }: { produto: Produto }) => {
-  const [quantity, setQuantity] = useState(1);
-  let { removerProduto } = useCarrinho();
+  const [quantity, setQuantity] = useState(produto.quantidade); // Initialize with product quantity
+  let { removerProduto, editarQuantidadeProduto } = useCarrinho(); // Get editarQuantidadeProduto
+
+  const handleQuantityChange = (newQuantity: number) => {
+    setQuantity(newQuantity);
+    editarQuantidadeProduto({ ...produto, quantidade: newQuantity });
+  }
 
   return (
     <div className="bg-white p-4 border-b border-gray-200">
@@ -86,7 +91,7 @@ const CartItem = ({ produto }: { produto: Produto }) => {
             <div>
               <QuantitySelector
                 quantity={quantity}
-                onChange={setQuantity}
+                onChange={handleQuantityChange}
               />
             </div>
 
@@ -117,7 +122,7 @@ const QuantitySelector = ({ quantity, onChange }: QuantitySelectorProps) => {
         onChange={(e) => onChange && onChange(parseInt(e.target.value))}
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
       >
-        {[1, 2, 3, 4, 5, 6].map((num) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
           <option key={num} value={num}>
             {num} un.
           </option>
