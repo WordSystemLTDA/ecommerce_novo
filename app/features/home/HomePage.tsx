@@ -313,6 +313,7 @@ function ProductSection({
   useEffect(() => {
     const fetchWithFilters = async () => {
       let finalFilters = globalFilters ? { ...globalFilters } : {};
+      finalFilters['ignore_total'] = true; // Optimize: homepage sections don't need total count
 
       // Ensure we ignore global sorting for these curated sections
       delete finalFilters['ordenacao'];

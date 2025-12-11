@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             } catch (error) {
                 setCliente(null);
+                localStorage.removeItem('token');
             } finally {
                 setIsLoading(false);
             }
@@ -42,6 +43,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const response = await authService.entrar(credentials);
 
             if (response.sucesso) {
+                const token = response.data.token;
+                if (token) {
+                    localStorage.setItem('token', token);
+                }
                 setCliente(response.data.cliente);
                 // toast.success('Bem-vindo de volta!', { position: 'top-center' });
             }
@@ -56,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = async () => {
         try {
             await authService.sair();
+            localStorage.removeItem('token');
             setCliente(null);
         } catch (error) {
             console.error('Erro ao sair', error);
