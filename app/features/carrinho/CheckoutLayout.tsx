@@ -75,16 +75,21 @@ const CartSummary = ({
     step,
     onContinue,
     onBack,
+    loading = false
 }: {
     step: number;
     onContinue: () => void;
     onBack: () => void;
+    loading?: boolean;
 }) => {
-    let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, tipoDeEntregaSelecionada, pagamentoSelecionado } = useCarrinho();
+    let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, tipoDeEntregaSelecionada, pagamentoSelecionado, selectedItems, produtos } = useCarrinho();
 
     const isConfirmationStep = step === 5;
     const isDisabled = () => {
+        if (loading) return true;
         switch (step) {
+            case 1:
+                return produtos.filter(p => selectedItems.includes(p.internalId)).length === 0;
             case 2:
                 return enderecoSelecionado == undefined;
             case 3:
@@ -170,14 +175,19 @@ const CartSummary = ({
                 <button
                     onClick={onContinue}
                     disabled={isDisabled()}
-                    className={`w-full ${isDisabled() ? 'bg-gray-500' : 'bg-primary hover:bg-secondary'} text-white font-bold py-3 rounded-md transition-colors`}
+                    className={`w-full ${isDisabled() ? 'bg-gray-500' : 'bg-primary hover:bg-secondary'} text-white font-bold py-3 rounded-md transition-colors flex justify-center items-center gap-2`}
                 >
-                    {isConfirmationStep ? 'FINALIZAR' : 'CONTINUAR'}
+                    {loading ? (
+                        <>Processando...</>
+                    ) : (
+                        isConfirmationStep ? 'FINALIZAR' : 'CONTINUAR'
+                    )}
                 </button>
                 {step > 1 && (
                     <button
                         onClick={onBack}
-                        className="w-full bg-white text-primary border border-primary font-bold py-3 rounded-md hover:bg-secondary transition-colors"
+                        disabled={loading}
+                        className={`w-full bg-white text-primary border border-primary font-bold py-3 rounded-md hover:bg-secondary transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         VOLTAR
                     </button>
@@ -205,8 +215,10 @@ export default function CheckoutLayout() {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [loading, setLoading] = React.useState(false);
+
     const { cliente } = useAuth();
-    const { produtos, pagamentoSelecionado, enderecoSelecionado, tipoDeEntregaSelecionada, valorFrete, retornarValorFinal, resetarCarrinho } = useCarrinho();
+    const { produtos, selectedItems, pagamentoSelecionado, enderecoSelecionado, tipoDeEntregaSelecionada, valorFrete, retornarValorFinal, removerProdutosSelecionados } = useCarrinho();
 
     const getActiveStep = (pathname: string): number => {
         if (pathname.endsWith('/carrinho')) return 1;
@@ -254,32 +266,42 @@ export default function CheckoutLayout() {
         if (nextStepIndex < stepsRoutes.length) {
             navigate(`/carrinho/${stepsRoutes[nextStepIndex]}`);
         } else {
-            var response = await carrinhoService.gerarVenda(
-                cliente!,
-                produtos.map(p => ({
-                    id: p.id,
-                    quantidade: p.quantidade,
-                    idPromocoesEcommerce: p.idPromocoesEcommerce,
-                    habilTipo: (p.tipo ?? 0).toString(),
-                    idTamanho: (p.tamanhoSelecionado?.id ?? 0).toString(),
-                })),
-                pagamentoSelecionado!,
-                enderecoSelecionado!.id,
-                '',
-                '',
-                '',
-                valorFrete,
-                '',
-                tipoDeEntregaSelecionada!.name,
-                retornarValorFinal(),
-            );
+            const produtosSelecionados = produtos.filter(p => selectedItems.includes(p.internalId));
 
-            if (response.sucesso) {
-                resetarCarrinho();
+            setLoading(true);
+            try {
+                var response = await carrinhoService.gerarVenda(
+                    cliente!,
+                    produtosSelecionados.map(p => ({
+                        id: p.id,
+                        quantidade: p.quantidade,
+                        idPromocoesEcommerce: p.idPromocoesEcommerce,
+                        habilTipo: (p.tipo ?? 0).toString(),
+                        idTamanho: (p.tamanhoSelecionado?.id ?? 0).toString(),
+                    })),
+                    pagamentoSelecionado!,
+                    enderecoSelecionado!.id,
+                    '',
+                    '',
+                    '',
+                    valorFrete,
+                    '',
+                    tipoDeEntregaSelecionada!.name,
+                    retornarValorFinal(),
+                );
 
-                navigate(`/pedido/sucesso/${response.data.id_venda}`);
-            } else {
-                toast.error(response.mensagem, { position: 'top-center' });
+                if (response.sucesso) {
+                    removerProdutosSelecionados();
+
+                    navigate(`/pedido/sucesso/${response.data.id_venda}`);
+                } else {
+                    toast.error(response.mensagem, { position: 'top-center' });
+                }
+            } catch (error) {
+                console.error(error);
+                toast.error("Erro ao gerar venda. Tente novamente.", { position: 'top-center' });
+            } finally {
+                setLoading(false);
             }
         }
     };
@@ -305,15 +327,11 @@ export default function CheckoutLayout() {
 
             <div className="bg-gray-100 min-h-screen py-8">
                 <div className="max-w-387 mx-auto px-4">
-
                     <CheckoutStepper activeStep={activeStep} />
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
                         <div className="lg:col-span-2">
-
                             <Outlet />
-
                         </div>
 
                         <div className="lg:col-span-1">
@@ -321,6 +339,7 @@ export default function CheckoutLayout() {
                                 step={activeStep}
                                 onContinue={handleContinue}
                                 onBack={handleBack}
+                                loading={loading}
                             />
                         </div>
                     </div>
@@ -330,4 +349,4 @@ export default function CheckoutLayout() {
             <Footer />
         </div>
     );
-}
+};

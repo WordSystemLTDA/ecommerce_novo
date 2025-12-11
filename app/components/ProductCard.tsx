@@ -18,7 +18,7 @@ export function ProductCard({ produto }: ProductCardProps) {
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!produto.dataLimitePromocao || !produto.horaLimitePromocao || !(produto.tipoDaPromocao != 4)) {
+        if (produto.promocaoAtiva == 'Nao' || !produto.dataLimitePromocao || !produto.horaLimitePromocao || !(produto.tipoDaPromocao != 4)) {
             setTimeLeft(null);
             return;
         }
@@ -69,6 +69,19 @@ export function ProductCard({ produto }: ProductCardProps) {
         navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
     };
 
+    const valorDescontoPix = parseFloat(produto.valorDescontoPix || '0');
+    const percentualPix = parseFloat(produto.percentualPix || '0');
+    const preco = parseFloat(produto.preco);
+    const precoComPix = preco - valorDescontoPix;
+    const precoExibido = (percentualPix > 0 ? precoComPix : preco).toFixed(2);
+
+    const precoAntigo = produto.precoAntigo ? parseFloat(produto.precoAntigo.toString()) : null;
+    const descontoTotal = precoAntigo
+        ? Math.round(((precoAntigo - parseFloat(precoExibido)) / precoAntigo) * 100)
+        : percentualPix > 0
+            ? Math.round(percentualPix)
+            : 0;
+
     return (
         <div
             className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group relative"
@@ -105,40 +118,33 @@ export function ProductCard({ produto }: ProductCardProps) {
                     </h3>
 
                     <div className="flex justify-between">
-                        {produto.precoAntigo && (
+                        {precoAntigo && (
                             <span className="text-xs text-gray-500 line-through">
                                 {currencyFormatter.format(produto.precoAntigo)}
                             </span>
                         )}
-                        {/* {produto.estoque <= 100 && (
-                            <span className="text-tiny text-gray-600">
-                                Restam {produto.estoque} unid.
-                            </span>
-                        )} */}
                     </div>
 
                     <div className="flex items-baseline gap-2 mb-0">
                         <span className="text-base font-medium text-primary">
-                            {currencyFormatter.format(parseFloat(produto.preco))}
+                            {currencyFormatter.format(parseFloat(precoExibido))}
                         </span>
 
-                        {produto.precoAntigo && (
+                        {descontoTotal > 0 && (
                             <span className="text-xs font-bold text-terciary bg-green-100 px-1 py-0.5 rounded">
-                                {Math.round(((produto.precoAntigo - parseFloat(produto.preco)) / produto.precoAntigo) * 100)}% OFF
+                                {descontoTotal}% OFF
                             </span>
                         )}
 
-                        {(Number(produto.quantidadeDesconto) <= Number(produto.estoque) && produto.idPromocoesEcommerce) ? (
-
-
+                        {produto.promocaoAtiva === 'Sim' && (Number(produto.quantidadeLimiteDesconto) <= Number(produto.estoque) && produto.idPromocoesEcommerce) ? (
                             <span className="text-medium-tiny font-bold text-white bg-red-400 px-1 py-0.5 rounded-full flex items-center gap-0.5 absolute top-2 left-2">
                                 <BsBoxes />
-                                Restam {(Number(produto.estoque)).toFixed(0)} un.
+                                Restam {(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} un.
                             </span>
 
                         )
                             :
-                            produto.idPromocoesEcommerce &&
+                            produto.idPromocoesEcommerce && produto.promocaoAtiva === 'Sim' &&
                             (
                                 <span className="text-medium-tiny font-bold text-white bg-blue-700 px-1 py-0.5 rounded-full flex items-center gap-0.5 absolute top-2 left-2">
                                     TOP OFERTA
@@ -147,9 +153,11 @@ export function ProductCard({ produto }: ProductCardProps) {
                         }
                     </div>
 
-                    {/* <span className="text-medium-tiny text-gray-600 block"> */}
                     <span className="text-medium-tiny text-pix block">
-                        À vista no PIX
+                        {percentualPix > 0
+                            ? <>À vista no PIX com <span className='font-semibold'>{percentualPix}% de desconto</span></>
+                            : 'À vista no PIX'
+                        }
                     </span>
                     {produto.parcelaMaxima && (
                         <span className="text-xs text-gray-600 mt-1 block">
@@ -182,12 +190,12 @@ export function ProductCard({ produto }: ProductCardProps) {
                                     </button>
                                 </>
                             )
-                            : produto.tipoDaPromocao === 4 ?
+                            : produto.tipoDaPromocao === 4 && produto.promocaoAtiva === 'Sim' ?
                                 (
                                     <>
                                         <p className="mt-2 w-full h-9 bg-white border border-primary text-primary font-bold text-xs py-2 rounded-sm flex flex-col leading-none items-center justify-center hover:bg-secondary transition-colors cursor-pointer z-11 lg:group-hover:hidden">
                                             <span className="text-[8px] lg:text-[10px] font-normal mb-0.5">RESTAM:</span>
-                                            <span>{(Number(produto.estoque)).toFixed(0)} Unidades</span>
+                                            <span>{(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} Unidades</span>
                                         </p>
 
                                         <button className="mt-2 w-full h-9 bg-primary text-white font-bold text-xs py-2 rounded-sm hidden lg:group-hover:flex items-center justify-center transition-colors cursor-pointer z-11" onClick={handleComprar}>

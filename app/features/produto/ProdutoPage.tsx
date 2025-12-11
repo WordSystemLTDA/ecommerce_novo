@@ -20,6 +20,7 @@ import { AiFillInfoCircle } from "react-icons/ai"
 import { MdOutlineDescription } from "react-icons/md"
 
 import { ShoppingBag } from 'lucide-react'
+import { BsBoxes } from 'react-icons/bs'
 import { useNavigate, useParams } from 'react-router'
 import Breadcrumb from '~/components/breadcrumb'
 import Button from '~/components/button'
@@ -28,6 +29,9 @@ import RatingStars from '~/components/rating_stars'
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext'
 import { currencyFormatter, gerarSlug } from '~/utils/formatters'
 import type { Produto } from './types'
+import { produtoService } from './services/produtoService'
+import type { TipoDeEntrega } from '~/types/TipoDeEntrega'
+import Loader from '~/components/loader'
 
 interface ProdutoProps {
     produto: Produto,
@@ -329,9 +333,28 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
     let navigate = useNavigate();
     let { adicionarNovoProduto, verificarAdicionadoCarrinho, tamanhoSelecionado } = useCarrinho();
 
-    const precoBase = parseFloat(produto.preco);
+    const valorDescontoPix = parseFloat(produto.valorDescontoPix || '0');
+    const percentualPix = parseFloat(produto.percentualPix || '0');
+
+    // Calcula o preço base a ser exibido (com desconto Pix se houver)
+    const precoBaseNum = parseFloat(produto.preco);
+    const precoComPix = precoBaseNum - valorDescontoPix;
+    const precoExibidoBase = percentualPix > 0 ? precoComPix : precoBaseNum;
+
+    // Adiciona o valor do tamanho selecionado
     const valorAdicional = tamanhoSelecionado ? parseFloat(tamanhoSelecionado.valorGrade) : 0;
-    const precoFinal = precoBase + valorAdicional;
+    const precoFinal = (precoExibidoBase + valorAdicional).toFixed(2);
+
+    // Recalcula o preço antigo (base) + adicional se existir
+    const precoAntigoBase = produto.precoAntigo ? parseFloat(produto.precoAntigo.toString()) : null;
+    const precoAntigoFinal = precoAntigoBase ? precoAntigoBase + valorAdicional : null;
+
+    // Calcula o percentual de desconto total exibido
+    const descontoTotal = precoAntigoFinal
+        ? Math.round(((precoAntigoFinal - parseFloat(precoFinal)) / precoAntigoFinal) * 100)
+        : percentualPix > 0
+            ? Math.round(percentualPix)
+            : 0;
 
     const produtoComTamanho = {
         ...produto,
@@ -341,22 +364,53 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
     };
 
     return (
-        <div className="flex flex-col gap-4 lg:sticky top-24">
-            <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-                {produto.precoAntigo && (
-                    <span className="text-xs text-gray-500 line-through">
-                        {currencyFormatter.format(produto.precoAntigo)}
-                    </span>
+        <div className="flex flex-col gap-4 lg:sticky top-30">
+            <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white px-4 pb-4 shadow-sm relative overflow-hidden">
+
+                {/* Badges do ProductCard */}
+                {produto.promocaoAtiva === 'Sim' && (Number(produto.quantidadeLimiteDesconto) <= Number(produto.estoque) && produto.idPromocoesEcommerce) ? (
+                    <div className="absolute top-0 right-0">
+                        <span className="text-xs font-bold text-white bg-red-400 px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm">
+                            <BsBoxes />
+                            Restam {(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} un.
+                        </span>
+                    </div>
+                ) : produto.idPromocoesEcommerce && produto.promocaoAtiva === 'Sim' && (
+                    <div className="absolute top-0 right-0">
+                        <span className="text-xs font-bold text-white bg-blue-700 px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm">
+                            TOP OFERTA
+                        </span>
+                    </div>
                 )}
+
+                <div className="flex items-center gap-2 mt-4">
+                    {precoAntigoFinal && (
+                        <span className="text-sm text-gray-500 line-through">
+                            {currencyFormatter.format(precoAntigoFinal)}
+                        </span>
+                    )}
+                    {descontoTotal > 0 && (
+                        <span className="text-xs font-bold text-terciary bg-green-100 px-2 py-0.5 rounded">
+                            {descontoTotal}% OFF
+                        </span>
+                    )}
+                </div>
+
                 <span className="text-3xl font-bold text-primary">
-                    {currencyFormatter.format(precoFinal)}
+                    {currencyFormatter.format(parseFloat(precoFinal))}
                 </span>
-                <span className="text-xs text-gray-700 mt-1">
-                    À vista no PIX com <span className='font-semibold'>15% de desconto</span>
+
+                <span className="text-medium-tiny text-pix mt-1">
+                    {percentualPix > 0
+                        ? <>À vista no PIX com <span className='font-semibold'>{percentualPix}% de desconto</span></>
+                        : 'À vista no PIX'
+                    }
                 </span>
-                <div className='my-2'></div>
+
+                <div className='my-0.5'></div>
                 <span className="text-tiny text-gray-600">
-                    <span className='font-bold'>R$ 2.699,90</span> em até 10x de <span className='font-bold'>R$ 269,99</span> sem juros ou 1x com <span className='font-bold'>10% de desconto</span> no cartão
+                    <span className='font-bold'>{currencyFormatter.format(precoBaseNum + valorAdicional)}</span> em até 6x de <span className='font-bold'>
+                        {currencyFormatter.format(parseFloat(((precoBaseNum + valorAdicional) / 6).toFixed(2)))}</span> sem juros no cartão de crédito
                 </span>
                 <a href="#" className="text-tiny font-semibold text-black underline mt-2">
                     Ver mais opções de pagamento e parcelamento
@@ -364,7 +418,7 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
 
                 {produto.estoque > 0 &&
                     <div className="my-2 text-xs font-semibold text-green-600">
-                        Em estoque
+                        Em estoque ({Number(produto.estoque).toFixed(0)} disponíveis)
                     </div>
                 }
                 {produto.estoque <= 0 &&
@@ -401,13 +455,44 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                 </div>
             </div>
 
-            <FreightCalculator />
+            <FreightCalculator produto={produto} />
         </div>
     )
 }
 
-function FreightCalculator() {
+function FreightCalculator({ produto }: { produto: Produto }) {
     const [cep, setCep] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [freteOptions, setFreteOptions] = useState<TipoDeEntrega[]>([]);
+
+    const maskCep = (value: string) => {
+        return value
+            .replace(/\D/g, '')
+            .replace(/^(\d{5})(\d)/, '$1-$2')
+            .substring(0, 9);
+    };
+
+    const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const masked = maskCep(e.target.value);
+        setCep(masked);
+    };
+
+    const handleCalculateFreight = async () => {
+        if (cep.length < 9) return;
+
+        setLoading(true);
+        try {
+            const cleanCep = cep.replace('-', '');
+            // Pass array with single product as expected by backend/service often
+            const options = await produtoService.calcularFrete(cleanCep, [produto]);
+            setFreteOptions(options.data.filter(option => option.price != null) || []);
+        } catch (error) {
+            console.error(error);
+            setFreteOptions([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
@@ -420,16 +505,42 @@ function FreightCalculator() {
                     type="text"
                     placeholder="Digite seu CEP"
                     value={cep}
-                    onChange={(e) => setCep(e.target.value)}
+                    onChange={handleCepChange}
+                    maxLength={9}
                     className="w-full rounded-md border border-gray-400 bg-white p-2 text-xs text-gray-900 placeholder-gray-500 focus:border-terciary focus:outline-none focus:ring-1 focus:ring-terciary"
                 />
-                <Button variant="primaryOutline" className="w-auto! px-4!">
-                    OK
+                <Button
+                    variant="primaryOutline"
+                    className="w-auto! px-4! relative"
+                    onClick={handleCalculateFreight}
+                    disabled={loading}
+                >
+                    {loading ? <Loader size="small" /> : 'OK'}
                 </Button>
             </div>
-            <a href="#" className="text-tiny text-primary underline">
+            <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target='_blank' rel="noreferrer" className="text-tiny text-primary underline">
                 Não sei meu CEP
             </a>
+
+            {freteOptions.length > 0 && (
+                <div className="flex flex-col gap-2 mt-2">
+                    {freteOptions.map((option) => (
+                        <div key={option.id} className="flex justify-between items-center text-xs border-b border-gray-100 pb-2 last:border-0">
+                            <span className="text-gray-700 font-medium">{option.name || option.company.name}</span>
+                            <div className="flex flex-col items-end">
+                                <span className="font-bold text-gray-900">
+                                    {option.price === "0.00" || option.price === "0"
+                                        ? "Grátis"
+                                        : currencyFormatter.format(Number(option.price))}
+                                </span>
+                                <span className="text-tiny text-gray-500">
+                                    até {option.delivery_time} dia{option.delivery_time > 1 ? 's' : ''} úteis
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

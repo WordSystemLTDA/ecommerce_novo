@@ -7,7 +7,7 @@ import { currencyFormatter } from '~/utils/formatters';
 
 export default function ConfirmationPage() {
   let { cliente } = useAuth();
-  let { produtos, enderecoSelecionado } = useCarrinho();
+  let { produtos, enderecoSelecionado, selectedItems } = useCarrinho();
 
   if (cliente == undefined) {
     return (
@@ -43,7 +43,7 @@ export default function ConfirmationPage() {
         </h2>
         <p className="text-xs text-gray-500 mb-4">Vendido e entregue por: <span className="font-bold">Word System!</span></p>
 
-        {produtos.map((produto) => {
+        {produtos.filter(p => selectedItems.includes(p.internalId)).map((produto) => {
           return (
             <div className="flex gap-4 border-b pb-4 mb-4">
               <img src={produto.fotos.m[0]} alt={produto.nome} className="w-16 h-16 object-contain rounded" />

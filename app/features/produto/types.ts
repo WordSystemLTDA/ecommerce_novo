@@ -47,9 +47,14 @@ export interface Produto extends DefaultResponse {
     horaLimitePromocao: string,
     tipoDeDesconto: string,
     tipoDaPromocao: number,
-    quantidadeDesconto: string,
+    quantidadeLimiteDesconto: string,
     idPromocoesEcommerce: string,
     tipodeestoque: string,
+    dataHoraLimitePromocao: string,
+    promocaoAtiva: "Sim" | "Nao",
+    quantidadeCompradoPromocao: string,
+    percentualPix: string,
+    valorDescontoPix: string,
 }
 
 export interface ProdutosBanners {

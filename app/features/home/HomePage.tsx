@@ -207,7 +207,6 @@ export function HomePage() {
                 id="maisvendidos"
                 title="Mais vendidos"
                 filtros="maisvendidos"
-
                 selectedCategoryId={sectionCategories['maisvendidos']}
                 onCategoryChange={handleSectionCategoryClick}
               />

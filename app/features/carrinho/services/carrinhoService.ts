@@ -85,4 +85,27 @@ export const carrinhoService = {
         });
         return data;
     },
+
+    pegarVenda: async (id_venda: number) => {
+        const response = await apiClient.get<any>(`/vendas/${id_venda}`);
+        return response.data['data'];
+    },
+
+    gerarPix: async (id_banco: number, valor: number, id_compra: string, usuario: any) => {
+        const response = await apiClient.post(`/pagamentos/pix/gerar`, {
+            id_banco,
+            valor,
+            id_compra,
+            usuario
+        });
+        return response.data;
+    },
+
+    verificarPix: async (id_banco: number, txid: string) => {
+        const response = await apiClient.post(`/pagamentos/pix/verificar`, {
+            id_banco,
+            txid
+        });
+        return response.data;
+    }
 };
