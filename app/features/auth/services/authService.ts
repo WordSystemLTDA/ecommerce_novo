@@ -22,7 +22,6 @@ export const authService = {
 
         if (data.sucesso) {
             // toast.success(data.mensagem, { position: 'top-center' });
-            window.location.href = "/";
         }
 
         return data;

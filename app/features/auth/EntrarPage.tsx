@@ -7,7 +7,7 @@ import Footer from '~/components/footer'
 import Header from '~/components/header'
 import IconCircle from '~/components/icon_circle'
 import CustomInput from '~/components/input'
-import { authService } from './services/authService'
+import { useAuth } from './context/AuthContext'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -15,11 +15,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
 
+  const { login } = useAuth();
   let navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    await authService.entrar({ email, senha: password });
+    try {
+      await login({ email, senha: password });
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return (

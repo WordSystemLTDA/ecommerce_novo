@@ -200,7 +200,7 @@ const CartSummary = ({
                         <input type="checkbox" className="w-4 h-4 accent-primary mt-0.5" />
                         <span>
                             Ao efetuar o seu pedido, você concorda com os
-                            <a href="#" className="font-bold text-primary"> Termos e condições de Venda do KaBuM! </a>
+                            <a href="#" className="font-bold text-primary"> Termos e condições de Venda do Word System! </a>
                             e com nossa
                             <a href="#" className="font-bold text-primary"> Política de Privacidade</a>.
                         </span>
