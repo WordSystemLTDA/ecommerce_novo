@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import { BsBoxes, BsCartPlus } from "react-icons/bs";
-import { MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout } from "react-icons/md";
+import { MdFavorite, MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout } from "react-icons/md";
 import { useNavigate } from "react-router";
+import { toast } from 'react-toastify';
 import RatingStars from "~/components/rating_stars";
+import { useAuth } from '~/features/auth/context/AuthContext';
 import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
+import { useFavorito } from '~/features/favoritos/context/FavoritoContext';
+import { favoritoService } from '~/features/favoritos/services/favoritoService';
 import type { Produto } from "~/features/produto/types";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
 
@@ -16,6 +20,44 @@ export function ProductCard({ produto }: ProductCardProps) {
     const { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
     const estaNoCarrinho = verificarAdicionadoCarrinho(produto);
     const [timeLeft, setTimeLeft] = useState<string | null>(null);
+
+    const { cliente } = useAuth();
+    const [isFavorite, setIsFavorite] = useState(false);
+    const { atualizarQuantidade } = useFavorito();
+    // Debug favorite status
+    // console.log(`Product ${produto.id} (${produto.nome}): ehFavorito=${produto.ehFavorito}, isFavorite=${isFavorite}`);
+
+    useEffect(() => {
+        if (cliente?.id) {
+            setIsFavorite(produto.ehFavorito === 'Sim');
+        } else {
+            setIsFavorite(false);
+        }
+    }, [cliente, produto.ehFavorito]);
+
+    const toggleFavorite = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!cliente?.id) {
+            toast.info("Faça login para favoritar.");
+            return;
+        }
+
+        // Optimistic update
+        const newState = !isFavorite;
+        setIsFavorite(newState);
+
+        try {
+            if (newState) {
+                await favoritoService.adicionar(cliente.id, produto.id);
+            } else {
+                await favoritoService.remover(cliente.id, produto.id);
+            }
+            atualizarQuantidade();
+        } catch (error) {
+            setIsFavorite(!newState); // Revert
+            toast.error("Erro ao atualizar favorito");
+        }
+    };
 
     useEffect(() => {
         if (produto.promocaoAtiva == 'Nao' || !produto.dataLimitePromocao || !produto.horaLimitePromocao || !(produto.tipoDaPromocao != 4)) {
@@ -100,7 +142,13 @@ export function ProductCard({ produto }: ProductCardProps) {
                 </div>
 
                 <div className="flex absolute top-2 right-2 group-hover:opacity-100 opacity-0 transition-opacity gap-2 p-1 z-10 cursor-auto">
-                    <MdFavoriteBorder size={20} color="gray" className="cursor-pointer" />
+                    <button onClick={toggleFavorite} className="hover:scale-110 transition-transform">
+                        {isFavorite ? (
+                            <MdFavorite size={20} className="text-red-500" />
+                        ) : (
+                            <MdFavoriteBorder size={20} color="gray" />
+                        )}
+                    </button>
                     {estaNoCarrinho ? (
                         <MdShoppingCartCheckout size={20} color="green" className="cursor-pointer" onClick={handleAdicionarCarrinho} />
                     ) : (

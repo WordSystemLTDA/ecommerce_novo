@@ -8,6 +8,9 @@ export default [
     route("categoria/:id/:slug?", "routes/categorias.tsx"),
     route("marca/:id/:slug?", "routes/marca.tsx"),
 
+    route("termos", "routes/termos.tsx"),
+    route("privacidade", "routes/privacidade.tsx"),
+
     route("carrinho", "routes/checkout.layout.tsx", [
         index("routes/checkout.cart.tsx"),
 
@@ -25,6 +28,7 @@ export default [
             route("novo", "routes/minhaconta.novo_endereco.tsx"),
             route("editar/:id", "routes/minhaconta.editar_endereco.tsx"),
         ]),
+        route("favoritos", "routes/minhaconta.favoritos.tsx"),
         route("pedidos", "routes/minhaconta.pedidos.tsx"),
         route("dados", "routes/minhaconta.dados.tsx"),
     ]),

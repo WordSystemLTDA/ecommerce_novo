@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Swiper as SwiperInstance } from 'swiper'
+import { toast } from 'react-toastify';
+
 
 import Header from '~/components/header'
 
@@ -11,8 +13,6 @@ import {
 } from 'react-icons/fa'
 
 import {
-    IoHeartOutline,
-    IoShareOutline,
     IoShareSocialOutline
 } from 'react-icons/io5'
 
@@ -41,12 +41,12 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
     const { id, slug } = useParams();
     const { tamanhoSelecionado, setTamanhoSelecionado } = useCarrinho();
 
+    const [erroTamanho, setErroTamanho] = useState(false);
+
     useEffect(() => {
-        if ((produto.tamanhos ?? []).length > 0) {
-            setTamanhoSelecionado(produto.tamanhos![0]);
-        } else {
-            setTamanhoSelecionado(null);
-        }
+        // Reset tamanho ao mudar de produto
+        setTamanhoSelecionado(null);
+        setErroTamanho(false);
     }, [id, setTamanhoSelecionado]);
 
     useEffect(() => {
@@ -77,13 +77,15 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
 
                         {produto.imagens != null &&
                             <div className='lg:col-span-5'>
-                                <ProdutoGallery images={produto.imagens} />
+                                <ProdutoGallery images={produto.imagens} produtoId={produto.id} />
                             </div>
                         }
 
                         <div className='lg:col-span-4'>
                             <ProdutoInfo
                                 produto={produto}
+                                erroTamanho={erroTamanho}
+                                setErroTamanho={setErroTamanho}
                             />
                         </div>
 
@@ -98,7 +100,7 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                         </div>
 
                         <div className="lg:col-span-3 lg:col-start-10 lg:row-start-1 lg:row-span-2">
-                            <PurchaseSidebar produto={produto} />
+                            <PurchaseSidebar produto={produto} setErroTamanho={setErroTamanho} />
                         </div>
                     </div>
 
@@ -142,16 +144,56 @@ function Avalicoes({ produto }: AvalicoesProps) {
     )
 }
 
+import { favoritoService } from '~/features/favoritos/services/favoritoService'
+import { useAuth } from '~/features/auth/context/AuthContext'
+import { useFavorito } from '~/features/favoritos/context/FavoritoContext'
+import { IoHeart, IoHeartOutline } from 'react-icons/io5'
+
+// ... (imports remain)
+
 interface ProdutoGalleryProps {
-    images: string[]
+    images: string[],
+    produtoId: number
 }
 
-
-function ProdutoGallery({ images }: ProdutoGalleryProps) {
+function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
+    let { atualizarQuantidade } = useFavorito();
     const [thumbsSwiper, setThumbsSwiper] =
         useState<SwiperInstance | null>(null)
 
     const [currentSlide, setCurrentSlide] = useState(0)
+    const [isFavorite, setIsFavorite] = useState(false);
+    const { cliente } = useAuth();
+
+    useEffect(() => {
+        if (cliente?.id && produtoId) {
+            favoritoService.verificar(cliente.id, produtoId)
+                .then(setIsFavorite)
+                .catch(console.error);
+        }
+    }, [cliente, produtoId]);
+
+    const toggleFavorite = async () => {
+        if (!cliente?.id) {
+            toast.info("Faça login para favoritar produtos.");
+            return;
+        }
+
+        try {
+            if (isFavorite) {
+                await favoritoService.remover(cliente.id, produtoId);
+                toast.success("Removido dos favoritos");
+            } else {
+                await favoritoService.adicionar(cliente.id, produtoId);
+                toast.success("Adicionado aos favoritos");
+            }
+            setIsFavorite(!isFavorite);
+            atualizarQuantidade();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao atualizar favoritos");
+        }
+    };
 
     return (
         <div className="flex flex-col gap-2 max-w-full relative">
@@ -162,8 +204,11 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
                 </div>
 
                 <div className="flex items-center gap-2 absolute right-2 lg:right-4 top-3 bg-white z-30 px-0 rounded-sm text-xs font-semibold">
-                    <button className="text-gray-600 hover:text-red-600">
-                        <IoHeartOutline size={22} />
+                    <button
+                        className={`text-gray-600 hover:text-red-600 transition-colors ${isFavorite ? 'text-red-600' : ''}`}
+                        onClick={toggleFavorite}
+                    >
+                        {isFavorite ? <IoHeart size={22} /> : <IoHeartOutline size={22} />}
                     </button>
                 </div>
 
@@ -233,7 +278,12 @@ function ProdutoGallery({ images }: ProdutoGalleryProps) {
     )
 }
 
-function ProdutoInfo({ produto }: ProdutoProps) {
+interface ProdutoInfoProps extends ProdutoProps {
+    erroTamanho: boolean;
+    setErroTamanho: (erro: boolean) => void;
+}
+
+function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps) {
     let navigate = useNavigate();
     const { tamanhoSelecionado, setTamanhoSelecionado } = useCarrinho();
 
@@ -247,7 +297,7 @@ function ProdutoInfo({ produto }: ProdutoProps) {
 
             <div className="flex flex-col gap-3">
                 {produto.cores && produto.cores.length > 0 && (
-                    <div className="flex flex-col gap-2 mb-4">
+                    <div className="flex flex-col gap-2 mb-0">
                         <span className="text-sm font-semibold text-gray-700">
                             Cor: <span className="font-normal text-gray-600">{produto.cores.find(c => c.id == produto.id)?.nome}</span>
                         </span>
@@ -283,18 +333,23 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                                 <div
                                     key={tamanho.id}
                                     onClick={() => {
-                                        if (tamanho.tipodeestoque == '2' || tamanho.estoque > 0) {
+                                        if (tamanho.estoque > 0) {
                                             setTamanhoSelecionado(tamanho);
+                                            setErroTamanho(false);
                                         }
                                     }}
-                                    className={`relative px-3 py-1 border rounded-md text-sm cursor-pointer overflow-hidden ${tamanhoSelecionado?.id === tamanho.id
-                                        ? 'border-terciary'
-                                        : ((tamanho.tipodeestoque == '2' || tamanho.estoque > 0) ? 'border-gray-300 text-gray-700 hover:border-terciary' : 'border-gray-400 text-gray-400 bg-gray-200 cursor-not-allowed')
+                                    className={`relative px-3 py-1 border rounded-md text-sm cursor-pointer overflow-hidden ${tamanhoSelecionado?.id === tamanho.id && tamanho.estoque > 0
+                                        ? 'border-terciary text-terciary'
+                                        : erroTamanho && tamanho.estoque > 0
+                                            ? 'border-red-500 text-red-500'
+                                            : tamanho.estoque > 0
+                                                ? 'border-gray-300 text-gray-700 hover:border-terciary'
+                                                : 'border-gray-400 text-gray-400 bg-gray-200 cursor-not-allowed'
                                         }`}
                                     title={`Estoque: ${tamanho.estoque}`}
                                 >
                                     {tamanho.tamanho}
-                                    {!(tamanho.tipodeestoque == '2' || tamanho.estoque > 0) && (
+                                    {!(tamanho.estoque > 0) && (
                                         <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
                                             <line x1="0" y1="0" x2="100%" y2="100%" stroke="#9ca3af" strokeWidth="1" />
                                         </svg>
@@ -304,7 +359,6 @@ function ProdutoInfo({ produto }: ProdutoProps) {
                         </div>
                     </div>
                 )}
-
                 <div className='flex gap-2 items-center text-terciary max-lg:hidden'>
                     <AiFillInfoCircle />
                     <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
@@ -329,9 +383,44 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
     );
 }
 
-function PurchaseSidebar({ produto }: ProdutoProps) {
+interface PurchaseSidebarProps extends ProdutoProps {
+    setErroTamanho: (erro: boolean) => void;
+}
+
+function PurchaseSidebar({ produto, setErroTamanho }: PurchaseSidebarProps) {
     let navigate = useNavigate();
     let { adicionarNovoProduto, verificarAdicionadoCarrinho, tamanhoSelecionado } = useCarrinho();
+    const { cliente } = useAuth();
+    const [avisoAtivo, setAvisoAtivo] = useState(false);
+    const [loadingAviso, setLoadingAviso] = useState(false);
+
+    useEffect(() => {
+        if (cliente?.id && produto?.id) {
+            produtoService.verificarAvisoEstoque(produto.id, cliente.id)
+                .then(response => {
+                    setAvisoAtivo(response.status);
+                })
+                .catch(err => console.error(err));
+        }
+    }, [cliente, produto]);
+
+    const handleAvisarMe = async () => {
+        if (!cliente?.id) {
+            // TODO: Navigate to login or open modal
+            alert("Faça login para ativar o aviso.");
+            return;
+        }
+
+        setLoadingAviso(true);
+        try {
+            const response = await produtoService.toggleAvisoEstoque(produto.id, cliente.id);
+            setAvisoAtivo(response.status);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingAviso(false);
+        }
+    };
 
     const valorDescontoPix = parseFloat(produto.valorDescontoPix || '0');
     const percentualPix = parseFloat(produto.percentualPix || '0');
@@ -427,36 +516,64 @@ function PurchaseSidebar({ produto }: ProdutoProps) {
                     </div>
                 }
 
-                <div className="flex flex-col gap-3">
-                    <Button
-                        variant="primary"
-                        onClick={async () => {
-                            if (!verificarAdicionadoCarrinho(produto)) {
-                                const success = await adicionarNovoProduto(produtoComTamanho);
-                                if (success) {
-                                    navigate('/carrinho');
-                                }
-                            } else {
-                                navigate('/carrinho');
-                            }
-                        }}
-                    >
-                        Comprar agora
-                    </Button>
-                    <Button
-                        variant="grayOutline"
-                        onClick={() => {
-                            adicionarNovoProduto(produtoComTamanho);
-                        }}
-                    >
-                        <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
-                        {verificarAdicionadoCarrinho(produto) ? 'Remover' : 'Adicionar'} ao Carrinho
-                    </Button>
-                </div>
+                {produto.habilitarAviso == 'Sim' ?
+                    (
+                        <Button
+                            variant={avisoAtivo ? "primaryOutline" : "primary"}
+                            onClick={handleAvisarMe}
+                            disabled={loadingAviso}
+                        >
+                            {loadingAviso ? <Loader size="small" /> : (avisoAtivo ? "Avisaremos você" : "Avisar-me")}
+                        </Button>
+                    )
+                    :
+                    (
+                        <div className="flex flex-col gap-3">
+                            <Button
+                                variant="primary"
+                                disabled={produto.estoque <= 0}
+                                onClick={async () => {
+                                    if (produto.tamanhos && produto.tamanhos.length > 0 && !tamanhoSelecionado) {
+                                        setErroTamanho(true);
+                                        toast.error("Selecione um tamanho", { position: 'top-center' });
+                                        return;
+                                    }
+
+                                    if (!verificarAdicionadoCarrinho(produto)) {
+                                        const success = await adicionarNovoProduto(produtoComTamanho);
+                                        if (success) {
+                                            navigate('/carrinho');
+                                        }
+                                    } else {
+                                        navigate('/carrinho');
+                                    }
+                                }}
+                            >
+                                Comprar agora
+                            </Button>
+
+                            <Button
+                                variant="grayOutline"
+                                disabled={produto.estoque <= 0}
+                                onClick={() => {
+                                    if (produto.tamanhos && produto.tamanhos.length > 0 && !tamanhoSelecionado) {
+                                        setErroTamanho(true);
+                                        toast.error("Selecione um tamanho", { position: 'top-center' });
+                                        return;
+                                    }
+                                    adicionarNovoProduto(produtoComTamanho);
+                                }}
+                            >
+                                <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
+                                {verificarAdicionadoCarrinho(produto) ? 'Remover' : 'Adicionar'} ao Carrinho
+                            </Button>
+                        </div>
+                    )
+                }
             </div>
 
             <FreightCalculator produto={produto} />
-        </div>
+        </div >
     )
 }
 

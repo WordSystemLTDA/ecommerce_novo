@@ -26,4 +26,17 @@ export const produtoService = {
         const { data } = await apiClient.get<any>('/produtos/filtros');
         return data;
     },
+
+    toggleAvisoEstoque: async (id_produto: number, id_cliente: number) => {
+        const { data } = await apiClient.post<any>('/produtos/aviso_estoque/toggle', {
+            id_produto,
+            id_cliente
+        });
+        return data['data']; // expected { status: boolean, message: string }
+    },
+
+    verificarAvisoEstoque: async (id_produto: number, id_cliente: number) => {
+        const { data } = await apiClient.get<any>(`/produtos/aviso_estoque/verificar/${id_produto}/${id_cliente}`);
+        return data['data']; // expected { status: boolean }
+    },
 };

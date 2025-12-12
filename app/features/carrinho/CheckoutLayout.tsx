@@ -83,6 +83,7 @@ const CartSummary = ({
     loading?: boolean;
 }) => {
     let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, tipoDeEntregaSelecionada, pagamentoSelecionado, selectedItems, produtos } = useCarrinho();
+    const [termsAccepted, setTermsAccepted] = React.useState(false);
 
     const isConfirmationStep = step === 5;
     const isDisabled = () => {
@@ -96,6 +97,8 @@ const CartSummary = ({
                 return tipoDeEntregaSelecionada == undefined;
             case 4:
                 return pagamentoSelecionado == undefined;
+            case 5:
+                return !termsAccepted;
             default:
                 return false;
         }
@@ -197,12 +200,17 @@ const CartSummary = ({
             {isConfirmationStep && (
                 <div className="mt-4 text-xs text-gray-500">
                     <label className="flex items-start gap-2">
-                        <input type="checkbox" className="w-4 h-4 accent-primary mt-0.5" />
+                        <input
+                            type="checkbox"
+                            className="w-4 h-4 accent-primary mt-0.5"
+                            checked={termsAccepted}
+                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                        />
                         <span>
                             Ao efetuar o seu pedido, você concorda com os
-                            <a href="#" className="font-bold text-primary"> Termos e condições de Venda do Word System! </a>
+                            <a href="/termos" target="_blank" className="font-bold text-primary"> Termos e condições de Venda do Word System! </a>
                             e com nossa
-                            <a href="#" className="font-bold text-primary"> Política de Privacidade</a>.
+                            <a href="/privacidade" target="_blank" className="font-bold text-primary"> Política de Privacidade</a>.
                         </span>
                     </label>
                 </div>

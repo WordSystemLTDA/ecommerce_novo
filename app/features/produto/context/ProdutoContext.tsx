@@ -10,6 +10,19 @@ interface ProdutoContextType {
 
 const ProdutoContext = createContext<ProdutoContextType | undefined>(undefined);
 
+function decodeJwt(token: string): any {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        return null;
+    }
+}
+
 export function ProdutoProvider({ children }: { children: ReactNode }) {
     const [produtos, setProdutos] = useState<ProdutosBanners[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -17,7 +30,21 @@ export function ProdutoProvider({ children }: { children: ReactNode }) {
     const listarProdutos = async (id: string, filtros: string) => {
         setIsLoading(true);
         try {
-            const responseProdutos = await produtoService.listarProdutos(`${filtros}&por_pagina=6`);
+            const token = localStorage.getItem('@ecommerce/token');
+            let idClienteFilter = '';
+
+            if (token) {
+                try {
+                    const decoded: any = decodeJwt(token);
+                    if (decoded && decoded.id) {
+                        idClienteFilter = `&id_cliente=${decoded.id}`;
+                    }
+                } catch (e) {
+                    console.error("Invalid token", e);
+                }
+            }
+
+            const responseProdutos = await produtoService.listarProdutos(`${filtros}&por_pagina=6${idClienteFilter}`);
             const responseCategorias = await categoriaService.listarCategorias();
 
             if (responseProdutos.sucesso) {
@@ -30,14 +57,16 @@ export function ProdutoProvider({ children }: { children: ReactNode }) {
                         newState[index] = {
                             id: id,
                             categorias: responseCategorias.data,
-                            produtos: produtos
+                            produtos: produtos,
+                            filtros: filtros
                         };
                         return newState;
                     }
                     return [...oldState, {
                         id: id,
                         categorias: responseCategorias.data,
-                        produtos: produtos
+                        produtos: produtos,
+                        filtros: filtros
                     }];
                 });
             }

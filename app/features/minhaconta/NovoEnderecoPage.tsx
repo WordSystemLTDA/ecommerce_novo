@@ -204,11 +204,11 @@ export default function NovoEnderecoPage() {
   }
 
   return (
-    <div className="flex items-center justify-center py-5 px-4">
+    <div className="flex items-center justify-center py-5 px-0">
 
       <div className="max-w-387 relative flex flex-col justify-center items-center w-full">
 
-        <div className="px-8 pt-8 pb-4 w-full">
+        <div className="px-0 pt-0 pb-4 w-full">
           <div className="flex items-center gap-2 mb-6">
             <MapPin className="text-primary" size={24} />
             <h2 className="text-xl font-bold text-gray-700 uppercase tracking-wide">
@@ -217,7 +217,7 @@ export default function NovoEnderecoPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-8 pb-8 w-full">
+        <form onSubmit={handleSubmit} className="px-0 pb-8 w-full">
 
           <div className="space-y-5">
 

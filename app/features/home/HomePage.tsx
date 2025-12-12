@@ -14,7 +14,7 @@ import LazySection from "~/components/lazy_section";
 import { ProductCard } from "~/components/ProductCard";
 import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
 import { SkeletonProductCard } from "~/components/skeleton_product_card";
-import { getBanners } from "~/services/bannerService";
+import { useAuth } from "~/features/auth/context/AuthContext";
 import { gerarSlug } from "~/utils/formatters";
 import type { Categoria } from "../categoria/types";
 import type { Marca } from "../marca/types";
@@ -24,19 +24,10 @@ import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 import { useHome } from "./context/HomeContext";
 
 export function HomePage() {
-  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos } = useHome();
+  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos, sectionCategories, setSectionCategories, sectionMarcas, setSectionMarcas, banners, secondaryBanners } = useHome();
   const navigate = useNavigate();
 
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [secondaryBanners, setSecondaryBanners] = useState<Banner[]>([]);
-  const [sectionCategories, setSectionCategories] = useState<Record<string, number | null>>({});
-  const [sectionMarcas, setSectionMarcas] = useState<Record<string, number | null>>({});
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-
-  useEffect(() => {
-    getBanners('Principal').then(setBanners);
-    getBanners('Secundario').then(setSecondaryBanners);
-  }, []);
 
   const pos0Banners = secondaryBanners.filter(b => b.tipo_de_banner === 2);
   const pos1Banners = secondaryBanners.filter(b => b.tipo_de_banner === 3);
@@ -308,6 +299,7 @@ function ProductSection({
   showCategoryCarousel = true
 }: ProductSectionProps) {
   let { listarProdutos, produtos } = useHome();
+  const { cliente } = useAuth();
   const bannerData = produtos.find((e) => e.id == id);
 
   useEffect(() => {
@@ -339,6 +331,10 @@ function ProductSection({
       const token = sign(finalFilters, 'secret');
       const params = new URLSearchParams();
       params.append('filtros', token);
+
+      if (cliente?.id) {
+        params.append('id_cliente', cliente.id.toString());
+      }
 
       await listarProdutos(id, params.toString());
     };
@@ -445,12 +441,12 @@ export function MarcaCardComImagem({ marca, onClick, isSelected }: MarcaCardProp
   );
 }
 
-
 export function CarouselBannersSecundarios({ id, filtros, globalFilters, selectedCategoryId, skipFetch }: { id: string, filtros: string, globalFilters?: any, selectedCategoryId?: number | null, skipFetch?: boolean }) {
   const prevButtonId = `${id}-produto-carousel-prev`;
   const nextButtonId = `${id}-produto-carousel-next`;
 
   let { listarProdutos, produtos } = useHome();
+  const { cliente } = useAuth();
   const bannerData = produtos.find((e) => e.id == id);
 
   useEffect(() => {
@@ -479,6 +475,10 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
       const token = sign(finalFilters, 'secret');
       const params = new URLSearchParams();
       params.append('filtros', token);
+
+      if (cliente?.id) {
+        params.append('id_cliente', cliente.id.toString());
+      }
 
       await listarProdutos(id, params.toString());
     };

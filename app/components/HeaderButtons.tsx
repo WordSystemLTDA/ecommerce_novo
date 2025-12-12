@@ -45,10 +45,23 @@ export function ButtonEntreOuCadastrese() {
     );
 }
 
+import { useFavorito } from "~/features/favoritos/context/FavoritoContext";
+
 export function ButtonFavoritos() {
+    let navigate = useNavigate();
+    const { quantidade } = useFavorito();
+
     return (
-        <div className="cursor-pointer hover:text-gray-200 transition-colors relative">
+        <div
+            className="cursor-pointer hover:text-gray-200 transition-colors relative"
+            onClick={() => navigate('/minha-conta/favoritos')}
+        >
             <MdOutlineFavorite size={24} />
+            {quantidade > 0 && (
+                <span className="absolute -top-1 -right-2 inline-flex items-center justify-center px-1 py-0 text-xs font-medium text-white bg-red-500 rounded-full">
+                    {quantidade}
+                </span>
+            )}
         </div>
     );
 }

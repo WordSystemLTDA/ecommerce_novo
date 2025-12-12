@@ -24,6 +24,7 @@ import { HeaderProvider } from "./context/HeaderContext";
 import { CarrinhoProvider } from "./features/carrinho/context/CarrinhoContext";
 import { ConfigProvider } from "./features/config/context/ConfigContext";
 import { HomeProvider } from "./features/home/context/HomeContext";
+import { FavoritoProvider } from "./features/favoritos/context/FavoritoContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -82,12 +83,14 @@ export default function App() {
         <ConfigProvider>
           <HomeProvider>
             <ProdutoProvider>
-              <CarrinhoProvider>
-                <HeaderProvider>
-                  <Outlet />
-                  <ToastContainer />
-                </HeaderProvider>
-              </CarrinhoProvider>
+              <FavoritoProvider>
+                <CarrinhoProvider>
+                  <HeaderProvider>
+                    <Outlet />
+                    <ToastContainer />
+                  </HeaderProvider>
+                </CarrinhoProvider>
+              </FavoritoProvider>
             </ProdutoProvider>
           </HomeProvider>
         </ConfigProvider>

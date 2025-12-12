@@ -72,6 +72,7 @@ import { useParams } from 'react-router';
 import { carrinhoService } from './services/carrinhoService';
 import { useAuth } from '../auth/context/AuthContext';
 import Loader from '~/components/loader';
+import { toast } from 'react-toastify';
 
 const Step6_Success = () => {
   const { id } = useParams();
@@ -194,6 +195,7 @@ const Step6_Success = () => {
               onClick={() => {
                 if (pixData.copia_cola) {
                   navigator.clipboard.writeText(pixData.copia_cola);
+                  toast.success('Código PIX copiado para a área de transferência');
                 }
               }}
             >

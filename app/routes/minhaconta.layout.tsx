@@ -1,4 +1,4 @@
-import { LayoutDashboard, LogOut, MapPin, ShoppingBag, User } from "lucide-react";
+import { Heart, LayoutDashboard, LogOut, MapPin, ShoppingBag, User } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import Header from "~/components/header";
 import { useAuth } from "~/features/auth/context/AuthContext";
@@ -23,6 +23,7 @@ export default function MinhaContaLayout() {
   const navItems = [
     { name: "Visão Geral", path: "/minha-conta", icon: LayoutDashboard, end: true },
     { name: "Meus Pedidos", path: "/minha-conta/pedidos", icon: ShoppingBag, end: false },
+    { name: "Meus Favoritos", path: "/minha-conta/favoritos", icon: Heart, end: false },
     { name: "Meus Endereços", path: "/minha-conta/enderecos", icon: MapPin, end: false },
     { name: "Meus Dados", path: "/minha-conta/dados", icon: User, end: false },
   ];

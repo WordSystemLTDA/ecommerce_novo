@@ -2,10 +2,11 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { useSearchParams } from 'react-router';
 import { categoriaService } from '~/features/categoria/services/categoriaService';
 import { produtoService } from '~/features/produto/services/produtoService';
-import type { Produto, ProdutosBanners } from '~/features/produto/types';
+import type { Produto, ProdutosBanners, Banner } from '~/features/produto/types';
 import sign from 'jwt-encode';
 import type { Marca } from '~/features/marca/types';
 import type { Categoria } from '~/features/categoria/types';
+import { getBanners } from '~/services/bannerService';
 
 interface HomeContextType {
     produtos: ProdutosBanners[];
@@ -18,6 +19,12 @@ interface HomeContextType {
     filteredProducts: Produto[];
     isFiltering: boolean;
     isLoadingFilters: boolean;
+    sectionCategories: Record<string, number | null>;
+    setSectionCategories: React.Dispatch<React.SetStateAction<Record<string, number | null>>>;
+    sectionMarcas: Record<string, number | null>;
+    setSectionMarcas: React.Dispatch<React.SetStateAction<Record<string, number | null>>>;
+    banners: Banner[];
+    secondaryBanners: Banner[];
 }
 
 export interface FilterOptions {
@@ -81,8 +88,18 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     const [filteredProducts, setFilteredProducts] = useState<Produto[]>([]);
     const [isFiltering, setIsFiltering] = useState(false);
 
+    // Persisted state for HomePage sections
+    const [sectionCategories, setSectionCategories] = useState<Record<string, number | null>>({});
+    const [sectionMarcas, setSectionMarcas] = useState<Record<string, number | null>>({});
+
+    // Persisted Banners
+    const [banners, setBanners] = useState<Banner[]>([]);
+    const [secondaryBanners, setSecondaryBanners] = useState<Banner[]>([]);
+
     useEffect(() => {
         fetchFilterOptions();
+        getBanners('Principal').then(setBanners).catch(err => console.error("Error fetching principal banners", err));
+        getBanners('Secundario').then(setSecondaryBanners).catch(err => console.error("Error fetching secondary banners", err));
     }, []);
 
     useEffect(() => {
@@ -118,6 +135,15 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         try {
             const params = new URLSearchParams();
             params.append('filtros', token);
+
+            // Add id_cliente if user is logged in
+            const authToken = localStorage.getItem('@ecommerce/token');
+            if (authToken) {
+                const decodedAuth = decodeJwt(authToken);
+                if (decodedAuth && decodedAuth.id) {
+                    params.append('id_cliente', decodedAuth.id);
+                }
+            }
 
             const queryString = params.toString();
 
@@ -160,7 +186,33 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     const listarProdutos = async (id: string, filtros: string) => {
         // Check if we already have data for this ID with the same filters
         const existingData = produtos.find(p => p.id === id);
-        if (existingData && existingData.filtros === filtros) {
+
+        const areFiltersEqual = (params1: string, params2: string) => {
+            if (params1 === params2) return true;
+
+            const p1 = new URLSearchParams(params1);
+            const p2 = new URLSearchParams(params2);
+
+            // Compare id_cliente
+            if (p1.get('id_cliente') !== p2.get('id_cliente')) return false;
+
+            // Compare JWT content
+            const t1 = p1.get('filtros');
+            const t2 = p2.get('filtros');
+
+            if (!t1 || !t2) return t1 === t2;
+
+            const d1 = decodeJwt(t1);
+            const d2 = decodeJwt(t2);
+
+            if (!d1 || !d2) return false;
+
+            // Simple deep compare for these specific filter objects
+            // We assume arrays are consistent (e.g. sorted or same order as generated)
+            return JSON.stringify(d1) === JSON.stringify(d2);
+        };
+
+        if (existingData && areFiltersEqual(existingData.filtros, filtros)) {
             return; // Data already exists and filters match, no need to fetch
         }
 
@@ -206,7 +258,13 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             applyFilters,
             filteredProducts,
             isFiltering,
-            isLoadingFilters
+            isLoadingFilters,
+            sectionCategories,
+            setSectionCategories,
+            sectionMarcas,
+            setSectionMarcas,
+            banners,
+            secondaryBanners
         }}>
             {children}
         </HomeContext.Provider>

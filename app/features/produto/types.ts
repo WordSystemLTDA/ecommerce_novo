@@ -55,6 +55,10 @@ export interface Produto extends DefaultResponse {
     quantidadeCompradoPromocao: string,
     percentualPix: string,
     valorDescontoPix: string,
+    habilitarAviso: string,
+    nomeCategoria: string,
+    nomeSubCategoria: string,
+    ehFavorito: "Sim" | "Nao",
 }
 
 export interface ProdutosBanners {
