@@ -3,7 +3,8 @@ const config = {
     API: 'https://eadsagestart.com.br/sistema/apis_restaurantes/api_e_commerce/api1',
     EMPRESAS: [
         // '32', // TESTE
-        '166', // TESTE
+        // '166', // TESTE
+        '135', // URBAN BOY
         // '3', // PRIETO KOUROS
     ],
     CORES: {

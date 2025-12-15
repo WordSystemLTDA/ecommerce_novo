@@ -37,7 +37,7 @@ export default function Header() {
                             const currentParams = new URLSearchParams(window.location.search);
                             navigate('/' + (currentParams.toString() ? '?' + currentParams.toString() : ''));
                         }}
-                        src="/logo_wordsystem.png"
+                        src="/logo.png"
                         alt="Logo"
                         className="w-28 lg:w-40 cursor-pointer object-contain"
                     />
@@ -104,7 +104,7 @@ export default function Header() {
                             </div>
 
                             <nav className="flex items-center gap-4 ml-2 overflow-x-auto no-scrollbar flex-1">
-                                {(categoriasMenu ?? []).map((categoria) => (
+                                {(categoriasMenu ?? []).slice(0, 10).map((categoria) => (
                                     <a
                                         key={categoria.id}
                                         onClick={() => navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`)}

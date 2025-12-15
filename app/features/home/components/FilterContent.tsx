@@ -31,7 +31,7 @@ export function FilterContent({ activeFilters, filterOptions, onFilterChange }: 
     return (
         <div className="flex flex-col gap-2">
             {filterOptions.categorias && filterOptions.categorias.length > 0 && (
-                <FilterSection title="Departamentos">
+                <FilterSection title="Departamentos" defaultOpen>
                     <CheckboxFilter
                         items={filterOptions.categorias.map((c: any) => ({ id: c.id, label: c.nome }))}
                         selectedValues={activeFilters.categorias}
