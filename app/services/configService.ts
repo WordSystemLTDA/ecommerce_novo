@@ -14,5 +14,5 @@ export interface ConfigData {
 
 export const getConfig = async (): Promise<ConfigData> => {
     const response = await apiClient.get('/configuracoes');
-    return response.data.dados;
+    return response.data['data'];
 };

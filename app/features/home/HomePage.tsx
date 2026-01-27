@@ -22,6 +22,7 @@ import type { Banner } from "../produto/types";
 import { FilterContent } from "./components/FilterContent";
 import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 import { useHome } from "./context/HomeContext";
+import { useIsMobile } from "~/hooks/useIsMobile";
 
 export function HomePage() {
   const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos, sectionCategories, setSectionCategories, sectionMarcas, setSectionMarcas, banners, secondaryBanners } = useHome();
@@ -29,9 +30,42 @@ export function HomePage() {
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
+  // const isMobile = useIsMobile();
+
   const pos0Banners = secondaryBanners.filter(b => b.tipo_de_banner === 2);
   const pos1Banners = secondaryBanners.filter(b => b.tipo_de_banner === 3);
   const pos2Banners = secondaryBanners.filter(b => b.tipo_de_banner === 4);
+
+  // const pos0BannersSemFiltro = secondaryBanners.filter(b => b.tipo_de_banner === 2);
+  // const pos1BannersSemFiltro = secondaryBanners.filter(b => b.tipo_de_banner === 3);
+  // const pos2BannersSemFiltro = secondaryBanners.filter(b => b.tipo_de_banner === 4);
+
+  // const pos0Banners = (pos0BannersSemFiltro ?? []).filter((v) => {
+  //   if (isMobile) {
+  //     return v.paraCelular === 'Sim';
+  //   } else {
+  //     // Assume que se não for 'Sim', é para desktop (ou verifique se existe 'Não')
+  //     return v.paraCelular !== 'Sim';
+  //   }
+  // });
+
+  // const pos1Banners = (pos1BannersSemFiltro ?? []).filter((v) => {
+  //   if (isMobile) {
+  //     return v.paraCelular === 'Sim';
+  //   } else {
+  //     // Assume que se não for 'Sim', é para desktop (ou verifique se existe 'Não')
+  //     return v.paraCelular !== 'Sim';
+  //   }
+  // });
+
+  // const pos2Banners = (pos2BannersSemFiltro ?? []).filter((v) => {
+  //   if (isMobile) {
+  //     return v.paraCelular === 'Sim';
+  //   } else {
+  //     // Assume que se não for 'Sim', é para desktop (ou verifique se existe 'Não')
+  //     return v.paraCelular !== 'Sim';
+  //   }
+  // });
 
   const handleSectionCategoryClick = (sectionId: string, category: Categoria) => {
     const catId = Number(category.id);
@@ -226,9 +260,24 @@ interface CarouselBannersPrincipaisProps {
 }
 
 export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisProps) {
+  // 1. Chama o hook para saber o estado atual
+  const isMobile = useIsMobile();
 
   const prevButtonId = 'main-banner-prev';
   const nextButtonId = 'main-banner-next';
+
+  // 2. Filtra as imagens baseado no estado
+  const bannersFiltrados = (images ?? []).filter((v) => {
+    if (isMobile) {
+      return v.paraCelular === 'Sim';
+    } else {
+      // Assume que se não for 'Sim', é para desktop (ou verifique se existe 'Não')
+      return v.paraCelular !== 'Sim';
+    }
+  });
+
+  // Dica: Se não houver banners para o dispositivo, evite renderizar o Swiper vazio
+  if (bannersFiltrados.length === 0) return null;
 
   return (
     <div className="relative group w-full">
@@ -250,7 +299,7 @@ export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisP
           clickable: true,
         }}
       >
-        {images?.map((image, index) => (
+        {bannersFiltrados.map((image, index) => (
           <SwiperSlide key={index}>
             <img
               src={image.imagemUrl}

@@ -74,7 +74,7 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
             {categoriaAtiva ? (
               <div className="p-4">
                 <div className="mb-3 pb-2 border-b border-gray-200">
-                  <a href={categoriaAtiva.link} className="text-sm font-bold text-primary hover:underline">
+                  <a href={categoriaAtiva.nome} className="text-sm font-bold text-primary hover:underline">
                     Ver tudo em {categoriaAtiva.nome}
                   </a>
                 </div>
@@ -83,7 +83,7 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
                   {(categoriaAtiva.subCategorias || []).map((sub) => (
                     <li key={sub.id}>
                       <a
-                        href={sub.link}
+                        href={sub.nome}
                         className="block text-sm text-gray-600 hover:text-secondary hover:translate-x-1 transition-all"
                       >
                         {sub.nome}

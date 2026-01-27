@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { MdPerson, MdOutlineFavorite, MdKeyboardArrowDown, MdOutlineSearch } from "react-icons/md";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaChevronRight, FaShoppingCart } from "react-icons/fa";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
 import type { Categoria } from "~/features/categoria/types";
@@ -29,13 +29,13 @@ export function ButtonEntreOuCadastrese() {
 
             {isAuthenticated ? (
                 <div>
-                    <span className="text-[10px] uppercase font-bold">Olá, <span className="font-bold text-white">{cliente?.nome}</span></span>
+                    <span className="text-tiny uppercase font-bold">Olá, <span className="font-bold text-white">{cliente?.nome}</span></span>
                 </div>
             )
                 :
                 (
                     <div className="flex flex-col leading-none sm:hidden lg:flex">
-                        <span className="text-[10px] uppercase font-bold opacity-80">Olá, faça seu login</span>
+                        <span className="text-tiny uppercase font-bold opacity-80">Olá, faça seu login</span>
                         <span className="text-xs font-bold">ou cadastre-se</span>
                     </div>
                 )
@@ -46,6 +46,7 @@ export function ButtonEntreOuCadastrese() {
 }
 
 import { useFavorito } from "~/features/favoritos/context/FavoritoContext";
+import { gerarSlug } from "~/utils/formatters";
 
 export function ButtonFavoritos() {
     let navigate = useNavigate();
@@ -144,20 +145,74 @@ export function ButtonOthers({ titulo }: { titulo: string }) {
     );
 }
 
+
 export function ButtonMore({ hiddenCategories }: { hiddenCategories: Categoria[] }) {
     const [isHovered, setIsHovered] = useState(false);
 
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    let navigate = useNavigate();
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsHovered(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [menuRef]);
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+    };
+
+    const toggleMenu = () => {
+        setIsHovered(!isHovered);
+    };
+
     return (
         <div
-            className="flex items-center gap-1 cursor-pointer text-white hover:text-gray-200"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="flex items-center gap-0 cursor-pointer text-white hover:text-gray-200 relative"
+            ref={menuRef} onMouseLeave={handleMouseLeave}
         >
-            <span className="text-xs font-bold">Mais</span>
-            <MdKeyboardArrowDown
-                size={16}
-                className={`transition-transform duration-300 ${isHovered ? '-rotate-180' : 'rotate-0'}`}
-            />
+
+            <button
+                onClick={toggleMenu}
+                className="flex h-full items-center py-1.5 text-xs font-bold text-secondary transition-colors cursor-pointer"
+            >
+                <span className="text-xs font-bold">Mais</span>
+
+                <MdKeyboardArrowDown
+                    size={16}
+                    className={`transition-transform duration-300 ${isHovered ? '-rotate-180' : 'rotate-0'}`}
+                />
+            </button>
+
+            {isHovered && (
+                <div className="absolute left-0 top-full mt-0 w-64 h-96 bg-white border border-gray-200 shadow-xl z-50 text-gray-800">
+                    {/* Descomentei seu código original para mostrar como ficaria dentro da caixa corrigida */}
+                    <div className="w-full h-full py-2">
+                        <ul className="max-h-[375px] overflow-y-auto">
+                            {hiddenCategories.map((categoria) => (
+                                <li key={categoria.id}>
+                                    <a
+                                        onMouseEnter={() => { }}
+                                        className="flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
+                                        onClick={() => navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`)}
+                                    >
+                                        <span className="font-medium">{categoria.nome}</span>
+                                        {(categoria.subCategorias?.length > 0) && <FaChevronRight size={10} />}
+                                    </a>
+                                </li>
+                            ))}
+                            {hiddenCategories.length === 0 && <p className="p-4 text-sm">Nenhuma categoria extra.</p>}
+                        </ul>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

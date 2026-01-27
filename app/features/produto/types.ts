@@ -149,6 +149,7 @@ export interface Filtros {
 export interface Banner {
     id: number | string;
     imagemUrl: string;
+    paraCelular: string;
     corHex: string;
     tipo_de_banner?: number;
 }

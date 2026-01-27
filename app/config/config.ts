@@ -4,8 +4,8 @@ const config = {
     EMPRESAS: [
         // '32', // TESTE
         // '166', // TESTE
-        '135', // URBAN BOY
-        // '3', // PRIETO KOUROS
+        // '135', // URBAN BOY
+        '3', // PRIETO KOUROS
     ],
     CORES: {
         PRIMARIA: '#333b57',

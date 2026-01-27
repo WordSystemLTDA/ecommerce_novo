@@ -39,7 +39,7 @@ export default function Header() {
                         }}
                         src="/logo.png"
                         alt="Logo"
-                        className="w-28 lg:w-40 cursor-pointer object-contain"
+                        className="w-15 lg:w-40 cursor-pointer object-contain"
                     />
                 </div>
 
@@ -103,19 +103,23 @@ export default function Header() {
                                 <ButtonMaisVendidos />
                             </div>
 
-                            <nav className="flex items-center gap-4 ml-2 overflow-x-auto no-scrollbar flex-1">
-                                {(categoriasMenu ?? []).slice(0, 10).map((categoria) => (
+                            <nav className="flex items-center gap-4 ml-2  no-scrollbar flex-1">
+                                {(categoriasMenu ?? []).slice(0, 12).map((categoria) => (
                                     <a
                                         key={categoria.id}
                                         onClick={() => navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`)}
-                                        className="text-white text-xs font-bold hover:underline whitespace-nowrap cursor-pointer">{categoria.nome}
+                                        className="text-white text-xs font-bold hover:underline whitespace-nowrap cursor-pointer">
+                                        {categoria.nome}
                                     </a>
                                 ))}
-
-                                {categoriasMenu.length > 10 && (
-                                    <ButtonMore hiddenCategories={categoriasMenu.slice(10)} />
+                                {categoriasMenu.length > 12 && (
+                                    <div className="shrink-0 ml-2">
+                                        <ButtonMore hiddenCategories={categoriasMenu.slice(12)} />
+                                    </div>
                                 )}
                             </nav>
+
+                  
                         </div>
 
                         <div className="w-64 ml-4 hidden xl:block">
@@ -168,7 +172,7 @@ export default function Header() {
                                 <div className="bg-primary p-2 rounded-full text-white">
                                     <MdHeadsetMic size={20} />
                                 </div>
-                                <span className="text-[10px] text-gray-600">Atend.</span>
+                                <span className="text-tiny text-gray-600">Atend.</span>
                             </div>
                             {/* Wrapper for existing buttons if they don't have text labels internally, otherwise simpler icons */}
                             <div className="flex flex-col items-center gap-1">
@@ -176,13 +180,13 @@ export default function Header() {
                                     {/* This might need adjustment if ButtonFavoritos renders a button. Assuming it renders an icon wrapped in button */}
                                     <ButtonFavoritos />
                                 </div>
-                                <span className="text-[10px] text-gray-600">Favoritos</span>
+                                <span className="text-tiny text-gray-600">Favoritos</span>
                             </div>
                             <div className="flex flex-col items-center gap-1">
                                 <div className="bg-primary p-2 rounded-full text-white flex items-center justify-center">
                                     <ButtonCarrinho />
                                 </div>
-                                <span className="text-[10px] text-gray-600">Carrinho</span>
+                                <span className="text-tiny text-gray-600">Carrinho</span>
                             </div>
                         </div>
 

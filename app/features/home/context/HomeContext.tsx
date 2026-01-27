@@ -7,6 +7,7 @@ import sign from 'jwt-encode';
 import type { Marca } from '~/features/marca/types';
 import type { Categoria } from '~/features/categoria/types';
 import { getBanners } from '~/services/bannerService';
+import { meta } from '~/routes/home';
 
 interface HomeContextType {
     produtos: ProdutosBanners[];
