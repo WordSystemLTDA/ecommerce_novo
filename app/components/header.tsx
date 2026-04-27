@@ -1,17 +1,20 @@
 import { useRef, useState } from "react";
 import { MdClose, MdHeadsetMic, MdKeyboardArrowDown, MdLocationOn, MdMenu } from "react-icons/md";
 import { useNavigate } from "react-router";
+import config from "~/config/config";
 import { useHeader } from "~/context/HeaderContext";
 import type { Endereco } from "~/features/minhaconta/types";
 import { gerarSlug } from "~/utils/formatters";
 import { AddressSelectionModal } from "./AddressSelectionModal";
 import DepartmentMenu from "./departament";
 import { ButtonBuscar, ButtonCarrinho, ButtonConta, ButtonEntreOuCadastrese, ButtonFavoritos, ButtonMaisVendidos, ButtonMore } from "./HeaderButtons";
+import { OptimizedImage } from "./OptimizedImage";
 import { SearchBar } from "./SearchBar";
 
 export default function Header() {
     let navigate = useNavigate();
     const { categorias, categoriasMenu, selectedAddress, handleAddressSelect } = useHeader();
+    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -25,29 +28,56 @@ export default function Header() {
     };
 
     return (
-        <header className="w-full bg-primary sticky top-0 z-50 flex flex-col">
-            <div className="flex flex-row items-center w-full relative">
-                <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1 text-white ml-2">
+        <header className={`w-full sticky top-0 z-50 flex flex-col backdrop-blur-md shadow-[0_8px_30px_rgba(2,6,23,0.16)] ${isPrietoKouros ? 'bg-secondary/95' : 'bg-primary/95'}`}>
+            <div className={`flex flex-row items-center w-full relative ${isPrietoKouros ? 'border-b border-primary/15' : 'border-b border-white/10'}`}>
+                <button onClick={() => setIsMobileMenuOpen(true)} className={`lg:hidden p-1 ml-2 ${isPrietoKouros ? 'text-primary' : 'text-white'}`}>
                     <MdMenu size={28} className="cursor-pointer" />
                 </button>
 
                 <div className="w-auto px-4 lg:px-0 lg:w-55 flex items-center justify-center absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
-                    <img
-                        onClick={() => {
-                            const currentParams = new URLSearchParams(window.location.search);
-                            navigate('/' + (currentParams.toString() ? '?' + currentParams.toString() : ''));
-                        }}
-                        src="/logo.png"
-                        alt="Logo"
-                        className="w-15 lg:w-40 cursor-pointer object-contain"
-                    />
+                    {isPrietoKouros ? (
+                        <button
+                            type="button"
+                            aria-label="Ir para a página inicial"
+                            onClick={() => {
+                                const currentParams = new URLSearchParams(window.location.search);
+                                navigate('/' + (currentParams.toString() ? '?' + currentParams.toString() : ''));
+                            }}
+                            className="cursor-pointer"
+                        >
+                            <div
+                                className="w-15 lg:w-40 aspect-[2048/431] bg-primary"
+                                style={{
+                                    WebkitMaskImage: "url('/logo_prieto_kouros_preto.png')",
+                                    maskImage: "url('/logo_prieto_kouros_preto.png')",
+                                    WebkitMaskRepeat: 'no-repeat',
+                                    maskRepeat: 'no-repeat',
+                                    WebkitMaskPosition: 'center',
+                                    maskPosition: 'center',
+                                    WebkitMaskSize: 'contain',
+                                    maskSize: 'contain',
+                                }}
+                            />
+                        </button>
+                    ) : (
+                        <OptimizedImage
+                            onClick={() => {
+                                const currentParams = new URLSearchParams(window.location.search);
+                                navigate('/' + (currentParams.toString() ? '?' + currentParams.toString() : ''));
+                            }}
+                            src="/logo.png"
+                            alt="Logo"
+                            priority
+                            className="w-15 lg:w-40 cursor-pointer object-contain"
+                        />
+                    )}
                 </div>
 
                 <div className="flex-1 w-full px-2 lg:px-8 py-3">
 
                     <div className="flex items-center gap-2 lg:gap-8 justify-end lg:justify-between">
                         <div
-                            className="hidden lg:flex items-center gap-2 text-white min-w-fit cursor-pointer hover:opacity-90"
+                            className={`hidden lg:flex items-center gap-2 min-w-fit cursor-pointer hover:opacity-90 ${isPrietoKouros ? 'text-primary' : 'text-white'}`}
                             onClick={() => setIsAddressModalOpen(true)}
                         >
                             <MdLocationOn size={24} />
@@ -66,7 +96,7 @@ export default function Header() {
                             <SearchBar ref={inputRef} />
                         </div>
 
-                        <div className="flex items-center gap-4 lg:gap-6 max-lg:pr-2 text-white shrink-0">
+                        <div className={`flex items-center gap-4 lg:gap-6 max-lg:pr-2 shrink-0 ${isPrietoKouros ? 'text-primary' : 'text-white'}`}>
                             <ButtonEntreOuCadastrese />
 
                             <div className="lg:hidden">
@@ -89,7 +119,7 @@ export default function Header() {
                             </div>
 
                             <div className="hidden lg:flex items-center gap-4">
-                                <MdHeadsetMic size={24} className="cursor-pointer hover:text-gray-200" title="Atendimento" />
+                                <MdHeadsetMic size={24} className={`cursor-pointer ${isPrietoKouros ? 'hover:text-primary/75' : 'hover:text-gray-200'}`} title="Atendimento" />
                                 <ButtonFavoritos />
                                 <ButtonCarrinho />
                             </div>
@@ -108,7 +138,7 @@ export default function Header() {
                                     <a
                                         key={categoria.id}
                                         onClick={() => navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`)}
-                                        className="text-white text-xs font-bold hover:underline whitespace-nowrap cursor-pointer">
+                                        className={`${isPrietoKouros ? 'text-primary' : 'text-white'} text-xs font-bold hover:underline whitespace-nowrap cursor-pointer`}>
                                         {categoria.nome}
                                     </a>
                                 ))}
@@ -119,11 +149,11 @@ export default function Header() {
                                 )}
                             </nav>
 
-                  
+
                         </div>
 
                         <div className="w-64 ml-4 hidden xl:block">
-                            <div className="bg-white text-primary px-4 py-1 rounded-full text-xs font-bold flex items-center justify-between gap-2 cursor-pointer hover:bg-gray-100 transition-colors">
+                            <div className={`${isPrietoKouros ? 'bg-primary text-secondary hover:opacity-90' : 'bg-white text-primary hover:bg-gray-100'} px-4 py-1 rounded-full text-xs font-bold flex items-center justify-between gap-2 cursor-pointer transition-colors`}>
                                 Seja um sócio
                                 <MdKeyboardArrowDown className="-rotate-90" />
                             </div>
@@ -141,7 +171,7 @@ export default function Header() {
                 <div className="fixed inset-0 z-50 flex lg:hidden">
                     <div className="fixed inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)}></div>
                     <div className="relative bg-white w-[80%] max-w-xs h-full shadow-xl flex flex-col overflow-y-auto">
-                        <div className="p-4 bg-primary text-white flex justify-between items-center">
+                        <div className={`p-4 flex justify-between items-center ${isPrietoKouros ? 'bg-secondary text-primary border-b border-primary/10' : 'bg-primary text-white'}`}>
                             <span className="font-bold text-lg">Menu</span>
                             <MdClose size={24} className="cursor-pointer" onClick={() => setIsMobileMenuOpen(false)} />
                         </div>

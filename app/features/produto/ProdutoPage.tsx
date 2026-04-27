@@ -1,37 +1,38 @@
-import { useEffect, useState } from 'react'
-import type { Swiper as SwiperInstance } from 'swiper'
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import type { Swiper as SwiperInstance } from 'swiper';
 
 
-import Header from '~/components/header'
+import Header from '~/components/header';
 
-import { FreeMode, Navigation, Pagination, Thumbs } from 'swiper/modules'
-import { Swiper, SwiperSlide } from 'swiper/react'
+import { FreeMode, Navigation, Thumbs } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 import {
     FaTruck,
-} from 'react-icons/fa'
+} from 'react-icons/fa';
 
 import {
     IoShareSocialOutline
-} from 'react-icons/io5'
+} from 'react-icons/io5';
 
-import { AiFillInfoCircle } from "react-icons/ai"
-import { MdOutlineDescription } from "react-icons/md"
+import { AiFillInfoCircle } from "react-icons/ai";
+import { MdOutlineDescription } from "react-icons/md";
 
-import { ShoppingBag } from 'lucide-react'
-import { BsBoxes } from 'react-icons/bs'
-import { useNavigate, useParams } from 'react-router'
-import Breadcrumb from '~/components/breadcrumb'
-import Button from '~/components/button'
-import Footer from '~/components/footer'
-import RatingStars from '~/components/rating_stars'
-import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext'
-import { currencyFormatter, gerarSlug } from '~/utils/formatters'
-import type { Produto } from './types'
-import { produtoService } from './services/produtoService'
-import type { TipoDeEntrega } from '~/types/TipoDeEntrega'
-import Loader from '~/components/loader'
+import { ShoppingBag } from 'lucide-react';
+import { BsBoxes } from 'react-icons/bs';
+import { useNavigate, useParams } from 'react-router';
+import Breadcrumb from '~/components/breadcrumb';
+import Button from '~/components/button';
+import Footer from '~/components/footer';
+import Loader from '~/components/loader';
+import { OptimizedImage } from '~/components/OptimizedImage';
+import RatingStars from '~/components/rating_stars';
+import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
+import type { TipoDeEntrega } from '~/types/TipoDeEntrega';
+import { currencyFormatter, gerarSlug } from '~/utils/formatters';
+import { produtoService } from './services/produtoService';
+import type { Produto } from './types';
 
 interface ProdutoProps {
     produto: Produto,
@@ -144,10 +145,10 @@ function Avalicoes({ produto }: AvalicoesProps) {
     )
 }
 
-import { favoritoService } from '~/features/favoritos/services/favoritoService'
-import { useAuth } from '~/features/auth/context/AuthContext'
-import { useFavorito } from '~/features/favoritos/context/FavoritoContext'
-import { IoHeart, IoHeartOutline } from 'react-icons/io5'
+import { IoHeart, IoHeartOutline } from 'react-icons/io5';
+import { useAuth } from '~/features/auth/context/AuthContext';
+import { useFavorito } from '~/features/favoritos/context/FavoritoContext';
+import { favoritoService } from '~/features/favoritos/services/favoritoService';
 
 // ... (imports remain)
 
@@ -233,10 +234,11 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
                 >
                     {images.map((img, index) => (
                         <SwiperSlide key={index} className='lg:h-130! max-lg:min-h-96!'>
-                            <img
+                            <OptimizedImage
                                 src={img}
                                 alt={`Imagem ${index + 1} do produto`}
                                 className="lg:h-130! max-lg:min-h-96! lg:w-full! lg:object-contain! max-lg:object-cover!"
+                                priority={index === 0}
                             />
                         </SwiperSlide>
                     ))}
@@ -259,7 +261,7 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
                             key={index}
                             className="cursor-pointer overflow-hidden rounded-md border border-gray-400"
                         >
-                            <img
+                            <OptimizedImage
                                 src={img}
                                 alt={`Miniatura ${index + 1}`}
                                 className="h-full! w-full! object-contain!"
@@ -311,7 +313,7 @@ function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps)
                                     className="group relative w-24 min-h-24 max-h-32 cursor-pointer"
                                 >
                                     <div className={`p-1 w-full h-full rounded-lg border overflow-hidden ${cor.id == produto.id ? 'border-terciary' : 'border-gray-400 group-hover:border-gray-400'}`}>
-                                        <img src={cor.imagem} alt={cor.nome} className="w-full max-h-20 object-cover" />
+                                        <OptimizedImage src={cor.imagem} alt={cor.nome} className="w-full max-h-20 object-cover" />
                                         <p className="text-tiny text-center mt-1">{cor.nome}</p>
                                     </div>
 

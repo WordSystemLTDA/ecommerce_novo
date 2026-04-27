@@ -17,15 +17,15 @@ export default function FilterToolbar({ onOpenMobileFilter, enableSortPerPage = 
     };
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-row justify-between items-center mx-4 lg:mx-4">
+        <div className="bg-white/95 backdrop-blur p-4 rounded-2xl border border-slate-100 shadow-sm mb-4 flex flex-row justify-between items-center mx-4 lg:mx-4">
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                    <label htmlFor="ordenar" className="text-sm font-medium text-gray-700 hidden md:block">Ordenar:</label>
+                    <label htmlFor="ordenar" className="text-sm font-medium text-slate-700 hidden md:block">Ordenar:</label>
                     <select
                         id="ordenar"
                         value={activeFilters.ordenacao}
                         onChange={handleSortChange}
-                        className="lg:appearance-none border border-gray-300 rounded-md px-3 py-2 text-sm max-lg:text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="lg:appearance-none border border-slate-200 rounded-lg px-3 py-2 text-sm max-lg:text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 bg-slate-50"
                     >
                         <option value="mais_procurados">Mais procurados</option>
                         <option value="mais_recentes">Mais recentes</option>
@@ -50,21 +50,21 @@ export default function FilterToolbar({ onOpenMobileFilter, enableSortPerPage = 
                     </div>
                 )}
 
-                <span className="text-sm text-gray-500 hidden md:block">{totalProdutos} produtos</span>
+                <span className="text-sm text-slate-500 hidden md:block">{totalProdutos} produtos</span>
             </div>
 
             <div className="flex items-center gap-2">
                 <button
-                    className="lg:hidden p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer flex items-center gap-2"
+                    className="lg:hidden px-3 py-2 text-slate-700 hover:text-primary bg-slate-100 rounded-lg cursor-pointer flex items-center gap-2 font-medium"
                     onClick={onOpenMobileFilter}
                 >
                     <IoFilter size={18} />
                     <span className="font-medium">Filtrar</span>
                 </button>
-                <button className="hidden lg:block p-2 text-gray-600 hover:text-terciary bg-gray-100 rounded cursor-pointer">
+                <button className="hidden lg:block p-2 text-slate-600 hover:text-terciary bg-slate-100 rounded-lg cursor-pointer">
                     <FaList size={16} />
                 </button>
-                <button className="hidden lg:block p-2 text-terciary bg-gray-100 rounded cursor-pointer">
+                <button className="hidden lg:block p-2 text-terciary bg-slate-100 rounded-lg cursor-pointer">
                     <FaTh size={16} />
                 </button>
             </div>

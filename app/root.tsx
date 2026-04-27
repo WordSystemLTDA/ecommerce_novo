@@ -23,10 +23,14 @@ import appStyles from "./app.css?url";
 import { HeaderProvider } from "./context/HeaderContext";
 import { CarrinhoProvider } from "./features/carrinho/context/CarrinhoContext";
 import { ConfigProvider } from "./features/config/context/ConfigContext";
-import { HomeProvider } from "./features/home/context/HomeContext";
 import { FavoritoProvider } from "./features/favoritos/context/FavoritoContext";
+import { HomeProvider } from "./features/home/context/HomeContext";
+
+const apiOrigin = new URL(config.API).origin;
 
 export const links: Route.LinksFunction = () => [
+  { rel: "dns-prefetch", href: apiOrigin },
+  { rel: "preconnect", href: apiOrigin },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
@@ -51,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html lang="pt-br">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <Meta />
         <Links />
       </head>
@@ -71,10 +75,11 @@ export function HydrateFallback() {
 export default function App() {
 
   useEffect(() => {
+    const coresAtivas = config.getCoresAtivas();
     const root = document.documentElement;
-    root.style.setProperty('--dynamic-primary', config.CORES.PRIMARIA);
-    root.style.setProperty('--dynamic-secondary', config.CORES.SECUNDARIA);
-    root.style.setProperty('--dynamic-terciary', config.CORES.TERCIARIA);
+    root.style.setProperty('--dynamic-primary', coresAtivas.PRIMARIA);
+    root.style.setProperty('--dynamic-secondary', coresAtivas.SECUNDARIA);
+    root.style.setProperty('--dynamic-terciary', coresAtivas.TERCIARIA);
   }, []);
 
   return (
@@ -87,7 +92,7 @@ export default function App() {
                 <CarrinhoProvider>
                   <HeaderProvider>
                     <Outlet />
-                    <ToastContainer />
+                    <ToastContainer limit={3} newestOnTop />
                   </HeaderProvider>
                 </CarrinhoProvider>
               </FavoritoProvider>

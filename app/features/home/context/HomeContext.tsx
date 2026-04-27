@@ -1,13 +1,12 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import sign from 'jwt-encode';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { categoriaService } from '~/features/categoria/services/categoriaService';
-import { produtoService } from '~/features/produto/services/produtoService';
-import type { Produto, ProdutosBanners, Banner } from '~/features/produto/types';
-import sign from 'jwt-encode';
-import type { Marca } from '~/features/marca/types';
 import type { Categoria } from '~/features/categoria/types';
+import type { Marca } from '~/features/marca/types';
+import { produtoService } from '~/features/produto/services/produtoService';
+import type { Banner, Produto, ProdutosBanners } from '~/features/produto/types';
 import { getBanners } from '~/services/bannerService';
-import { meta } from '~/routes/home';
 
 interface HomeContextType {
     produtos: ProdutosBanners[];
@@ -26,6 +25,7 @@ interface HomeContextType {
     setSectionMarcas: React.Dispatch<React.SetStateAction<Record<string, number | null>>>;
     banners: Banner[];
     secondaryBanners: Banner[];
+    isInitialDataLoaded: boolean;
 }
 
 export interface FilterOptions {
@@ -75,7 +75,6 @@ const defaultFilters: ActiveFilters = {
 
 export function HomeProvider({ children }: { children: ReactNode }) {
     const [produtos, setProdutos] = useState<ProdutosBanners[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [isLoadingFilters, setIsLoadingFilters] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -88,6 +87,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     const [activeFilters, setActiveFilters] = useState<ActiveFilters>(defaultFilters);
     const [filteredProducts, setFilteredProducts] = useState<Produto[]>([]);
     const [isFiltering, setIsFiltering] = useState(false);
+    const latestFilterRequestRef = useRef<string>('');
 
     // Persisted state for HomePage sections
     const [sectionCategories, setSectionCategories] = useState<Record<string, number | null>>({});
@@ -96,42 +96,40 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     // Persisted Banners
     const [banners, setBanners] = useState<Banner[]>([]);
     const [secondaryBanners, setSecondaryBanners] = useState<Banner[]>([]);
+    const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
 
     useEffect(() => {
-        fetchFilterOptions();
-        getBanners('Principal').then(setBanners).catch(err => console.error("Error fetching principal banners", err));
-        getBanners('Secundario').then(setSecondaryBanners).catch(err => console.error("Error fetching secondary banners", err));
+        const loadInitialData = async () => {
+            try {
+                const [filtersResult, principalResult, secondaryResult] = await Promise.allSettled([
+                    produtoService.listarFiltros(),
+                    getBanners('Principal'),
+                    getBanners('Secundario'),
+                ]);
+
+                if (filtersResult.status === 'fulfilled' && filtersResult.value?.sucesso) {
+                    setFilterOptions(filtersResult.value.data);
+                }
+
+                if (principalResult.status === 'fulfilled') {
+                    setBanners(principalResult.value);
+                }
+
+                if (secondaryResult.status === 'fulfilled') {
+                    setSecondaryBanners(secondaryResult.value);
+                }
+            } catch (error) {
+                console.error('Error loading home initial data', error);
+            } finally {
+                setIsInitialDataLoaded(true);
+            }
+        };
+
+        loadInitialData();
     }, []);
 
-    useEffect(() => {
-        const token = searchParams.get('filtros');
-        if (token) {
-            const decodedPartial = decodeJwt(token);
-            if (decodedPartial) {
-                const mergedFilters = { ...defaultFilters, ...decodedPartial };
-                setActiveFilters(mergedFilters);
-                setIsFiltering(true);
-                fetchFilteredProducts(token);
-            }
-        } else {
-            setIsFiltering(false);
-            setFilteredProducts([]);
-            setActiveFilters(defaultFilters);
-        }
-    }, [searchParams]);
-
-    const fetchFilterOptions = async () => {
-        try {
-            const response = await produtoService.listarFiltros();
-            if (response.sucesso) {
-                setFilterOptions(response.data);
-            }
-        } catch (error) {
-            console.error("Error fetching filter options", error);
-        }
-    };
-
-    const fetchFilteredProducts = async (token: string) => {
+    const fetchFilteredProducts = useCallback(async (token: string) => {
+        latestFilterRequestRef.current = token;
         setIsLoadingFilters(true);
         try {
             const params = new URLSearchParams();
@@ -150,17 +148,36 @@ export function HomeProvider({ children }: { children: ReactNode }) {
 
             const response = await produtoService.listarProdutos(queryString);
 
-            if (response.sucesso) {
+            if (response.sucesso && latestFilterRequestRef.current === token) {
                 setFilteredProducts(response.data.produtos);
             }
         } catch (error) {
             console.error("Error fetching filtered products", error);
         } finally {
-            setIsLoadingFilters(false);
+            if (latestFilterRequestRef.current === token) {
+                setIsLoadingFilters(false);
+            }
         }
-    }
+    }, []);
 
-    const applyFilters = (filters: ActiveFilters) => {
+    useEffect(() => {
+        const token = searchParams.get('filtros');
+        if (token) {
+            const decodedPartial = decodeJwt(token);
+            if (decodedPartial) {
+                const mergedFilters = { ...defaultFilters, ...decodedPartial };
+                setActiveFilters(mergedFilters);
+                setIsFiltering(true);
+                fetchFilteredProducts(token);
+            }
+        } else {
+            setIsFiltering(false);
+            setFilteredProducts([]);
+            setActiveFilters(defaultFilters);
+        }
+    }, [fetchFilteredProducts, searchParams]);
+
+    const applyFilters = useCallback((filters: ActiveFilters) => {
         const payload: any = {};
 
         if (filters.marcas.length > 0) payload.marcas = filters.marcas;
@@ -182,9 +199,9 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             const token = sign(payload, 'secret');
             setSearchParams({ filtros: token });
         }
-    };
+    }, [setSearchParams]);
 
-    const listarProdutos = async (id: string, filtros: string) => {
+    const listarProdutos = useCallback(async (id: string, filtros: string) => {
         // Check if we already have data for this ID with the same filters
         const existingData = produtos.find(p => p.id === id);
 
@@ -217,7 +234,6 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             return; // Data already exists and filters match, no need to fetch
         }
 
-        setIsLoading(true);
         try {
             const responseProdutos = await produtoService.listarProdutos(filtros);
             const responseCategorias = await categoriaService.listarCategorias();
@@ -243,30 +259,45 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             }
         } catch (error) {
             throw error;
-        } finally {
-            setIsLoading(false);
         }
-    };
+    }, [produtos]);
+
+    const contextValue = useMemo(() => ({
+        produtos,
+        listarProdutos,
+        filterOptions,
+        activeFilters,
+        setFilterOptions,
+        setActiveFilters,
+        applyFilters,
+        filteredProducts,
+        isFiltering,
+        isLoadingFilters,
+        sectionCategories,
+        setSectionCategories,
+        sectionMarcas,
+        setSectionMarcas,
+        banners,
+        secondaryBanners,
+        isInitialDataLoaded
+    }), [
+        produtos,
+        listarProdutos,
+        filterOptions,
+        activeFilters,
+        applyFilters,
+        filteredProducts,
+        isFiltering,
+        isLoadingFilters,
+        sectionCategories,
+        sectionMarcas,
+        banners,
+        secondaryBanners,
+        isInitialDataLoaded
+    ]);
 
     return (
-        <HomeContext.Provider value={{
-            produtos,
-            listarProdutos,
-            filterOptions,
-            activeFilters,
-            setFilterOptions,
-            setActiveFilters,
-            applyFilters,
-            filteredProducts,
-            isFiltering,
-            isLoadingFilters,
-            sectionCategories,
-            setSectionCategories,
-            sectionMarcas,
-            setSectionMarcas,
-            banners,
-            secondaryBanners
-        }}>
+        <HomeContext.Provider value={contextValue}>
             {children}
         </HomeContext.Provider>
     );

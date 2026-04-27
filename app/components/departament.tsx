@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FaBars, FaChevronRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router';
-import { gerarSlug } from '~/utils/formatters';
+import config from '~/config/config';
 import type { Categoria } from '~/features/categoria/types';
+import { gerarSlug } from '~/utils/formatters';
 
 export default function DepartmentMenu(props: { categorias: Categoria[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [categoriaAtiva, setCategoriaAtiva] = useState<Categoria | null>(null);
+  const isPrietoKouros = config.EMPRESAS.includes('3');
 
   let navigate = useNavigate();
 
@@ -41,7 +43,10 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
 
       <button
         onClick={toggleMenu}
-        className="flex h-full items-center gap-2 border border-secondary rounded-sm px-6 py-1.5 text-xs font-bold text-secondary transition-colors cursor-pointer hover:opacity-80"
+        className={`flex h-full items-center gap-2 rounded-sm px-6 py-1.5 text-xs font-bold transition-colors cursor-pointer hover:opacity-80 ${isPrietoKouros
+          ? 'bg-primary text-secondary border border-primary'
+          : 'border border-secondary text-secondary'
+          }`}
       >
         <FaBars />
         <p>Departamentos</p>

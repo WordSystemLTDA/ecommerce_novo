@@ -5,6 +5,7 @@ import FilterToolbar from '~/components/filter_toolbar';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
 import { ProductCard } from '~/components/ProductCard';
+import { SkeletonProductCard } from '~/components/skeleton_product_card';
 import { FilterContent } from '~/features/home/components/FilterContent';
 import { MobileFilterDrawer } from '~/features/home/components/MobileFilterDrawer';
 import { produtoService } from '~/features/produto/services/produtoService';
@@ -58,7 +59,7 @@ function decodeJwt(token: string): any {
 const Sidebar = ({ filterOptions, activeFilters, onFilterChange }: { filterOptions: FilterOptions, activeFilters: ActiveFilters, onFilterChange: (newFilters: ActiveFilters) => void }) => {
     return (
         <aside className="hidden lg:block lg:col-span-1">
-            <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
+            <div className="bg-white/95 backdrop-blur p-4 rounded-2xl border border-slate-100 shadow-sm sticky top-4">
                 <FilterContent
                     activeFilters={activeFilters}
                     filterOptions={filterOptions}
@@ -71,15 +72,25 @@ const Sidebar = ({ filterOptions, activeFilters, onFilterChange }: { filterOptio
 
 const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: boolean }) => {
     if (isLoading) {
-        return <div className="p-8 text-center">Carregando produtos...</div>;
+        return (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 lg:gap-4 px-4">
+                {Array.from({ length: 10 }).map((_, index) => (
+                    <SkeletonProductCard key={index} />
+                ))}
+            </div>
+        );
     }
 
     if (products.length === 0) {
-        return <div className="p-8 text-center">Nenhum produto encontrado nesta marca.</div>;
+        return (
+            <div className="mx-4 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
+                Nenhum produto encontrado nesta marca.
+            </div>
+        );
     }
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-0.5 lg:gap-4 px-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 lg:gap-4 px-4">
             {products.map((product) => (
                 <ProductCard key={product.id} produto={product} />
             ))}
@@ -106,18 +117,18 @@ const Pagination = ({ pagination, onPageChange }: { pagination: Paginacao, onPag
     if (total_paginas <= 1) return null;
 
     return (
-        <nav className="flex justify-center items-center gap-1 mt-8 text-sm">
+        <nav className="flex justify-center items-center gap-1 mt-8 text-sm pb-2">
             <button
                 onClick={() => onPageChange(pagina - 1)}
                 disabled={pagina === 1}
-                className="px-3 py-1 rounded hover:bg-gray-200 disabled:opacity-50"
+                className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50"
             >
                 {'<'}
             </button>
 
             {startPage > 1 && (
                 <>
-                    <button onClick={() => onPageChange(1)} className="px-3 py-1 rounded hover:bg-gray-200">1</button>
+                    <button onClick={() => onPageChange(1)} className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50">1</button>
                     {startPage > 2 && <span className="px-3 py-1">...</span>}
                 </>
             )}
@@ -126,7 +137,7 @@ const Pagination = ({ pagination, onPageChange }: { pagination: Paginacao, onPag
                 <button
                     key={p}
                     onClick={() => onPageChange(p)}
-                    className={`px-3 py-1 rounded ${p === pagina ? 'bg-terciary text-white' : 'hover:bg-gray-200'}`}
+                    className={`px-3 py-1.5 rounded-lg border ${p === pagina ? 'bg-terciary text-white border-terciary' : 'bg-white border-slate-200 hover:bg-slate-50'}`}
                 >
                     {p}
                 </button>
@@ -135,14 +146,14 @@ const Pagination = ({ pagination, onPageChange }: { pagination: Paginacao, onPag
             {endPage < total_paginas && (
                 <>
                     {endPage < total_paginas - 1 && <span className="px-3 py-1">...</span>}
-                    <button onClick={() => onPageChange(total_paginas)} className="px-3 py-1 rounded hover:bg-gray-200">{total_paginas}</button>
+                    <button onClick={() => onPageChange(total_paginas)} className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50">{total_paginas}</button>
                 </>
             )}
 
             <button
                 onClick={() => onPageChange(pagina + 1)}
                 disabled={pagina === total_paginas}
-                className="px-3 py-1 rounded hover:bg-gray-200 disabled:opacity-50"
+                className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50"
             >
                 {'>'}
             </button>
@@ -299,7 +310,7 @@ export default function MarcaPage() {
     };
 
     return (
-        <div className="bg-gray-100">
+        <div className="bg-gradient-to-b from-slate-50 to-slate-100/70 min-h-screen">
             <Header />
 
             <div className="max-w-387 mx-auto px-0 mb-4 lg:mt-4">
@@ -313,15 +324,17 @@ export default function MarcaPage() {
                     </div>
 
                     <div className="lg:col-span-4 lg:mb-5">
+                        <div className="mb-4 mx-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500">Resultados da marca</p>
+                            <p className="text-xl md:text-2xl font-semibold text-slate-800 mt-1">{brandName}</p>
+                            <p className="text-sm text-slate-500 mt-1">{pagination.total} itens encontrados</p>
+                        </div>
+
                         <FilterToolbar
                             totalProdutos={pagination.total}
                             onPerPageChange={setPorPagina}
                             onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
                         />
-
-                        <div className="mb-4 px-4">
-                            <p className="text-lg max-lg:text-base font-semibold">{brandName}</p>
-                        </div>
 
                         <ProductGrid products={products} isLoading={isLoading} />
                         <Pagination pagination={pagination} onPageChange={handlePageChange} />

@@ -4,17 +4,25 @@ import Header from "~/components/header";
 import { Autoplay, EffectFade, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import sign from 'jwt-encode';
+import { BsLightningChargeFill } from "react-icons/bs";
+import { HiOutlineSparkles } from "react-icons/hi2";
+import { MdLocalFireDepartment, MdNewReleases, MdOutlineLocalShipping, MdOutlineSecurity, MdSupportAgent, MdTrendingUp, MdWorkspacePremium } from "react-icons/md";
 import { useNavigate } from "react-router";
 import FilterToolbar from "~/components/filter_toolbar";
 import Footer from "~/components/footer";
 import LazySection from "~/components/lazy_section";
+import { OptimizedImage } from "~/components/OptimizedImage";
 import { ProductCard } from "~/components/ProductCard";
+import { SectionHeader } from "~/components/SectionHeader";
+import { SkeletonBanner, SkeletonImageCard, SkeletonMainBanner } from "~/components/skeleton_banner";
 import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
 import { SkeletonProductCard } from "~/components/skeleton_product_card";
+import config from "~/config/config";
 import { useAuth } from "~/features/auth/context/AuthContext";
+import { useIsMobile } from "~/hooks/useIsMobile";
 import { gerarSlug } from "~/utils/formatters";
 import type { Categoria } from "../categoria/types";
 import type { Marca } from "../marca/types";
@@ -22,19 +30,43 @@ import type { Banner } from "../produto/types";
 import { FilterContent } from "./components/FilterContent";
 import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 import { useHome } from "./context/HomeContext";
-import { useIsMobile } from "~/hooks/useIsMobile";
+
+interface TrustBadgeProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  accent: string;
+}
+
+function TrustBadge({ icon, title, description, accent }: TrustBadgeProps) {
+  return (
+    <div className="group relative rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm p-3 lg:p-4 shadow-[0_4px_20px_rgba(15,23,42,0.04)] lift-hover">
+      <div className="flex items-center gap-3">
+        <div className={`flex h-10 w-10 lg:h-11 lg:w-11 shrink-0 items-center justify-center rounded-xl border ${accent}`}>
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-800 truncate">{title}</p>
+          <p className="text-xs text-slate-500 truncate hidden sm:block">{description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function HomePage() {
-  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos, sectionCategories, setSectionCategories, sectionMarcas, setSectionMarcas, banners, secondaryBanners } = useHome();
+  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos, sectionCategories, setSectionCategories, sectionMarcas, setSectionMarcas, banners, secondaryBanners, isInitialDataLoaded } = useHome();
   const navigate = useNavigate();
+  const isPrietoKouros = config.EMPRESAS.includes('3');
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // const isMobile = useIsMobile();
 
-  const pos0Banners = secondaryBanners.filter(b => b.tipo_de_banner === 2);
-  const pos1Banners = secondaryBanners.filter(b => b.tipo_de_banner === 3);
-  const pos2Banners = secondaryBanners.filter(b => b.tipo_de_banner === 4);
+  const pos0Banners = useMemo(() => secondaryBanners.filter(b => b.tipo_de_banner === 2), [secondaryBanners]);
+  const pos1Banners = useMemo(() => secondaryBanners.filter(b => b.tipo_de_banner === 3), [secondaryBanners]);
+  const pos2Banners = useMemo(() => secondaryBanners.filter(b => b.tipo_de_banner === 4), [secondaryBanners]);
+  const canLoadImages = isInitialDataLoaded;
 
   // const pos0BannersSemFiltro = secondaryBanners.filter(b => b.tipo_de_banner === 2);
   // const pos1BannersSemFiltro = secondaryBanners.filter(b => b.tipo_de_banner === 3);
@@ -88,26 +120,60 @@ export function HomePage() {
   };
 
   return (
-    <div>
+    <div className="bg-white min-h-screen">
       <Header />
 
       <main className="flex items-center justify-center pt-0 pb-0">
         <div className={`flex-1 flex flex-col items-center gap-0 min-h-0 w-full`}>
-          <CarouselBannersPrincipais
-            images={banners}
-          />
+          {banners && banners.length > 0 ? (
+            <CarouselBannersPrincipais images={banners} canLoadImages={canLoadImages} />
+          ) : (
+            <SkeletonMainBanner />
+          )}
 
-          <div className="flex flex-col lg:flex-row mt-4 lg:mt-5 mx-0 lg:pl-10 mb-10 w-full">
+          <section className="w-full px-4 lg:px-12 mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <TrustBadge
+                icon={<MdOutlineLocalShipping size={22} />}
+                title="Entrega rápida"
+                description="Despacho ágil para todo Brasil"
+                accent="text-sky-600 bg-sky-50 border-sky-100"
+              />
+              <TrustBadge
+                icon={<MdOutlineSecurity size={22} />}
+                title="Compra segura"
+                description="Pagamento criptografado"
+                accent="text-emerald-600 bg-emerald-50 border-emerald-100"
+              />
+              <TrustBadge
+                icon={<MdSupportAgent size={22} />}
+                title="Suporte humano"
+                description="Atendimento especializado"
+                accent="text-violet-600 bg-violet-50 border-violet-100"
+              />
+              <TrustBadge
+                icon={<MdWorkspacePremium size={22} />}
+                title="Selo de qualidade"
+                description="Marcas oficiais e originais"
+                accent="text-amber-600 bg-amber-50 border-amber-100"
+              />
+            </div>
+          </section>
+
+          <div className="flex flex-col lg:flex-row mt-6 lg:mt-8 mx-0 lg:pl-10 mb-10 w-full">
             <Sidebar />
 
-            <main className="flex-1 w-full bg-background-dark min-w-0">
+            <main className="flex-1 w-full bg-transparent min-w-0 lg:rounded-tl-3xl">
               <FilterToolbar totalProdutos={produtos?.length ?? 0} onOpenMobileFilter={() => setIsMobileFilterOpen(true)} />
 
               <ProductSection
                 id="promocoes"
-                title="Promoção"
+                title="Promoções"
+                eyebrow="Ofertas relâmpago"
+                description="Aproveite descontos por tempo limitado"
+                icon={<BsLightningChargeFill size={20} />}
+                accent="rose"
                 filtros="promocoes"
-
                 selectedCategoryId={sectionCategories['promocoes']}
                 onCategoryChange={handleSectionCategoryClick}
                 onLinkClick={handleVerTodosClick}
@@ -115,122 +181,188 @@ export function HomePage() {
 
               <ProductSection
                 id="maisprocurados"
-                title="Departamentos"
+                title="Tendências do momento"
+                eyebrow="Mais procurados"
+                description="O que todo mundo está olhando"
+                icon={<MdTrendingUp size={22} />}
+                accent="terciary"
                 filtros="maisprocurados"
-
                 selectedCategoryId={sectionCategories['maisprocurados']}
                 onCategoryChange={handleSectionCategoryClick}
                 onLinkClick={handleVerTodosClick}
               />
 
-              <div className="flex flex-col md:flex-row gap-4 lg:gap-10 mx-4 lg:mx-12">
-                <Swiper
-                  modules={[EffectFade, Navigation, Autoplay]}
-                  spaceBetween={40}
-                  slidesPerView={2}
-                  loop={true}
-                  effect="fade"
-                  autoplay={{ delay: 5000 }}
-                  className="w-full"
-                >
-                  {pos0Banners.map((banner, index) => (
-                    <SwiperSlide key={index}>
-                      <img src={banner.imagemUrl} className="w-full" />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
+              {(secondaryBanners.length === 0) ? (
+                <section className="mx-4 lg:mx-12 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                    <SkeletonBanner />
+                    <SkeletonBanner />
+                  </div>
+                </section>
+              ) : (pos0Banners.length > 0 || pos1Banners.length > 0) && (
+                <section className="mx-4 lg:mx-12 mt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                    {pos0Banners.length > 0 && (
+                      <Swiper
+                        modules={[EffectFade, Navigation, Autoplay]}
+                        spaceBetween={20}
+                        slidesPerView={1}
+                        loop={true}
+                        effect="fade"
+                        autoplay={{ delay: 5000, disableOnInteraction: false }}
+                        className="w-full rounded-2xl overflow-hidden shadow-sm"
+                      >
+                        {pos0Banners.map((banner, index) => (
+                          <SwiperSlide key={index}>
+                            <div className="relative aspect-[16/7] bg-slate-100">
+                              <OptimizedImage
+                                src={banner.imagemUrl}
+                                className="w-full h-full object-cover"
+                                alt={`Banner promocional ${index + 1}`}
+                                allowNetworkLoad={canLoadImages}
+                              />
+                            </div>
+                          </SwiperSlide>
+                        ))}
+                      </Swiper>
+                    )}
 
-                <Swiper
-                  modules={[EffectFade, Navigation, Autoplay]}
-                  spaceBetween={40}
-                  slidesPerView={2}
-                  loop={true}
-                  effect="fade"
-                  autoplay={{ delay: 5000 }}
-                  className="w-full"
-                >
-                  {pos1Banners.map((banner, index) => (
-                    <SwiperSlide key={index}>
-                      <img src={banner.imagemUrl} className="w-full" />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
+                    {pos1Banners.length > 0 && (
+                      <Swiper
+                        modules={[EffectFade, Navigation, Autoplay]}
+                        spaceBetween={20}
+                        slidesPerView={1}
+                        loop={true}
+                        effect="fade"
+                        autoplay={{ delay: 6000, disableOnInteraction: false }}
+                        className="w-full rounded-2xl overflow-hidden shadow-sm"
+                      >
+                        {pos1Banners.map((banner, index) => (
+                          <SwiperSlide key={index}>
+                            <div className="relative aspect-[16/7] bg-slate-100">
+                              <OptimizedImage
+                                src={banner.imagemUrl}
+                                className="w-full h-full object-cover"
+                                alt={`Banner promocional ${index + 1}`}
+                                allowNetworkLoad={canLoadImages}
+                              />
+                            </div>
+                          </SwiperSlide>
+                        ))}
+                      </Swiper>
+                    )}
+                  </div>
+                </section>
+              )}
 
-              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-                <p className="text-lg max-lg:text-base font-semibold">Departamentos</p>
-                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
-              </div>
-
-              <LazySection forceVisible={true}>
-                <CarouselCategoriaComImagem
-                  id='maisprocurados_img'
-                  onChange={(cat) => handleSectionCategoryClick('maisprocurados_img', cat)}
-                  selectedCategoryId={sectionCategories['maisprocurados_img']}
+              <section className="mt-10">
+                <SectionHeader
+                  eyebrow="Navegue por"
+                  title="Departamentos"
+                  description="Encontre exatamente o que procura"
+                  icon={<HiOutlineSparkles size={20} />}
+                  accent="primary"
+                  onLinkClick={handleVerTodosClick}
                 />
-              </LazySection>
+                <LazySection forceVisible={true}>
+                  <CarouselCategoriaComImagem
+                    id='maisprocurados_img'
+                    onChange={(cat) => handleSectionCategoryClick('maisprocurados_img', cat)}
+                    selectedCategoryId={sectionCategories['maisprocurados_img']}
+                    canLoadImages={canLoadImages}
+                  />
+                </LazySection>
+              </section>
 
-              <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-                <p className="text-lg max-lg:text-base font-semibold">Marcas</p>
-                <p className="text-sm cursor-pointer hover:underline" onClick={handleVerTodosClick}>Ver todos</p>
-              </div>
-
-              <LazySection forceVisible={true}>
-                <CarouselMarcaComImagem
-                  id='marcas'
-                  onChange={(marca) => handleSectionMarcaClick('marcas', marca)}
-                  selectedMarcaId={sectionCategories['marcas']}
+              <section className="mt-10">
+                <SectionHeader
+                  eyebrow="As que você ama"
+                  title="Marcas oficiais"
+                  description="Selecionadas com selo de autenticidade"
+                  icon={<MdWorkspacePremium size={20} />}
+                  accent="amber"
+                  onLinkClick={handleVerTodosClick}
                 />
-              </LazySection>
+                <LazySection forceVisible={true}>
+                  <CarouselMarcaComImagem
+                    id='marcas'
+                    onChange={(marca) => handleSectionMarcaClick('marcas', marca)}
+                    selectedMarcaId={sectionMarcas['marcas']}
+                    canLoadImages={canLoadImages}
+                  />
+                </LazySection>
+              </section>
 
-              <div className="flex gap-4 lg:gap-10 mx-4 lg:mx-12 my-10">
-                <Swiper
-                  modules={[EffectFade, Navigation, Autoplay]}
-                  spaceBetween={10}
-                  slidesPerView={1}
-                  loop={true}
-                  effect="fade"
-                  autoplay={{ delay: 5000 }}
-                  className="w-full"
-                >
-                  {pos2Banners.map((banner, index) => (
-                    <SwiperSlide key={index}>
-                      <img src={banner.imagemUrl} className="w-full" />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
+              {secondaryBanners.length === 0 ? (
+                <section className="mx-4 lg:mx-12 mt-10">
+                  <SkeletonBanner aspect="aspect-[21/7]" />
+                </section>
+              ) : pos2Banners.length > 0 && (
+                <section className="mx-4 lg:mx-12 mt-10">
+                  <Swiper
+                    modules={[EffectFade, Navigation, Autoplay]}
+                    spaceBetween={10}
+                    slidesPerView={1}
+                    loop={true}
+                    effect="fade"
+                    autoplay={{ delay: 7000, disableOnInteraction: false }}
+                    className="w-full rounded-2xl overflow-hidden shadow-sm"
+                  >
+                    {pos2Banners.map((banner, index) => (
+                      <SwiperSlide key={index}>
+                        <div className="relative aspect-[21/7] bg-slate-100">
+                          <OptimizedImage
+                            src={banner.imagemUrl}
+                            className="w-full h-full object-cover"
+                            alt={`Banner destaque ${index + 1}`}
+                            allowNetworkLoad={canLoadImages}
+                          />
+                        </div>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </section>
+              )}
 
-              </div>
-
-              <hr className="my-2 max-lg:my-0 border-gray-200" />
+              <div className="section-divider" />
 
               <ProductSection
                 id="maisprocurados_bottom"
                 title="Mais procurados"
+                eyebrow="Top da semana"
+                description="Os preferidos de quem comprou"
+                icon={<MdTrendingUp size={22} />}
+                accent="terciary"
                 filtros="maisprocurados"
-
                 selectedCategoryId={sectionCategories['maisprocurados_bottom']}
                 onCategoryChange={handleSectionCategoryClick}
                 onLinkClick={handleVerTodosClick}
               />
 
-              <hr className="my-2 max-lg:my-0 border-gray-200" />
+              <div className="section-divider" />
 
               <ProductSection
                 id="novos"
                 title="Acabaram de chegar"
+                eyebrow="Novidades"
+                description="Lançamentos fresquinhos no estoque"
+                icon={<MdNewReleases size={22} />}
+                accent="emerald"
                 filtros="order_by=recente"
-
                 selectedCategoryId={sectionCategories['novos']}
                 onCategoryChange={handleSectionCategoryClick}
                 onLinkClick={handleVerTodosClick}
               />
 
-              <hr className="my-2 max-lg:my-0 border-gray-200" />
+              <div className="section-divider" />
 
               <ProductSection
                 id="maisvendidos"
                 title="Mais vendidos"
+                eyebrow="Campeões de venda"
+                description="Os mais comprados pelos clientes"
+                icon={<MdLocalFireDepartment size={22} />}
+                accent="rose"
                 filtros="maisvendidos"
                 selectedCategoryId={sectionCategories['maisvendidos']}
                 onCategoryChange={handleSectionCategoryClick}
@@ -257,9 +389,10 @@ export function HomePage() {
 
 interface CarouselBannersPrincipaisProps {
   images: Banner[];
+  canLoadImages: boolean;
 }
 
-export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisProps) {
+export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBannersPrincipaisProps) {
   // 1. Chama o hook para saber o estado atual
   const isMobile = useIsMobile();
 
@@ -301,11 +434,11 @@ export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisP
       >
         {bannersFiltrados.map((image, index) => (
           <SwiperSlide key={index}>
-            <img
+            <OptimizedImage
               src={image.imagemUrl}
               className="w-full object-cover min-h-[200px] h-[200px] md:h-[300px] lg:h-[450px]"
-              loading={index === 0 ? "eager" : "lazy"}
-              decoding="async"
+              priority={index === 0}
+              allowNetworkLoad={canLoadImages}
               alt={`Banner principal ${index + 1}`}
             />
           </SwiperSlide>
@@ -329,6 +462,10 @@ export function CarouselBannersPrincipais({ images }: CarouselBannersPrincipaisP
 interface ProductSectionProps {
   id: string;
   title: string;
+  eyebrow?: string;
+  description?: string;
+  icon?: React.ReactNode;
+  accent?: 'primary' | 'terciary' | 'rose' | 'amber' | 'emerald';
   filtros: string;
   globalFilters?: any;
   selectedCategoryId?: number | null;
@@ -340,6 +477,10 @@ interface ProductSectionProps {
 function ProductSection({
   id,
   title,
+  eyebrow,
+  description,
+  icon,
+  accent = 'primary',
   filtros,
   globalFilters,
   selectedCategoryId,
@@ -355,6 +496,7 @@ function ProductSection({
     const fetchWithFilters = async () => {
       let finalFilters = globalFilters ? { ...globalFilters } : {};
       finalFilters['ignore_total'] = true; // Optimize: homepage sections don't need total count
+      finalFilters['por_pagina'] = 10; // Optimize: home sections only show ~8 cards in carousel
 
       // Ensure we ignore global sorting for these curated sections
       delete finalFilters['ordenacao'];
@@ -398,11 +540,15 @@ function ProductSection({
 
   // If loading or has data, render.
   return (
-    <section className="my-4">
-      <div className="flex flex-row justify-between items-end relative w-full mx-auto px-4 lg:px-12 mb-2 mt-4">
-        <p className="text-lg max-lg:text-base font-semibold">{title}</p>
-        {onLinkClick && <p className="text-sm cursor-pointer hover:underline" onClick={onLinkClick}>Ver todos</p>}
-      </div>
+    <section className="my-6 ml-4 mr-4 rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm py-3 shadow-[0_4px_24px_rgba(15,23,42,0.05)] section-shell fade-in-up">
+      <SectionHeader
+        eyebrow={eyebrow}
+        title={title}
+        description={description}
+        icon={icon}
+        accent={accent}
+        onLinkClick={onLinkClick}
+      />
 
       <LazySection forceVisible={!!bannerData}>
         {showCategoryCarousel && (
@@ -439,6 +585,7 @@ interface CategoriaCardProps {
   categoria: Categoria;
   onClick?: (categoria: Categoria) => void;
   isSelected?: boolean;
+  canLoadImages?: boolean;
 }
 
 export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardProps) {
@@ -452,18 +599,20 @@ export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardP
   );
 }
 
-export function CategoriaCardComImagem({ categoria, onClick, isSelected }: CategoriaCardProps) {
+export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoadImages = true }: CategoriaCardProps) {
   let navigate = useNavigate();
 
   return (
     <div
-      className={`border px-4 py-2 rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
+      className={`flex flex-col items-center gap-1 px-3 py-3 text-center rounded-2xl cursor-pointer bg-white border border-slate-200 lift-hover ${isSelected ? 'border-primary ring-2 ring-primary/30' : ''}`}
       onClick={() => {
         navigate('/categoria/' + categoria.id);
       }}
     >
-      <img src={categoria.imagem} className="max-h-33 min-w-53 max-w-53 object-contain" />
-      <p>{categoria.nome}</p>
+      <div className="flex items-center justify-center w-full h-32 overflow-hidden rounded-xl bg-slate-50">
+        <OptimizedImage src={categoria.imagem} allowNetworkLoad={canLoadImages} className="max-h-32 min-w-48 max-w-48 object-contain transition-transform duration-300 hover:scale-105" alt={categoria.nome} />
+      </div>
+      <p className="text-sm font-medium text-slate-700 mt-1 truncate max-w-[12rem]">{categoria.nome}</p>
     </div>
   );
 }
@@ -472,20 +621,23 @@ interface MarcaCardProps {
   marca: Marca;
   onClick?: (marca: Marca) => void;
   isSelected?: boolean;
+  canLoadImages?: boolean;
 }
 
-export function MarcaCardComImagem({ marca, onClick, isSelected }: MarcaCardProps) {
+export function MarcaCardComImagem({ marca, onClick, isSelected, canLoadImages = true }: MarcaCardProps) {
   let navigate = useNavigate();
 
   return (
     <div
-      className="flex flex-col h-full border border-gray-200 text-center rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group"
+      className={`flex flex-col h-full border border-slate-200 text-center rounded-2xl overflow-hidden bg-white cursor-pointer lift-hover group ${isSelected ? 'ring-2 ring-amber-400/50 border-amber-300' : ''}`}
       onClick={() => {
         navigate(`/marca/${marca.id}/${gerarSlug(marca.nome)}`);
       }}
     >
-      <img src={marca.imagem} className="max-h-42 min-w-80 max-w-80 object-contain" />
-      <p>{marca.nome}</p>
+      <div className="flex items-center justify-center w-full h-40 overflow-hidden bg-slate-50">
+        <OptimizedImage src={marca.imagem} allowNetworkLoad={canLoadImages} className="max-h-40 min-w-72 max-w-72 object-contain transition-transform duration-300 group-hover:scale-105" alt={marca.nome} />
+      </div>
+      <p className="px-2 py-2 text-sm font-medium text-slate-700 border-t border-slate-100">{marca.nome}</p>
     </div>
   );
 }
@@ -583,7 +735,7 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
   return (
     <div className="relative w-full mx-auto px-2 lg:px-12">
       {/* Mobile Grid */}
-      <div className="grid grid-cols-2 gap-0.5 lg:hidden">
+      <div className="grid grid-cols-2 gap-2 lg:hidden px-2">
         {bannerData.produtos.map((produto) => (
           <ProductCard key={produto.id} produto={produto} />
         ))}
@@ -634,6 +786,7 @@ interface CarouselCategoriaProps {
   id: string;
   onChange: (category: Categoria) => void;
   selectedCategoryId?: number | null;
+  canLoadImages?: boolean;
 }
 
 export function CarouselCategoria({ id, onChange, selectedCategoryId }: CarouselCategoriaProps) {
@@ -732,7 +885,7 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
   );
 };
 
-export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }: CarouselCategoriaProps) {
+export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId, canLoadImages = true }: CarouselCategoriaProps) {
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
 
@@ -742,24 +895,11 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }:
   if (!categorias || categorias.length <= 0) {
     return (
       <div className="relative w-full mx-auto px-4 lg:px-12">
-        <Swiper
-          modules={[Navigation]}
-          loop={false}
-          spaceBetween={16}
-          slidesPerView={"auto"}
-          breakpoints={{
-            320: { spaceBetween: 10 },
-            768: { spaceBetween: 10 },
-            1024: { spaceBetween: 8 }
-          }}
-          className="select-none"
-        >
+        <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 8 }).map((_, index) => (
-            <SwiperSlide key={index} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
-              <SkeletonCategoryCard />
-            </SwiperSlide>
+            <SkeletonImageCard key={index} width="min-w-[13rem] max-w-[13rem]" height="h-32" />
           ))}
-        </Swiper>
+        </div>
       </div>
     );
   }
@@ -788,6 +928,7 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId }:
               categoria={categoria as any}
               onClick={onChange}
               isSelected={selectedCategoryId === Number(categoria.id)}
+              canLoadImages={canLoadImages}
             />
           </SwiperSlide>
         ))}
@@ -811,9 +952,10 @@ interface CarouselMarcaProps {
   id: string;
   onChange: (marca: Marca) => void;
   selectedMarcaId?: number | null;
+  canLoadImages?: boolean;
 }
 
-export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId }: CarouselMarcaProps) {
+export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId, canLoadImages = true }: CarouselMarcaProps) {
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
 
@@ -823,24 +965,11 @@ export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId }: Carous
   if (!marcas || marcas.length <= 0) {
     return (
       <div className="relative w-full mx-auto px-4 lg:px-12">
-        <Swiper
-          modules={[Navigation]}
-          loop={false}
-          spaceBetween={16}
-          slidesPerView={"auto"}
-          breakpoints={{
-            320: { spaceBetween: 10 },
-            768: { spaceBetween: 10 },
-            1024: { spaceBetween: 8 }
-          }}
-          className="select-none"
-        >
-          {Array.from({ length: 8 }).map((_, index) => (
-            <SwiperSlide key={index} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
-              <SkeletonCategoryCard />
-            </SwiperSlide>
+        <div className="flex gap-3 overflow-hidden">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <SkeletonImageCard key={index} width="min-w-[20rem] max-w-[20rem]" height="h-40" />
           ))}
-        </Swiper>
+        </div>
       </div>
     );
   }
@@ -869,6 +998,7 @@ export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId }: Carous
               marca={marca as any}
               onClick={onChange}
               isSelected={selectedMarcaId === Number(marca.id)}
+              canLoadImages={canLoadImages}
             />
           </SwiperSlide>
         ))}
@@ -893,7 +1023,7 @@ export function Sidebar() {
 
   return (
     <aside className="hidden lg:block lg:col-span-1 w-full lg:w-64 min-w-[250px]">
-      <div className="bg-white p-4 rounded-lg shadow-sm sticky top-4">
+      <div className="bg-white/95 backdrop-blur p-4 rounded-2xl shadow-sm border border-slate-100 sticky top-4">
         <FilterContent
           activeFilters={activeFilters}
           filterOptions={filterOptions}

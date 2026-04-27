@@ -5,6 +5,7 @@ import {
   FaTrash
 } from 'react-icons/fa';
 
+import { OptimizedImage } from '~/components/OptimizedImage';
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 import { currencyFormatter } from '~/utils/formatters';
 import type { CartItem as CartItemType } from './context/CarrinhoContext';
@@ -53,7 +54,7 @@ const CartItem = ({ produto }: { produto: CartItemType }) => {
 
         {/* Imagem */}
         <div className="shrink-0">
-          <img
+          <OptimizedImage
             src={produto.fotos.m[0]}
             alt={produto.nome}
             className="w-20 h-20 object-contain rounded bg-gray-50 mix-blend-multiply"

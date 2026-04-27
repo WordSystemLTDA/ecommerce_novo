@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
-import { MdPerson, MdOutlineFavorite, MdKeyboardArrowDown, MdOutlineSearch } from "react-icons/md";
+import { BsPersonFill, BsPersonFillCheck } from "react-icons/bs";
 import { FaChevronRight, FaShoppingCart } from "react-icons/fa";
+import { MdKeyboardArrowDown, MdOutlineFavorite, MdOutlineSearch, MdPerson } from "react-icons/md";
+import { useNavigate } from "react-router";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
 import type { Categoria } from "~/features/categoria/types";
-import { GoPerson, GoPersonAdd } from "react-icons/go";
-import { BsPersonFill, BsPersonFillCheck } from "react-icons/bs";
 
 export function ButtonEntreOuCadastrese() {
     let navigate = useNavigate();
     let { isAuthenticated, cliente } = useAuth();
+    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     return (
         <div
@@ -23,13 +23,13 @@ export function ButtonEntreOuCadastrese() {
                 }
             }}
         >
-            <div className="p-1 border-2 border-white rounded-full">
-                <MdPerson size={20} className="text-white" />
+            <div className={`p-1 border-2 rounded-full ${isPrietoKouros ? 'border-primary' : 'border-white'}`}>
+                <MdPerson size={20} className={isPrietoKouros ? 'text-primary' : 'text-white'} />
             </div>
 
             {isAuthenticated ? (
                 <div>
-                    <span className="text-tiny uppercase font-bold">Olá, <span className="font-bold text-white">{cliente?.nome}</span></span>
+                    <span className="text-tiny uppercase font-bold">Olá, <span className={`font-bold ${isPrietoKouros ? 'text-primary' : 'text-white'}`}>{cliente?.nome}</span></span>
                 </div>
             )
                 :
@@ -45,16 +45,18 @@ export function ButtonEntreOuCadastrese() {
     );
 }
 
+import config from "~/config/config";
 import { useFavorito } from "~/features/favoritos/context/FavoritoContext";
 import { gerarSlug } from "~/utils/formatters";
 
 export function ButtonFavoritos() {
     let navigate = useNavigate();
     const { quantidade } = useFavorito();
+    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     return (
         <div
-            className="cursor-pointer hover:text-gray-200 transition-colors relative"
+            className={`cursor-pointer transition-colors relative ${isPrietoKouros ? 'hover:text-primary/80' : 'hover:text-gray-200'}`}
             onClick={() => navigate('/minha-conta/favoritos')}
         >
             <MdOutlineFavorite size={24} />
@@ -72,9 +74,10 @@ interface ButtonBuscarProps {
 }
 
 export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
+    const isPrietoKouros = config.EMPRESAS.includes('3');
     return (
         <div
-            className="cursor-pointer hover:text-gray-200 transition-colors relative"
+            className={`cursor-pointer transition-colors relative ${isPrietoKouros ? 'hover:text-primary/80' : 'hover:text-gray-200'}`}
             onClick={aoClicar}
         >
             <MdOutlineSearch size={24} />
@@ -86,10 +89,11 @@ export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
 export function ButtonConta() {
     let navigate = useNavigate();
     let { isAuthenticated } = useAuth();
+    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     return (
         <div
-            className="cursor-pointer hover:text-gray-200 transition-colors relative"
+            className={`cursor-pointer transition-colors relative ${isPrietoKouros ? 'hover:text-primary/80' : 'hover:text-gray-200'}`}
             onClick={() => {
                 if (isAuthenticated) {
                     navigate('/minha-conta');
@@ -111,10 +115,11 @@ export function ButtonConta() {
 export function ButtonCarrinho() {
     let navigate = useNavigate();
     let { produtos } = useCarrinho();
+    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     return (
         <div
-            className="cursor-pointer hover:text-gray-200 transition-colors relative"
+            className={`cursor-pointer transition-colors relative ${isPrietoKouros ? 'hover:text-primary/80' : 'hover:text-gray-200'}`}
             onClick={() => navigate('/carrinho')}
         >
             <FaShoppingCart size={20} className="max-lg:hidden" />
@@ -130,16 +135,18 @@ export function ButtonCarrinho() {
 }
 
 export function ButtonMaisVendidos() {
+    const isPrietoKouros = config.EMPRESAS.includes('3');
     return (
-        <div className="bg-primary hover:bg-terciary text-white px-4 py-1.5 rounded text-xs font-bold cursor-pointer transition-colors whitespace-nowrap">
+        <div className={`${isPrietoKouros ? 'bg-primary hover:bg-terciary text-secondary' : 'bg-primary hover:bg-terciary text-white'} px-4 py-1.5 rounded text-xs font-bold cursor-pointer transition-colors whitespace-nowrap`}>
             Mais Vendidos
         </div>
     );
 }
 
 export function ButtonOthers({ titulo }: { titulo: string }) {
+    const isPrietoKouros = config.EMPRESAS.includes('3');
     return (
-        <a href="#" className="text-white text-xs font-bold hover:underline whitespace-nowrap px-2">
+        <a href="#" className={`${isPrietoKouros ? 'text-primary' : 'text-white'} text-xs font-bold hover:underline whitespace-nowrap px-2`}>
             {titulo}
         </a>
     );
@@ -148,6 +155,7 @@ export function ButtonOthers({ titulo }: { titulo: string }) {
 
 export function ButtonMore({ hiddenCategories }: { hiddenCategories: Categoria[] }) {
     const [isHovered, setIsHovered] = useState(false);
+    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -175,13 +183,13 @@ export function ButtonMore({ hiddenCategories }: { hiddenCategories: Categoria[]
 
     return (
         <div
-            className="flex items-center gap-0 cursor-pointer text-white hover:text-gray-200 relative"
+            className={`flex items-center gap-0 cursor-pointer relative ${isPrietoKouros ? 'text-primary hover:text-primary/80' : 'text-white hover:text-gray-200'}`}
             ref={menuRef} onMouseLeave={handleMouseLeave}
         >
 
             <button
                 onClick={toggleMenu}
-                className="flex h-full items-center py-1.5 text-xs font-bold text-secondary transition-colors cursor-pointer"
+                className={`flex h-full items-center py-1.5 text-xs font-bold transition-colors cursor-pointer ${isPrietoKouros ? 'text-primary' : 'text-secondary'}`}
             >
                 <span className="text-xs font-bold">Mais</span>
 

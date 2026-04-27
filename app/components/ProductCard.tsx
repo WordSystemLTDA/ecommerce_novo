@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BsBoxes, BsCartPlus } from "react-icons/bs";
 import { MdFavorite, MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout } from "react-icons/md";
 import { useNavigate } from "react-router";
@@ -9,7 +9,9 @@ import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
 import { useFavorito } from '~/features/favoritos/context/FavoritoContext';
 import { favoritoService } from '~/features/favoritos/services/favoritoService';
 import type { Produto } from "~/features/produto/types";
+import { useSecondTicker } from "~/hooks/useSecondTicker";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
+import { OptimizedImage } from "./OptimizedImage";
 
 interface ProductCardProps {
     produto: Produto;
@@ -19,7 +21,7 @@ export function ProductCard({ produto }: ProductCardProps) {
     let navigate = useNavigate();
     const { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
     const estaNoCarrinho = verificarAdicionadoCarrinho(produto);
-    const [timeLeft, setTimeLeft] = useState<string | null>(null);
+    const now = useSecondTicker();
 
     const { cliente } = useAuth();
     const [isFavorite, setIsFavorite] = useState(false);
@@ -59,39 +61,31 @@ export function ProductCard({ produto }: ProductCardProps) {
         }
     };
 
-    useEffect(() => {
-        if (produto.promocaoAtiva == 'Nao' || !produto.dataLimitePromocao || !produto.horaLimitePromocao || !(produto.tipoDaPromocao != 4)) {
-            setTimeLeft(null);
-            return;
+    const timeLeft = useMemo(() => {
+        if (produto.promocaoAtiva === 'Nao' || !produto.dataLimitePromocao || !produto.horaLimitePromocao || produto.tipoDaPromocao === 4) {
+            return null;
         }
 
-        const calculateTimeLeft = () => {
-            const now = new Date();
-            const targetDate = new Date(`${produto.dataLimitePromocao}T${produto.horaLimitePromocao}`);
-            const difference = targetDate.getTime() - now.getTime();
+        const targetDate = new Date(`${produto.dataLimitePromocao}T${produto.horaLimitePromocao}`);
+        const difference = targetDate.getTime() - now;
 
-            if (difference <= 0) {
-                setTimeLeft(null);
-                return;
-            }
+        if (difference <= 0) {
+            return null;
+        }
 
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
-            let formattedTime = "";
-            if (days > 0) formattedTime += `${days}D `;
-            formattedTime += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        let formattedTime = "";
+        if (days > 0) {
+            formattedTime += `${days}D `;
+        }
 
-            setTimeLeft(formattedTime);
-        };
-
-        const timer = setInterval(calculateTimeLeft, 1000);
-        calculateTimeLeft(); // Immediate call
-
-        return () => clearInterval(timer);
-    }, [produto.dataLimitePromocao, produto.horaLimitePromocao, produto.tipoDeDesconto]);
+        formattedTime += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        return formattedTime;
+    }, [now, produto.dataLimitePromocao, produto.horaLimitePromocao, produto.promocaoAtiva, produto.tipoDaPromocao]);
 
     const handleAdicionarCarrinho = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -126,7 +120,7 @@ export function ProductCard({ produto }: ProductCardProps) {
 
     return (
         <div
-            className="flex flex-col h-full border border-gray-200 rounded-lg overflow-hidden bg-white cursor-pointer hover:shadow-lg transition-shadow group relative"
+            className="flex flex-col h-full border border-slate-200 rounded-2xl overflow-hidden bg-white cursor-pointer hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group relative"
             onClick={() => {
                 navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
             }}
@@ -156,7 +150,12 @@ export function ProductCard({ produto }: ProductCardProps) {
                     )}
                 </div>
 
-                <img src={produto.fotos.m[0]} alt={produto.nome} className="w-full min-h-48 max-h-48 object-contain px-4 pt-4 pb-0" loading="lazy" />
+                <OptimizedImage
+                    src={produto.fotos?.m?.[0]}
+                    alt={produto.nome}
+                    className="w-full min-h-48 max-h-48 object-contain px-4 pt-4 pb-0"
+                    fallbackSrc="/logo.png"
+                />
             </div>
 
             <div className="flex-1 p-2 lg:p-4 flex flex-col justify-between">
