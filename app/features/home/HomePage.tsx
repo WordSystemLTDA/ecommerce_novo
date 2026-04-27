@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import sign from 'jwt-encode';
 import { BsLightningChargeFill } from "react-icons/bs";
 import { HiOutlineSparkles } from "react-icons/hi2";
-import { MdLocalFireDepartment, MdNewReleases, MdOutlineLocalShipping, MdOutlineSecurity, MdSupportAgent, MdTrendingUp, MdWorkspacePremium } from "react-icons/md";
+import { MdLocalFireDepartment, MdNewReleases, MdTrendingUp, MdWorkspacePremium } from "react-icons/md";
 import { useNavigate } from "react-router";
 import FilterToolbar from "~/components/filter_toolbar";
 import Footer from "~/components/footer";
@@ -131,7 +131,7 @@ export function HomePage() {
             <SkeletonMainBanner />
           )}
 
-          <section className="w-full px-4 lg:px-12 mt-6">
+          {/* <section className="w-full px-4 lg:px-12 mt-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <TrustBadge
                 icon={<MdOutlineLocalShipping size={22} />}
@@ -158,7 +158,7 @@ export function HomePage() {
                 accent="text-amber-600 bg-amber-50 border-amber-100"
               />
             </div>
-          </section>
+          </section> */}
 
           <div className="flex flex-col lg:flex-row mt-6 lg:mt-8 mx-0 lg:pl-10 mb-10 w-full">
             <Sidebar />
@@ -446,12 +446,12 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
       </Swiper>
 
       <div
-        className={`${prevButtonId} absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-white rounded-3xl flex justify-center items-center p-2 opacity-0 group-hover:opacity-100 transition-opacity`}
+        className={`${prevButtonId} absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-white  flex justify-center items-center p-2 opacity-0 group-hover:opacity-100 transition-opacity`}
       >
         <SlArrowLeft color="white" size={18} />
       </div>
       <div
-        className={`${nextButtonId} absolute right-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-white rounded-3xl flex justify-center items-center p-2 opacity-0 group-hover:opacity-100 transition-opacity`}
+        className={`${nextButtonId} absolute right-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-white  flex justify-center items-center p-2 opacity-0 group-hover:opacity-100 transition-opacity`}
       >
         <SlArrowRight color="white" size={18} />
       </div>

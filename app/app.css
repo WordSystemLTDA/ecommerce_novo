@@ -134,7 +134,7 @@ video {
 }
 
 .main-banner-carousel {
-  border-radius: 0 0 24px 24px;
+  border-radius: 0;
   overflow: hidden;
 }
 
