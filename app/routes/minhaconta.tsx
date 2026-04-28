@@ -1,13 +1,56 @@
+import { ArrowRight, Heart, MapPin, ShoppingBag, User } from "lucide-react";
+import { Link } from "react-router";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import type { Route } from "./+types/home";
-import { Link } from "react-router";
-import { MapPin, ShoppingBag, User, ArrowRight } from "lucide-react";
 
 export function meta({ }: Route.MetaArgs) {
   return [
     { title: "Minha Conta - Word System" },
   ];
 }
+
+const cards = [
+  {
+    to: "/minha-conta/pedidos",
+    icon: ShoppingBag,
+    title: "Meus Pedidos",
+    description: "Acompanhe o status e histórico de suas compras.",
+    linkLabel: "Ver pedidos",
+    iconBg: "bg-primary/10 group-hover:bg-primary",
+    iconColor: "text-primary group-hover:text-secondary",
+    linkColor: "text-primary",
+  },
+  {
+    to: "/minha-conta/favoritos",
+    icon: Heart,
+    title: "Meus Favoritos",
+    description: "Produtos que você salvou para comprar depois.",
+    linkLabel: "Ver favoritos",
+    iconBg: "bg-terciary/10 group-hover:bg-terciary",
+    iconColor: "text-terciary group-hover:text-secondary",
+    linkColor: "text-terciary",
+  },
+  {
+    to: "/minha-conta/enderecos",
+    icon: MapPin,
+    title: "Meus Endereços",
+    description: "Gerencie seus endereços de entrega.",
+    linkLabel: "Gerenciar endereços",
+    iconBg: "bg-(--dynamic-success-bg) group-hover:bg-(--dynamic-success)",
+    iconColor: "text-(--dynamic-success) group-hover:text-white",
+    linkColor: "text-(--dynamic-success)",
+  },
+  {
+    to: "/minha-conta/dados",
+    icon: User,
+    title: "Meus Dados",
+    description: "Atualize suas informações pessoais e de contato.",
+    linkLabel: "Editar dados",
+    iconBg: "bg-primary/5 group-hover:bg-primary/80",
+    iconColor: "text-primary/70 group-hover:text-secondary",
+    linkColor: "text-primary/70",
+  },
+];
 
 export default function MinhaConta() {
   const { cliente } = useAuth();
@@ -16,50 +59,29 @@ export default function MinhaConta() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">Olá, {cliente.nome}!</h1>
-      <p className="text-gray-500 mb-8">Bem-vindo ao seu painel de controle.</p>
+      <div className="mb-6 pb-5 border-b border-primary/10">
+        <p className="overline-label">Painel</p>
+        <h1 className="text-xl md:text-2xl font-semibold text-primary mt-1">Olá, {cliente.nome}!</h1>
+        <p className="text-sm text-primary/55 mt-1">Bem-vindo ao seu painel. O que deseja fazer hoje?</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        <Link to="/minha-conta/pedidos" className="block group">
-          <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow h-full">
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-              <ShoppingBag size={24} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {cards.map((card) => (
+          <Link key={card.to} to={card.to} className="block group">
+            <div className="rounded-xl border border-primary/10 bg-main-bg hover:bg-product-bg p-5 hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300 h-full flex flex-col gap-3">
+              <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-300 ${card.iconBg}`}>
+                <card.icon size={22} className={`transition-colors duration-300 ${card.iconColor}`} />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-primary mb-1">{card.title}</h3>
+                <p className="text-primary/55 text-sm">{card.description}</p>
+              </div>
+              <div className={`flex items-center font-medium text-sm gap-1 ${card.linkColor}`}>
+                {card.linkLabel} <ArrowRight size={15} />
+              </div>
             </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Meus Pedidos</h3>
-            <p className="text-gray-500 text-sm mb-4">Acompanhe o status e histórico de suas compras.</p>
-            <div className="flex items-center text-blue-600 font-medium text-sm">
-              Ver pedidos <ArrowRight size={16} className="ml-1" />
-            </div>
-          </div>
-        </Link>
-
-        <Link to="/minha-conta/enderecos" className="block group">
-          <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow h-full">
-            <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors">
-              <MapPin size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Meus Endereços</h3>
-            <p className="text-gray-500 text-sm mb-4">Gerencie seus endereços de entrega.</p>
-            <div className="flex items-center text-green-600 font-medium text-sm">
-              Gerenciar endereços <ArrowRight size={16} className="ml-1" />
-            </div>
-          </div>
-        </Link>
-
-        <Link to="/minha-conta/dados" className="block group">
-          <div className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow h-full">
-            <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-              <User size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Meus Dados</h3>
-            <p className="text-gray-500 text-sm mb-4">Atualize suas informações pessoais e de contato.</p>
-            <div className="flex items-center text-purple-600 font-medium text-sm">
-              Editar dados <ArrowRight size={16} className="ml-1" />
-            </div>
-          </div>
-        </Link>
-
+          </Link>
+        ))}
       </div>
     </div>
   );

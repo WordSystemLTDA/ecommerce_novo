@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Package, Clock, CheckCircle, XCircle, Truck } from "lucide-react";
+import { CheckCircle, ChevronDown, ChevronUp, Clock, Package, Truck, XCircle } from "lucide-react";
 import { currencyFormatter } from "~/utils/formatters";
 
 interface OrderCardProps {
@@ -17,7 +17,7 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
     const getStatusColor = (status: string) => {
         switch (status?.toLowerCase()) {
             case 'pendente': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-            case 'aprovado': return 'text-green-600 bg-green-50 border-green-200';
+            case 'aprovado': return 'text-(--dynamic-success) bg-(--dynamic-success-bg) border-(--dynamic-success)';
             case 'cancelado': return 'text-red-600 bg-red-50 border-red-200';
             case 'entregue': return 'text-blue-600 bg-blue-50 border-blue-200';
             default: return 'text-gray-600 bg-gray-50 border-gray-200';

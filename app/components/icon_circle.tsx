@@ -10,7 +10,7 @@ export default function IconCircle({ icon: Icon, color }: IconCircleProps) {
     primary: 'bg-primary',
     secondary: 'bg-secondary',
     red: 'bg-red-600',
-    green: 'bg-green-500',
+    green: 'bg-[var(--dynamic-success)]',
   }
   return (
     <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${colorClasses[color]}`}>

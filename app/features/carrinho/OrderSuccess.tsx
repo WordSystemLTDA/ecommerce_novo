@@ -1,21 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import {
+  FaCheck,
   FaCheckCircle,
+  FaCreditCard,
+  FaExclamationCircle,
+  FaMapMarkerAlt,
   FaQrcode,
   FaRegCopy,
-  FaExclamationCircle,
   FaShoppingCart,
-  FaMapMarkerAlt,
-  FaTruck,
-  FaCreditCard,
-  FaCheck
+  FaTruck
 } from 'react-icons/fa';
 import QRCode from 'react-qr-code';
+import { useNavigate } from 'react-router';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
-import { useCarrinho } from './context/CarrinhoContext';
-import { useNavigate } from 'react-router';
 
 const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
   const steps = [
@@ -69,10 +68,10 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
 };
 
 import { useParams } from 'react-router';
-import { carrinhoService } from './services/carrinhoService';
-import { useAuth } from '../auth/context/AuthContext';
-import Loader from '~/components/loader';
 import { toast } from 'react-toastify';
+import Loader from '~/components/loader';
+import { useAuth } from '../auth/context/AuthContext';
+import { carrinhoService } from './services/carrinhoService';
 
 const Step6_Success = () => {
   const { id } = useParams();
@@ -160,11 +159,11 @@ const Step6_Success = () => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-8 max-w-4xl mx-auto">
       <div className="text-center mb-8">
-        <FaCheckCircle className="text-green-500 text-5xl mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-green-700">PEDIDO REALIZADO COM SUCESSO!</h1>
+        <FaCheckCircle className="text-(--dynamic-success) text-5xl mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-(--dynamic-success-strong)">PEDIDO REALIZADO COM SUCESSO!</h1>
         {isPix ? (
           pagamentoStatus === 'aprovado' ? (
-            <div className="mt-4 bg-green-100 text-green-800 p-4 rounded text-lg font-bold">
+            <div className="mt-4 bg-(--dynamic-success-bg) text-(--dynamic-success-strong) p-4 rounded text-lg font-bold">
               PAGAMENTO CONFIRMADO!
             </div>
           ) : (
@@ -203,7 +202,7 @@ const Step6_Success = () => {
             </button>
 
             <button
-              className="mt-4 w-64 bg-green-600 text-white font-bold py-3 rounded-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              className="mt-4 w-64 bg-(--dynamic-success) text-white font-bold py-3 rounded-md hover:bg-(--dynamic-success-strong) transition-colors flex items-center justify-center gap-2"
               onClick={async () => {
                 setCheckingPayment(true);
                 await checkPixStatus(true);

@@ -246,7 +246,8 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             }
             var response = await produtoService.calcularFrete(cepDestino, produtosParaCalculo);
 
-            setTipoDeEntregas(response.data);
+            const data = response.data;
+            setTipoDeEntregas(Array.isArray(data) ? data : []);
 
             setTipoDeEntregaSelecionada(undefined);
             setValorFrete(0);

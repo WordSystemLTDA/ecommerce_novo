@@ -39,7 +39,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap",
   },
   { rel: "stylesheet", href: swiperStyles },
   { rel: "stylesheet", href: rangeSliderStyles },
@@ -75,11 +75,19 @@ export function HydrateFallback() {
 export default function App() {
 
   useEffect(() => {
-    const coresAtivas = config.getCoresAtivas();
+    const coresAtivas = config.CORES;
     const root = document.documentElement;
     root.style.setProperty('--dynamic-primary', coresAtivas.PRIMARIA);
     root.style.setProperty('--dynamic-secondary', coresAtivas.SECUNDARIA);
     root.style.setProperty('--dynamic-terciary', coresAtivas.TERCIARIA);
+    root.style.setProperty('--dynamic-success', coresAtivas.SUCESSO);
+    root.style.setProperty('--dynamic-success-strong', coresAtivas.SUCESSO_FORTE);
+    root.style.setProperty('--dynamic-success-bg', coresAtivas.SUCESSO_FUNDO);
+    root.style.setProperty('--dynamic-bg-header', coresAtivas.FUNDO_HEADER);
+    root.style.setProperty('--dynamic-bg-footer', coresAtivas.FUNDO_FOOTER);
+    root.style.setProperty('--dynamic-bg-main', coresAtivas.FUNDO_MAIN);
+    root.style.setProperty('--dynamic-bg-sidebar', coresAtivas.FUNDO_SIDEBAR);
+    root.style.setProperty('--dynamic-bg-product', coresAtivas.FUNDO_PRODUTO);
   }, []);
 
   return (

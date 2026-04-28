@@ -1,10 +1,10 @@
-import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router";
+﻿import { useEffect, useRef, useState } from "react";
+import { IoMdClose } from "react-icons/io";
 import { MdOutlineSearch } from "react-icons/md";
+import { useNavigate } from "react-router";
+import { produtoService } from "~/features/produto/services/produtoService";
 import type { Produto } from "~/features/produto/types";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
-import { produtoService } from "~/features/produto/services/produtoService";
-import { IoMdClose } from "react-icons/io";
 
 export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | null> }) {
     const [searchTerm, setSearchTerm] = useState("");
@@ -72,7 +72,7 @@ export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | nul
                 onFocus={() => {
                     if (searchResults.length > 0) setShowResults(true);
                 }}
-                className="bg-white w-full rounded text-sm px-4 border-0 outline-none text-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-secondary transition-shadow"
+                className="bg-secondary/90/40 w-full text-sm px-4 py-2 border border-primary/10 outline-none text-primary placeholder:text-primary/70/70 focus:border-terciary transition-colors duration-500"
                 placeholder="Busque na Loja!"
             />
             <button className="absolute right-0 top-0 h-full px-4 bg-transparent text-primary hover:text-secondary transition-colors">
@@ -121,3 +121,4 @@ export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | nul
         </div>
     );
 }
+

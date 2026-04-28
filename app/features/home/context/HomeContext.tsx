@@ -19,6 +19,7 @@ interface HomeContextType {
     filteredProducts: Produto[];
     isFiltering: boolean;
     isLoadingFilters: boolean;
+    isLoadingSidebarFilters: boolean;
     sectionCategories: Record<string, number | null>;
     setSectionCategories: React.Dispatch<React.SetStateAction<Record<string, number | null>>>;
     sectionMarcas: Record<string, number | null>;
@@ -49,6 +50,36 @@ export interface ActiveFilters {
 }
 
 const HomeContext = createContext<HomeContextType | undefined>(undefined);
+const SIDEBAR_FILTERS_CACHE_KEY = 'home:sidebar-filters';
+
+function getCachedSidebarFilters(): FilterOptions | null {
+    if (typeof window === 'undefined') {
+        return null;
+    }
+
+    try {
+        const cached = window.sessionStorage.getItem(SIDEBAR_FILTERS_CACHE_KEY);
+        if (!cached) {
+            return null;
+        }
+
+        return JSON.parse(cached) as FilterOptions;
+    } catch {
+        return null;
+    }
+}
+
+function persistSidebarFilters(filters: FilterOptions) {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    try {
+        window.sessionStorage.setItem(SIDEBAR_FILTERS_CACHE_KEY, JSON.stringify(filters));
+    } catch {
+        // Ignore cache persistence failures.
+    }
+}
 
 function decodeJwt(token: string): any {
     try {
@@ -74,11 +105,13 @@ const defaultFilters: ActiveFilters = {
 };
 
 export function HomeProvider({ children }: { children: ReactNode }) {
+    const cachedSidebarFilters = getCachedSidebarFilters();
     const [produtos, setProdutos] = useState<ProdutosBanners[]>([]);
     const [isLoadingFilters, setIsLoadingFilters] = useState(false);
+    const [isLoadingSidebarFilters, setIsLoadingSidebarFilters] = useState(!cachedSidebarFilters);
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    const [filterOptions, setFilterOptions] = useState<FilterOptions>(() => cachedSidebarFilters ?? {
         marcas: [],
         categorias: [],
         cores: [],
@@ -97,32 +130,84 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     const [banners, setBanners] = useState<Banner[]>([]);
     const [secondaryBanners, setSecondaryBanners] = useState<Banner[]>([]);
     const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
+    const hasLoadedInitialDataRef = useRef(false);
+    const sectionCategoriesCacheRef = useRef<Categoria[] | null>(cachedSidebarFilters?.categorias ?? null);
+    const sectionCategoriesPromiseRef = useRef<Promise<Categoria[]> | null>(null);
+
+    const getSectionCategories = useCallback(async () => {
+        if (sectionCategoriesCacheRef.current && sectionCategoriesCacheRef.current.length > 0) {
+            return sectionCategoriesCacheRef.current;
+        }
+
+        if (filterOptions.categorias.length > 0) {
+            sectionCategoriesCacheRef.current = filterOptions.categorias;
+            return filterOptions.categorias;
+        }
+
+        if (!sectionCategoriesPromiseRef.current) {
+            sectionCategoriesPromiseRef.current = categoriaService
+                .listarCategorias()
+                .then((response) => {
+                    const categorias = response?.data ?? [];
+                    sectionCategoriesCacheRef.current = categorias;
+                    return categorias;
+                })
+                .finally(() => {
+                    sectionCategoriesPromiseRef.current = null;
+                });
+        }
+
+        return sectionCategoriesPromiseRef.current;
+    }, [filterOptions.categorias]);
 
     useEffect(() => {
         const loadInitialData = async () => {
-            try {
-                const [filtersResult, principalResult, secondaryResult] = await Promise.allSettled([
-                    produtoService.listarFiltros(),
-                    getBanners('Principal'),
-                    getBanners('Secundario'),
-                ]);
-
-                if (filtersResult.status === 'fulfilled' && filtersResult.value?.sucesso) {
-                    setFilterOptions(filtersResult.value.data);
-                }
-
-                if (principalResult.status === 'fulfilled') {
-                    setBanners(principalResult.value);
-                }
-
-                if (secondaryResult.status === 'fulfilled') {
-                    setSecondaryBanners(secondaryResult.value);
-                }
-            } catch (error) {
-                console.error('Error loading home initial data', error);
-            } finally {
-                setIsInitialDataLoaded(true);
+            if (hasLoadedInitialDataRef.current) {
+                return;
             }
+
+            hasLoadedInitialDataRef.current = true;
+            setIsLoadingSidebarFilters(!cachedSidebarFilters);
+
+            const loadSidebarFilters = async () => {
+                try {
+                    const filtersResult = await produtoService.listarFiltros();
+
+                    if (filtersResult?.sucesso) {
+                        setFilterOptions(filtersResult.data);
+                        sectionCategoriesCacheRef.current = filtersResult.data.categorias ?? [];
+                        persistSidebarFilters(filtersResult.data);
+                    }
+                } catch (error) {
+                    console.error('Error loading sidebar filters', error);
+                } finally {
+                    setIsLoadingSidebarFilters(false);
+                }
+            };
+
+            const loadBanners = async () => {
+                try {
+                    const [principalResult, secondaryResult] = await Promise.allSettled([
+                        getBanners('Principal'),
+                        getBanners('Secundario'),
+                    ]);
+
+                    if (principalResult.status === 'fulfilled') {
+                        setBanners(principalResult.value);
+                    }
+
+                    if (secondaryResult.status === 'fulfilled') {
+                        setSecondaryBanners(secondaryResult.value);
+                    }
+                } catch (error) {
+                    console.error('Error loading home banners', error);
+                } finally {
+                    setIsInitialDataLoaded(true);
+                }
+            };
+
+            loadSidebarFilters();
+            loadBanners();
         };
 
         loadInitialData();
@@ -235,8 +320,10 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         }
 
         try {
-            const responseProdutos = await produtoService.listarProdutos(filtros);
-            const responseCategorias = await categoriaService.listarCategorias();
+            const [responseProdutos, categorias] = await Promise.all([
+                produtoService.listarProdutos(filtros),
+                getSectionCategories(),
+            ]);
 
             if (responseProdutos.sucesso) {
                 setProdutos((oldState) => {
@@ -244,14 +331,14 @@ export function HomeProvider({ children }: { children: ReactNode }) {
                     if (exists) {
                         return oldState.map(p => p.id === id ? {
                             id: id,
-                            categorias: responseCategorias.data,
+                            categorias,
                             produtos: responseProdutos.data.produtos as Produto[],
                             filtros: filtros
                         } : p);
                     }
                     return [...oldState, {
                         id: id,
-                        categorias: responseCategorias.data,
+                        categorias,
                         produtos: responseProdutos.data.produtos as Produto[],
                         filtros: filtros
                     }];
@@ -260,7 +347,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             throw error;
         }
-    }, [produtos]);
+    }, [getSectionCategories, produtos]);
 
     const contextValue = useMemo(() => ({
         produtos,
@@ -273,6 +360,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         filteredProducts,
         isFiltering,
         isLoadingFilters,
+        isLoadingSidebarFilters,
         sectionCategories,
         setSectionCategories,
         sectionMarcas,
@@ -289,6 +377,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         filteredProducts,
         isFiltering,
         isLoadingFilters,
+        isLoadingSidebarFilters,
         sectionCategories,
         sectionMarcas,
         banners,

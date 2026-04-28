@@ -2,13 +2,13 @@ import sign from 'jwt-encode';
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import FilterToolbar from '~/components/filter_toolbar';
+import FilterSidebar from '~/components/FilterSidebar';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
 import { ProductCard } from '~/components/ProductCard';
 import { SkeletonProductCard } from '~/components/skeleton_product_card';
 import { categoriaService } from '~/features/categoria/services/categoriaService';
 import type { Categoria } from '~/features/categoria/types';
-import { FilterContent } from '~/features/home/components/FilterContent';
 import { MobileFilterDrawer } from '~/features/home/components/MobileFilterDrawer';
 import { produtoService } from '~/features/produto/services/produtoService';
 import type { Paginacao, Produto } from '~/features/produto/types';
@@ -56,20 +56,6 @@ function decodeJwt(token: string): any {
     }
 }
 
-const Sidebar = ({ filterOptions, activeFilters, onFilterChange }: { filterOptions: FilterOptions, activeFilters: ActiveFilters, onFilterChange: (newFilters: ActiveFilters) => void }) => {
-    return (
-        <aside className="hidden lg:block lg:col-span-1">
-            <div className="bg-white/95 backdrop-blur p-4 rounded-2xl border border-slate-100 shadow-sm sticky top-4">
-                <FilterContent
-                    activeFilters={activeFilters}
-                    filterOptions={filterOptions}
-                    onFilterChange={onFilterChange}
-                />
-            </div>
-        </aside>
-    );
-};
-
 const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: boolean }) => {
     if (isLoading) {
         return (
@@ -83,7 +69,7 @@ const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: 
 
     if (products.length === 0) {
         return (
-            <div className="mx-4 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
+            <div className="mx-4 rounded-2xl border border-dashed border-slate-300 bg-product-bg p-10 text-center text-slate-600">
                 Nenhum produto encontrado nesta categoria.
             </div>
         );
@@ -171,12 +157,18 @@ export default function CategoryPage() {
     const [categoryName, setCategoryName] = useState('CATEGORIA');
     const [porPagina, setPorPagina] = useState(20);
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+    const [isLoadingSidebar, setIsLoadingSidebar] = useState(() => {
+        try {
+            return !window.sessionStorage.getItem('home:sidebar-filters');
+        } catch { return true; }
+    });
 
-    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-        marcas: [],
-        categorias: [],
-        cores: [],
-        tamanhos: []
+    const [filterOptions, setFilterOptions] = useState<FilterOptions>(() => {
+        try {
+            const cached = window.sessionStorage.getItem('home:sidebar-filters');
+            if (cached) return JSON.parse(cached);
+        } catch { }
+        return { marcas: [], categorias: [], cores: [], tamanhos: [] };
     });
     const [activeFilters, setActiveFilters] = useState<ActiveFilters>(defaultFilters);
 
@@ -185,12 +177,21 @@ export default function CategoryPage() {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
+                const cached = window.sessionStorage.getItem('home:sidebar-filters');
+                if (cached) {
+                    setFilterOptions(JSON.parse(cached));
+                    setIsLoadingSidebar(false);
+                    return;
+                }
                 const response = await produtoService.listarFiltros();
                 if (response.sucesso) {
                     setFilterOptions(response.data);
+                    window.sessionStorage.setItem('home:sidebar-filters', JSON.stringify(response.data));
                 }
             } catch (error) {
                 console.error("Erro ao buscar opções de filtro", error);
+            } finally {
+                setIsLoadingSidebar(false);
             }
         };
         fetchOptions();
@@ -320,16 +321,18 @@ export default function CategoryPage() {
     };
 
     return (
-        <div className="bg-gradient-to-b from-slate-50 to-slate-100/70 min-h-screen">
+        <div className="bg-linear-to-b from-slate-50 to-slate-100/70 min-h-screen">
             <Header />
 
             <div className="max-w-387 mx-auto px-0 mb-4 lg:mt-4">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     <div className="lg:col-span-1">
-                        <Sidebar
+                        <FilterSidebar
                             filterOptions={filterOptions}
                             activeFilters={activeFilters}
                             onFilterChange={handleFilterChange}
+                            isLoading={isLoadingSidebar}
+                            className="hidden lg:block lg:col-span-1"
                         />
                     </div>
 

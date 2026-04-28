@@ -1,23 +1,37 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @theme {
+  /* Typography */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
 
+  /* Legacy text sizes (kept for compatibility) */
   --text-extra-tiny: 0.325rem;
   --text-medium-tiny: 0.525rem;
   --text-tiny: 0.625rem;
 
-  --color-background-light: #f2f3f4;
-  --color-background-dark: #f2f3f4;
+  /* Legacy background tokens (kept for compatibility) */
+  --color-background-light: var(--dynamic-secondary);
+  --color-background-dark: var(--dynamic-primary);
 
-  --color-header-light: #0e1116;
-  --color-header-dark: white;
+  /* Luxury palette */
+  --color-lux-bg: var(--dynamic-secondary);
+  --color-lux-fg: var(--dynamic-primary);
+  --color-lux-muted-bg: color-mix(in srgb, var(--dynamic-secondary) 88%, var(--dynamic-primary) 12%);
+  --color-lux-muted-fg: color-mix(in srgb, var(--dynamic-primary) 65%, var(--dynamic-secondary) 35%);
+  --color-lux-gold: var(--dynamic-terciary);
 
+  /* Dynamic brand colors (set at runtime via JS) */
   --color-primary: var(--dynamic-primary);
   --color-secondary: var(--dynamic-secondary);
   --color-terciary: var(--dynamic-terciary);
+  --color-header-bg: var(--dynamic-bg-header);
+  --color-footer-bg: var(--dynamic-bg-footer);
+  --color-main-bg: var(--dynamic-bg-main);
+  --color-sidebar-bg: var(--dynamic-bg-sidebar);
+  --color-product-bg: var(--dynamic-bg-product);
 
-  --color-pix: #008531;
+  --color-pix: var(--dynamic-terciary);
 }
 
 @layer utilities {
@@ -29,21 +43,86 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* Luxury typography utilities */
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .overline-label {
+    @apply text-xs uppercase tracking-[0.25em] font-medium text-primary/70;
+  }
+
+  .luxury-divider {
+    @apply h-px w-8 bg-primary/20;
+  }
+
+  /* Lift hover - subtle card elevation */
+  .lift-hover {
+    @apply transition-shadow duration-500;
+  }
+  .lift-hover:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
 }
 
 html,
 body {
-  @apply bg-background-light;
-
-  @media (prefers-color-scheme: white) {
-    color-scheme: white;
-  }
+  background-color: var(--dynamic-secondary);
 }
 
 body {
-  background: radial-gradient(1200px 300px at 50% -120px, rgba(15, 23, 42, 0.04), transparent 70%), linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
-  color: #0f172a;
+  background-color: var(--dynamic-secondary);
+  color: var(--dynamic-primary);
+  font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Paper grain noise texture - fixed overlay, pointer-events disabled */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* Luxury primary button - gold slide overlay */
+.btn-luxury-primary {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--dynamic-primary);
+  color: var(--dynamic-secondary);
+  border: none;
+  cursor: pointer;
+  transition: box-shadow 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+.btn-luxury-primary:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+.btn-luxury-primary .btn-gold-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: var(--dynamic-terciary);
+  transform: translateX(-100%);
+  transition: transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.btn-luxury-primary:hover .btn-gold-overlay {
+  transform: translateX(0);
+}
+.btn-luxury-primary .btn-content {
+  position: relative;
+  z-index: 10;
 }
 
 main,
@@ -52,6 +131,26 @@ aside,
 footer {
   content-visibility: auto;
   contain-intrinsic-size: 1px 900px;
+}
+
+header {
+  background-color: var(--dynamic-bg-header);
+}
+
+footer {
+  background-color: var(--dynamic-bg-footer);
+}
+
+main {
+  background-color: var(--dynamic-bg-main);
+}
+
+.bg-sidebar-bg {
+  background-color: var(--dynamic-bg-sidebar);
+}
+
+.bg-product-bg {
+  background-color: var(--dynamic-bg-product);
 }
 
 img,
@@ -74,7 +173,7 @@ video {
 }
 
 .main-banner-carousel .swiper-pagination-bullet-active {
-  background-color: var(--dynamic-primary);
+  background-color: var(--dynamic-terciary);
   opacity: 1;
 }
 

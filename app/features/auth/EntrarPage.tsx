@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
-import { FaLock, FaUserPlus } from 'react-icons/fa'
-import { FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiEye, FiEyeOff, FiLock, FiMail, FiUserPlus } from 'react-icons/fi'
 import { useNavigate } from 'react-router'
 import Button from '~/components/button'
 import Footer from '~/components/footer'
 import Header from '~/components/header'
-import IconCircle from '~/components/icon_circle'
 import CustomInput from '~/components/input'
 import { useAuth } from './context/AuthContext'
 
@@ -14,100 +12,135 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const { login } = useAuth();
   let navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
     try {
       await login({ email, senha: password });
       navigate("/");
     } catch (error) {
+      const apiMessage =
+        (error as any)?.response?.data?.mensagem ||
+        (error as any)?.response?.data?.message;
+
+      setErrorMessage(apiMessage ?? 'Nao foi possivel entrar com os dados informados. Tente novamente.');
       console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
-    <div>
+    <div className="min-h-screen flex flex-col bg-main-bg">
       <Header />
-      <div className="relative flex flex-col items-center bg-white p-4 py-16 text-gray-700">
 
-        <main className="w-full max-w-387">
-          <div className="grid grid-cols-1 gap-16 md:grid-cols-2">
+      <main className="flex-1 flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-4xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <div className="flex flex-col">
-              <IconCircle icon={FaLock} color='primary' />
-              <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
-                Já tem uma conta?
-              </h2>
-              <p className="mb-6 text-center text-sm">
-                Informe os seus dados abaixo para acessá-la.
-              </p>
+            {/* Login */}
+            <div className="rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8 flex flex-col">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
+                  <FiLock size={18} />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-primary/50 font-medium">Bem-vindo de volta</p>
+                  <h2 className="font-serif text-xl font-semibold text-slate-800">Acessar conta</h2>
+                </div>
+              </div>
 
-              <form onSubmit={handleLogin} className="flex flex-col gap-4">
-                <CustomInput
-                  type="email"
-                  placeholder="E-mail *"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+              <form onSubmit={handleLogin} className="flex flex-col gap-6 flex-1">
+                {errorMessage && (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    {errorMessage}
+                  </div>
+                )}
 
-                <PasswordInput
-                  placeholder="Senha *"
-                  show={showPassword}
-                  onToggle={() => setShowPassword(!showPassword)}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-
-                <label className="flex cursor-pointer items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-400 bg-white text-primary focus:ring-terciary"
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                    <FiMail size={12} /> E-mail
+                  </label>
+                  <CustomInput
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
-                  Lembrar meus dados
-                </label>
+                </div>
 
-                <Button
-                  variant="primary"
-                  type="submit"
-                >
-                  ACESSAR CONTA
-                </Button>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                    <FiLock size={12} /> Senha
+                  </label>
+                  <PasswordInput
+                    placeholder="Sua senha"
+                    show={showPassword}
+                    onToggle={() => setShowPassword(!showPassword)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
 
-                <a
-                  href="#"
-                  className="mt-2 text-center text-sm text-primary hover:text-terciary hover:underline"
-                >
-                  Esqueci minha senha
-                </a>
+                <div className="flex items-center justify-between">
+                  <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 rounded border-primary/30 accent-primary"
+                    />
+                    Lembrar meus dados
+                  </label>
+                  <a href="#" className="text-xs text-primary/60 hover:text-primary transition-colors">
+                    Esqueci minha senha
+                  </a>
+                </div>
+
+                <div className="mt-auto pt-2">
+                  <Button variant="primary" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'ACESSANDO...' : 'ACESSAR CONTA'}
+                  </Button>
+                </div>
               </form>
             </div>
 
-            <div className="flex flex-col">
-              <IconCircle icon={FaUserPlus} color="green" />
-              <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
-                Novo Cliente
-              </h2>
-              <p className="mb-6 text-center text-sm">
-                Criar uma conta é fácil! Informe seus dados e uma senha para
-                aproveitar todos os benefícios de ter uma conta.
+            {/* Cadastro */}
+            <div className="rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8 flex flex-col">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-(--dynamic-success) bg-(--dynamic-success-bg) text-(--dynamic-success)">
+                  <FiUserPlus size={18} />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-slate-400 font-medium">Primeira vez aqui?</p>
+                  <h2 className="font-serif text-xl font-semibold text-slate-800">Criar conta</h2>
+                </div>
+              </div>
+
+              <p className="text-sm text-slate-500 leading-relaxed mb-8">
+                Crie sua conta e aproveite todos os benefícios: histórico de pedidos, endereços salvos, lista de favoritos e muito mais.
               </p>
 
-              <Button variant="primary" type="button" onClick={() => navigate("/registrar/")}>
-                CADASTRE-SE
-              </Button>
+              <div className="mt-auto">
+                <Button variant="secondary" type="button" onClick={() => navigate("/registrar/")}>
+                  CADASTRAR-SE GRÁTIS
+                </Button>
+              </div>
             </div>
 
           </div>
-        </main>
-
-      </div>
+        </div>
+      </main>
 
       <Footer />
     </div>
@@ -125,15 +158,14 @@ function PasswordInput({ show, onToggle, ...props }: PasswordInputProps) {
       <CustomInput
         {...props}
         type={show ? 'text' : 'password'}
-        className="w-full rounded-md border border-gray-400 bg-white p-3 pr-10 text-gray-900 placeholder-gray-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
       />
       <button
         type="button"
         onClick={onToggle}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900"
+        className="absolute right-0 top-1/2 -translate-y-1/2 text-primary/40 hover:text-primary transition-colors"
         aria-label={show ? 'Esconder senha' : 'Mostrar senha'}
       >
-        {show ? <FiEyeOff /> : <FiEye />}
+        {show ? <FiEyeOff size={16} /> : <FiEye size={16} />}
       </button>
     </div>
   )

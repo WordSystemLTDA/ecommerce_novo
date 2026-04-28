@@ -38,23 +38,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = async (credentials: any) => {
-        setIsLoading(true);
         try {
             const response = await authService.entrar(credentials);
 
-            if (response.sucesso) {
-                const token = response.data.token;
-                if (token) {
-                    localStorage.setItem('token', token);
-                }
-                setCliente(response.data.cliente);
-                // toast.success('Bem-vindo de volta!', { position: 'top-center' });
+            if (!response.sucesso) {
+                throw {
+                    response: {
+                        data: {
+                            mensagem: response.mensagem ?? 'Email ou senha invalidos.'
+                        }
+                    }
+                };
             }
+
+            const token = response.data.token;
+            if (token) {
+                localStorage.setItem('token', token);
+            }
+            setCliente(response.data.cliente);
+            // toast.success('Bem-vindo de volta!', { position: 'top-center' });
         } catch (error) {
-            toast.error('Erro ao fazer login', { position: 'top-center' });
+            const mensagem =
+                (error as any)?.response?.data?.mensagem ||
+                (error as any)?.response?.data?.message ||
+                'Erro ao fazer login';
+
+            toast.error(mensagem, { position: 'top-center' });
             throw error;
-        } finally {
-            setIsLoading(false);
         }
     };
 

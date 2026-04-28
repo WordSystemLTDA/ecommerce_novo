@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import type { Swiper as SwiperInstance } from 'swiper';
 
@@ -64,14 +64,14 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
         <div>
             <Header />
 
-            <div className="flex flex-col items-center bg-white text-gray-900 pb-8">
-                <div className="w-full px-4 lg:px-10 py-0">
-                    <div className='lg:hidden flex justify-between items-center pt-5 pb-2'>
+            <main className="bg-main-bg text-primary w-full">
+                <div className="max-w-387 mx-auto px-0 pb-12">
+                    <div className='lg:hidden flex justify-between items-center pt-5 pb-2 px-4 lg:px-0'>
                         <Breadcrumb />
                         <Avalicoes produto={produto} />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 relative lg:pt-5">
+                    <div className="grid grid-cols-1 gap-6 lg:gap-6 lg:grid-cols-12 relative lg:pt-5 px-4 lg:px-0">
                         <div className='lg:hidden flex flex-col gap-2'>
                             <ProdutoNameInfo produto={produto} />
                         </div>
@@ -91,12 +91,12 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                         </div>
 
                         <div className="flex flex-col max-w-full relative lg:col-span-9 lg:col-start-1 lg:row-start-2 max-lg:hidden">
-                            <div className='mt-8'>
+                            <div className='mt-8 border-t border-primary/10 pt-6'>
                                 <div className='flex gap-2 items-center '>
-                                    <MdOutlineDescription className='text-terciary' size={24} />
-                                    <h2 className="text-xl font-semibold">DESCRIÇÃO DO PRODUTO</h2>
+                                    <MdOutlineDescription className='text-terciary' size={20} />
+                                    <h2 className="text-lg uppercase tracking-[0.2em] font-medium">Descrição do produto</h2>
                                 </div>
-                                <p>{produto.descricaolonga1}<br /><br /> {produto.descricaolonga2}</p>
+                                <p className='text-primary/70 leading-relaxed mt-2'>{produto.descricaolonga1}<br /><br /> {produto.descricaolonga2}</p>
                             </div>
                         </div>
 
@@ -105,22 +105,22 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                         </div>
                     </div>
 
-                    <div className='flex flex-row gap-2 items-center text-terciary mt-6 lg:hidden'>
+                    <div className='flex flex-row gap-2 items-center text-terciary mt-6 lg:hidden px-4 lg:px-0'>
                         <AiFillInfoCircle />
-                        <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
+                        <h2 className="text-sm uppercase tracking-[0.2em] font-medium">Sobre o produto</h2>
                     </div>
 
-                    <div className="flex flex-col max-w-full relative max-lg:block lg:hidden">
-                        <div className='mt-6'>
+                    <div className="flex flex-col max-w-full relative max-lg:block lg:hidden px-4 lg:px-0">
+                        <div className='mt-6 border-t border-primary/10 pt-6'>
                             <div className='flex gap-2 items-center '>
-                                <MdOutlineDescription className='text-terciary' size={24} />
-                                <h2 className="text-xl font-semibold">DESCRIÇÃO DO PRODUTO</h2>
+                                <MdOutlineDescription className='text-terciary' size={20} />
+                                <h2 className="text-lg uppercase tracking-[0.2em] font-medium">Descrição do produto</h2>
                             </div>
-                            <p>{produto.descricaolonga1}<br /><br /> {produto.descricaolonga2}</p>
+                            <p className='text-primary/70 leading-relaxed mt-2'>{produto.descricaolonga1}<br /><br /> {produto.descricaolonga2}</p>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
 
             <Footer />
         </div>
@@ -199,22 +199,22 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
     return (
         <div className="flex flex-col gap-2 max-w-full relative">
 
-            <div className="overflow-hidden rounded-lg lg:border lg:border-gray-400 relative">
-                <div className="flex items-center gap-2 absolute left-2 lg:left-4 top-3 bg-white z-30 px-0 rounded-sm text-xs font-semibold">
+            <div className="overflow-hidden relative rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)]">
+                <div className="flex items-center gap-2 absolute left-2 lg:left-4 top-3 bg-white/90 z-30 px-2 py-0.5 text-xs font-medium border border-slate-200 text-slate-600">
                     <span>{currentSlide + 1} / {images.length}</span>
                 </div>
 
-                <div className="flex items-center gap-2 absolute right-2 lg:right-4 top-3 bg-white z-30 px-0 rounded-sm text-xs font-semibold">
+                <div className="flex items-center gap-2 absolute right-2 lg:right-4 top-3 bg-white/90 z-30 px-2 py-0.5 text-xs font-medium border border-slate-200">
                     <button
-                        className={`text-gray-600 hover:text-red-600 transition-colors ${isFavorite ? 'text-red-600' : ''}`}
+                        className={`text-primary hover:text-terciary transition-colors duration-500 ${isFavorite ? 'text-terciary' : ''}`}
                         onClick={toggleFavorite}
                     >
                         {isFavorite ? <IoHeart size={22} /> : <IoHeartOutline size={22} />}
                     </button>
                 </div>
 
-                <div className="flex items-center gap-2 absolute right-2 lg:right-4 bottom-3 bg-white z-30 px-0 rounded-sm text-xs font-semibold">
-                    <button className="text-gray-600 hover:text-red-600">
+                <div className="flex items-center gap-2 absolute right-2 lg:right-4 bottom-3 bg-white/90 z-30 px-2 py-0.5 text-xs font-medium border border-slate-200">
+                    <button className="text-primary/70 hover:text-terciary transition-colors duration-500">
                         <IoShareSocialOutline size={22} />
                     </button>
                 </div>
@@ -233,11 +233,11 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
                     className="lg:max-h-130! max-lg:min-h-96! lg:w-full!"
                 >
                     {images.map((img, index) => (
-                        <SwiperSlide key={index} className='lg:h-130! max-lg:min-h-96!'>
+                        <SwiperSlide key={index} className='lg:h-130! max-lg:min-h-96! bg-white'>
                             <OptimizedImage
                                 src={img}
                                 alt={`Imagem ${index + 1} do produto`}
-                                className="lg:h-130! max-lg:min-h-96! lg:w-full! lg:object-contain! max-lg:object-cover!"
+                                className="lg:h-130! max-lg:min-h-96! lg:w-full! w-full! object-contain! p-4 lg:p-6"
                                 priority={index === 0}
                             />
                         </SwiperSlide>
@@ -259,12 +259,12 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
                     {images.map((img, index) => (
                         <SwiperSlide
                             key={index}
-                            className="cursor-pointer overflow-hidden rounded-md border border-gray-400"
+                            className="cursor-pointer overflow-hidden border border-slate-200 bg-white rounded-xl"
                         >
                             <OptimizedImage
                                 src={img}
                                 alt={`Miniatura ${index + 1}`}
-                                className="h-full! w-full! object-contain!"
+                                className="h-full! w-full! object-contain! p-2"
                             />
                         </SwiperSlide>
                     ))}
@@ -273,7 +273,7 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
 
             <div className='lg:hidden flex gap-1 items-center justify-center'>
                 {images.map((img, index) => (
-                    <div className='rounded-full bg-gray-600 w-1.5 h-1.5'></div>
+                    <div className='bg-primary/35 w-1.5 h-1.5'></div>
                 ))}
             </div>
         </div>
@@ -295,13 +295,13 @@ function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps)
                 <ProdutoNameInfo produto={produto} />
             </div>
 
-            <hr className="my-2 border-gray-200 max-lg:hidden" />
+            <hr className="my-2 border-primary/10 max-lg:hidden" />
 
             <div className="flex flex-col gap-3">
                 {produto.cores && produto.cores.length > 0 && (
                     <div className="flex flex-col gap-2 mb-0">
-                        <span className="text-sm font-semibold text-gray-700">
-                            Cor: <span className="font-normal text-gray-600">{produto.cores.find(c => c.id == produto.id)?.nome}</span>
+                        <span className="text-sm font-medium text-primary">
+                            Cor: <span className="font-normal text-primary/70">{produto.cores.find(c => c.id == produto.id)?.nome}</span>
                         </span>
                         <div className="flex gap-2 flex-wrap">
                             {produto.cores.map((cor) => (
@@ -312,7 +312,7 @@ function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps)
                                     }}
                                     className="group relative w-24 min-h-24 max-h-32 cursor-pointer"
                                 >
-                                    <div className={`p-1 w-full h-full rounded-lg border overflow-hidden ${cor.id == produto.id ? 'border-terciary' : 'border-gray-400 group-hover:border-gray-400'}`}>
+                                    <div className={`p-1 w-full h-full border overflow-hidden ${cor.id == produto.id ? 'border-terciary' : 'border-primary/20 group-hover:border-primary/35'}`}>
                                         <OptimizedImage src={cor.imagem} alt={cor.nome} className="w-full max-h-20 object-cover" />
                                         <p className="text-tiny text-center mt-1">{cor.nome}</p>
                                     </div>
@@ -340,13 +340,13 @@ function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps)
                                             setErroTamanho(false);
                                         }
                                     }}
-                                    className={`relative px-3 py-1 border rounded-md text-sm cursor-pointer overflow-hidden ${tamanhoSelecionado?.id === tamanho.id && tamanho.estoque > 0
+                                    className={`relative px-3 py-1 border text-sm cursor-pointer overflow-hidden ${tamanhoSelecionado?.id === tamanho.id && tamanho.estoque > 0
                                         ? 'border-terciary text-terciary'
                                         : erroTamanho && tamanho.estoque > 0
                                             ? 'border-red-500 text-red-500'
                                             : tamanho.estoque > 0
-                                                ? 'border-gray-300 text-gray-700 hover:border-terciary'
-                                                : 'border-gray-400 text-gray-400 bg-gray-200 cursor-not-allowed'
+                                                ? 'border-primary/25 text-primary hover:border-terciary'
+                                                : 'border-primary/20 text-primary/70 bg-secondary/90 cursor-not-allowed'
                                         }`}
                                     title={`Estoque: ${tamanho.estoque}`}
                                 >
@@ -363,7 +363,7 @@ function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps)
                 )}
                 <div className='flex gap-2 items-center text-terciary max-lg:hidden'>
                     <AiFillInfoCircle />
-                    <h2 className="text-sm font-semibold">SOBRE O PRODUTO</h2>
+                    <h2 className="text-sm uppercase tracking-[0.2em] font-medium">Sobre o produto</h2>
                 </div>
             </div>
         </div>
@@ -380,7 +380,7 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
                 <Avalicoes produto={produto} />
             </div>
 
-            <h1 className="text-base font-normal leading-tight">{produto.nome}</h1>
+            <h1 className="text-base lg:text-lg font-normal leading-tight">{produto.nome}</h1>
         </div>
     );
 }
@@ -456,19 +456,19 @@ function PurchaseSidebar({ produto, setErroTamanho }: PurchaseSidebarProps) {
 
     return (
         <div className="flex flex-col gap-4 lg:sticky top-30">
-            <div className="flex flex-col gap-0 rounded-lg border border-gray-200 bg-white px-4 pb-4 shadow-sm relative overflow-hidden">
+            <div className="flex flex-col gap-0 border border-primary/15 bg-secondary px-4 pb-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden">
 
                 {/* Badges do ProductCard */}
                 {produto.promocaoAtiva === 'Sim' && (Number(produto.quantidadeLimiteDesconto) <= Number(produto.estoque) && produto.idPromocoesEcommerce) ? (
                     <div className="absolute top-0 right-0">
-                        <span className="text-xs font-bold text-white bg-red-400 px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm">
+                        <span className="text-xs font-medium text-secondary bg-primary px-3 py-1 flex items-center gap-1 shadow-sm">
                             <BsBoxes />
                             Restam {(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} un.
                         </span>
                     </div>
                 ) : produto.idPromocoesEcommerce && produto.promocaoAtiva === 'Sim' && (
                     <div className="absolute top-0 right-0">
-                        <span className="text-xs font-bold text-white bg-blue-700 px-3 py-1 rounded-bl-lg flex items-center gap-1 shadow-sm">
+                        <span className="text-xs font-medium text-primary bg-terciary px-3 py-1 flex items-center gap-1 shadow-sm">
                             TOP OFERTA
                         </span>
                     </div>
@@ -476,18 +476,18 @@ function PurchaseSidebar({ produto, setErroTamanho }: PurchaseSidebarProps) {
 
                 <div className="flex items-center gap-2 mt-4">
                     {precoAntigoFinal && (
-                        <span className="text-sm text-gray-500 line-through">
+                        <span className="text-sm text-primary/70 line-through">
                             {currencyFormatter.format(precoAntigoFinal)}
                         </span>
                     )}
                     {descontoTotal > 0 && (
-                        <span className="text-xs font-bold text-terciary bg-green-100 px-2 py-0.5 rounded">
+                        <span className="text-xs font-medium text-terciary border border-terciary px-2 py-0.5">
                             {descontoTotal}% OFF
                         </span>
                     )}
                 </div>
 
-                <span className="text-3xl font-bold text-primary">
+                <span className="text-3xl font-medium text-primary">
                     {currencyFormatter.format(parseFloat(precoFinal))}
                 </span>
 
@@ -499,16 +499,16 @@ function PurchaseSidebar({ produto, setErroTamanho }: PurchaseSidebarProps) {
                 </span>
 
                 <div className='my-0.5'></div>
-                <span className="text-tiny text-gray-600">
+                <span className="text-tiny text-primary/70">
                     <span className='font-bold'>{currencyFormatter.format(precoBaseNum + valorAdicional)}</span> em até 6x de <span className='font-bold'>
                         {currencyFormatter.format(parseFloat(((precoBaseNum + valorAdicional) / 6).toFixed(2)))}</span> sem juros no cartão de crédito
                 </span>
-                <a href="#" className="text-tiny font-semibold text-black underline mt-2">
+                <a href="#" className="text-tiny font-medium text-primary underline mt-2 hover:text-terciary transition-colors duration-500">
                     Ver mais opções de pagamento e parcelamento
                 </a>
 
                 {produto.estoque > 0 &&
-                    <div className="my-2 text-xs font-semibold text-green-600">
+                    <div className="my-2 text-xs font-semibold text-(--dynamic-success)">
                         Em estoque ({Number(produto.estoque).toFixed(0)} disponíveis)
                     </div>
                 }
@@ -614,8 +614,8 @@ function FreightCalculator({ produto }: { produto: Produto }) {
     };
 
     return (
-        <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-2 font-semibold text-primary text-xs">
+        <div className="flex flex-col gap-3 border border-primary/15 bg-secondary p-4 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+            <div className="flex items-center gap-2 font-medium text-primary text-xs uppercase tracking-[0.2em]">
                 <FaTruck size={18} />
                 <span>CONSULTE FRETE</span>
             </div>
@@ -626,7 +626,7 @@ function FreightCalculator({ produto }: { produto: Produto }) {
                     value={cep}
                     onChange={handleCepChange}
                     maxLength={9}
-                    className="w-full rounded-md border border-gray-400 bg-white p-2 text-xs text-gray-900 placeholder-gray-500 focus:border-terciary focus:outline-none focus:ring-1 focus:ring-terciary"
+                    className="w-full border border-primary/20 bg-secondary p-2 text-xs text-primary placeholder:text-primary/70 focus:border-terciary focus:outline-none"
                 />
                 <Button
                     variant="primaryOutline"
@@ -637,22 +637,22 @@ function FreightCalculator({ produto }: { produto: Produto }) {
                     {loading ? <Loader size="small" /> : 'OK'}
                 </Button>
             </div>
-            <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target='_blank' rel="noreferrer" className="text-tiny text-primary underline">
+            <a href="https://buscacepinter.correios.com.br/app/endereco/index.php" target='_blank' rel="noreferrer" className="text-tiny text-primary underline hover:text-terciary transition-colors duration-500">
                 Não sei meu CEP
             </a>
 
             {freteOptions.length > 0 && (
                 <div className="flex flex-col gap-2 mt-2">
                     {freteOptions.map((option) => (
-                        <div key={option.id} className="flex justify-between items-center text-xs border-b border-gray-100 pb-2 last:border-0">
-                            <span className="text-gray-700 font-medium">{option.name || option.company.name}</span>
+                        <div key={option.id} className="flex justify-between items-center text-xs border-b border-primary/10 pb-2 last:border-0">
+                            <span className="text-primary font-medium">{option.name || option.company.name}</span>
                             <div className="flex flex-col items-end">
-                                <span className="font-bold text-gray-900">
+                                <span className="font-medium text-primary">
                                     {option.price === "0.00" || option.price === "0"
                                         ? "Grátis"
                                         : currencyFormatter.format(Number(option.price))}
                                 </span>
-                                <span className="text-tiny text-gray-500">
+                                <span className="text-tiny text-primary/70">
                                     até {option.delivery_time} dia{option.delivery_time > 1 ? 's' : ''} úteis
                                 </span>
                             </div>
@@ -663,3 +663,4 @@ function FreightCalculator({ produto }: { produto: Produto }) {
         </div>
     )
 }
+

@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { BsBoxes, BsCartPlus } from "react-icons/bs";
 import { MdFavorite, MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { toast } from 'react-toastify';
-import RatingStars from "~/components/rating_stars";
 import { useAuth } from '~/features/auth/context/AuthContext';
 import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
 import { useFavorito } from '~/features/favoritos/context/FavoritoContext';
@@ -25,6 +24,7 @@ export function ProductCard({ produto }: ProductCardProps) {
 
     const { cliente } = useAuth();
     const [isFavorite, setIsFavorite] = useState(false);
+    const [isImageLoading, setIsImageLoading] = useState(true);
     const { atualizarQuantidade } = useFavorito();
     // Debug favorite status
     // console.log(`Product ${produto.id} (${produto.nome}): ehFavorito=${produto.ehFavorito}, isFavorite=${isFavorite}`);
@@ -36,6 +36,10 @@ export function ProductCard({ produto }: ProductCardProps) {
             setIsFavorite(false);
         }
     }, [cliente, produto.ehFavorito]);
+
+    useEffect(() => {
+        setIsImageLoading(true);
+    }, [produto.id, produto.fotos?.m?.[0]]);
 
     const toggleFavorite = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -120,57 +124,53 @@ export function ProductCard({ produto }: ProductCardProps) {
 
     return (
         <div
-            className="flex flex-col h-full border border-slate-200 rounded-2xl overflow-hidden bg-white cursor-pointer hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group relative"
+            className="flex flex-col h-full border-t border-primary/15 bg-product-bg cursor-pointer group relative shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-shadow duration-500"
             onClick={() => {
                 navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
             }}
         >
-            <div className="relative">
-                <div className="absolute top-2 right-2 group-hover:opacity-0 opacity-100 transition-opacity p-1">
-                    {produto.avaliacao !== undefined && (
-                        <div className="flex items-center gap-0.5">
-                            <RatingStars rating={produto.avaliacao} variant="tiny" />
-                            <span className="text-tiny text-gray-400">({produto.avaliacao})</span>
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex absolute top-2 right-2 group-hover:opacity-100 opacity-0 transition-opacity gap-2 p-1 z-10 cursor-auto">
-                    <button onClick={toggleFavorite} className="hover:scale-110 transition-transform">
+            <div className="relative overflow-hidden">
+                <div className="flex absolute top-2 right-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300 gap-2 p-1 z-10 cursor-auto">
+                    <button onClick={toggleFavorite} className="hover:scale-110 transition-transform duration-300">
                         {isFavorite ? (
-                            <MdFavorite size={20} className="text-red-500" />
+                            <MdFavorite size={20} className="text-terciary" />
                         ) : (
-                            <MdFavoriteBorder size={20} color="gray" />
+                            <MdFavoriteBorder size={20} className="text-primary" />
                         )}
                     </button>
                     {estaNoCarrinho ? (
-                        <MdShoppingCartCheckout size={20} color="green" className="cursor-pointer" onClick={handleAdicionarCarrinho} />
+                        <MdShoppingCartCheckout size={20} className="cursor-pointer text-primary" onClick={handleAdicionarCarrinho} />
                     ) : (
-                        <MdOutlineAddShoppingCart size={20} color="gray" className="cursor-pointer" onClick={handleAdicionarCarrinho} />
+                        <MdOutlineAddShoppingCart size={20} className="cursor-pointer text-primary" onClick={handleAdicionarCarrinho} />
                     )}
                 </div>
+
+                {isImageLoading && (
+                    <div className="absolute inset-0 px-4 pt-4 pb-0 z-1">
+                        <div className="h-full w-full animate-pulse bg-primary/8" />
+                    </div>
+                )}
 
                 <OptimizedImage
                     src={produto.fotos?.m?.[0]}
                     alt={produto.nome}
-                    className="w-full min-h-48 max-h-48 object-contain px-4 pt-4 pb-0"
+                    className={`w-full min-h-48 max-h-48 object-contain px-4 pt-4 pb-0 transition-all duration-900 ease-out group-hover:scale-[1.03] ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
                     fallbackSrc="/logo.png"
+                    onLoad={() => setIsImageLoading(false)}
                 />
             </div>
 
-            <div className="flex-1 p-2 lg:p-4 flex flex-col justify-between">
+            <div className="flex-1 p-3 lg:p-4 flex flex-col justify-between border-t border-primary/8">
                 <div className="flex-1">
-                    <h3 className="text-xs font-medium text-gray-600 mb-2 overflow-hidden text-ellipsis">
+                    <h3 className="text-xs font-normal text-primary mb-2 overflow-hidden text-ellipsis leading-relaxed group-hover:text-terciary transition-colors duration-500">
                         {produto.nome}
                     </h3>
 
-                    <div className="flex justify-between">
-                        {precoAntigo && (
-                            <span className="text-xs text-gray-500 line-through">
-                                {currencyFormatter.format(produto.precoAntigo)}
-                            </span>
-                        )}
-                    </div>
+                    {precoAntigo && (
+                        <span className="text-xs text-primary/70 line-through block mb-0.5">
+                            {currencyFormatter.format(produto.precoAntigo)}
+                        </span>
+                    )}
 
                     <div className="flex items-baseline gap-2 mb-0">
                         <span className="text-base font-medium text-primary">
@@ -178,13 +178,13 @@ export function ProductCard({ produto }: ProductCardProps) {
                         </span>
 
                         {descontoTotal > 0 && (
-                            <span className="text-xs font-bold text-terciary bg-green-100 px-1 py-0.5 rounded">
-                                {descontoTotal}% OFF
+                            <span className="text-tiny font-medium text-terciary border border-terciary px-1 py-0.5 tracking-wider">
+                                -{descontoTotal}%
                             </span>
                         )}
 
                         {produto.promocaoAtiva === 'Sim' && (Number(produto.quantidadeLimiteDesconto) <= Number(produto.estoque) && produto.idPromocoesEcommerce) ? (
-                            <span className="text-medium-tiny font-bold text-white bg-red-400 px-1 py-0.5 rounded-full flex items-center gap-0.5 absolute top-2 left-2">
+                            <span className="text-medium-tiny font-bold text-white bg-primary px-1 py-0.5 flex items-center gap-0.5 absolute top-2 left-2">
                                 <BsBoxes />
                                 Restam {(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} un.
                             </span>
@@ -193,8 +193,8 @@ export function ProductCard({ produto }: ProductCardProps) {
                             :
                             produto.idPromocoesEcommerce && produto.promocaoAtiva === 'Sim' &&
                             (
-                                <span className="text-medium-tiny font-bold text-white bg-blue-700 px-1 py-0.5 rounded-full flex items-center gap-0.5 absolute top-2 left-2">
-                                    TOP OFERTA
+                                <span className="text-medium-tiny font-bold text-primary border border-primary px-1 py-0.5 flex items-center gap-0.5 absolute top-2 left-2">
+                                    OFERTA
                                 </span>
                             )
                         }
@@ -207,15 +207,15 @@ export function ProductCard({ produto }: ProductCardProps) {
                         }
                     </span>
                     {produto.parcelaMaxima && (
-                        <span className="text-xs text-gray-600 mt-1 block">
-                            ou até <span className="font-bold">{produto.parcelaMaxima}</span>
+                        <span className="text-xs text-primary/70 mt-1 block">
+                            ou até <span className="font-medium text-primary">{produto.parcelaMaxima}</span>
                         </span>
                     )}
                 </div>
 
                 <div className="flex gap-0.5">
                     <button
-                        className="mt-2 w-10 h-9 bg-primary text-white font-bold text-xs py-2 rounded-sm flex items-center justify-center transition-colors cursor-pointer z-11"
+                        className="mt-2 w-10 h-9 bg-primary text-secondary font-medium text-xs py-2 flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10"
                         onClick={handleAdicionarCarrinho}
                     >
                         <BsCartPlus size={18} aria-hidden />
@@ -225,41 +225,35 @@ export function ProductCard({ produto }: ProductCardProps) {
                         (timeLeft) ?
                             (
                                 <>
-                                    <p className="mt-2 w-full h-9 bg-white border border-primary text-primary font-bold text-xs py-2 rounded-sm flex flex-col leading-none items-center justify-center hover:bg-secondary transition-colors cursor-pointer z-11 lg:group-hover:hidden">
-                                        <span className="text-[8px] lg:text-[10px] font-normal mb-0.5">TERMINA EM:</span>
+                                    <p className="mt-2 w-full h-9 bg-product-bg border border-primary/20 text-primary font-medium text-xs py-2 flex flex-col leading-none items-center justify-center cursor-default z-10 lg:group-hover:hidden">
+                                        <span className="text-[8px] lg:text-tiny font-normal mb-0.5 tracking-wider uppercase">Termina em</span>
                                         <span>{timeLeft}</span>
                                     </p>
 
-                                    <button className="mt-2 w-full h-9 bg-primary text-white font-bold text-xs py-2 rounded-sm hidden lg:group-hover:flex items-center justify-center transition-colors cursor-pointer z-11" onClick={handleComprar}>
-                                        <span className="flex items-center">
-                                            COMPRAR
-                                        </span>
+                                    <button className="mt-2 w-full h-9 bg-primary text-secondary font-medium text-xs py-2 hidden lg:group-hover:flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase" onClick={handleComprar}>
+                                        Comprar
                                     </button>
                                 </>
                             )
                             : produto.tipoDaPromocao === 4 && produto.promocaoAtiva === 'Sim' ?
                                 (
                                     <>
-                                        <p className="mt-2 w-full h-9 bg-white border border-primary text-primary font-bold text-xs py-2 rounded-sm flex flex-col leading-none items-center justify-center hover:bg-secondary transition-colors cursor-pointer z-11 lg:group-hover:hidden">
-                                            <span className="text-[8px] lg:text-[10px] font-normal mb-0.5">RESTAM:</span>
+                                        <p className="mt-2 w-full h-9 bg-product-bg border border-primary/20 text-primary font-medium text-xs py-2 flex flex-col leading-none items-center justify-center cursor-default z-10 lg:group-hover:hidden">
+                                            <span className="text-[8px] lg:text-tiny font-normal mb-0.5 tracking-wider uppercase">Restam</span>
                                             <span>{(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} Unidades</span>
                                         </p>
 
-                                        <button className="mt-2 w-full h-9 bg-primary text-white font-bold text-xs py-2 rounded-sm hidden lg:group-hover:flex items-center justify-center transition-colors cursor-pointer z-11" onClick={handleComprar}>
-                                            <span className="flex items-center">
-                                                COMPRAR
-                                            </span>
+                                        <button className="mt-2 w-full h-9 bg-primary text-secondary font-medium text-xs py-2 hidden lg:group-hover:flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase" onClick={handleComprar}>
+                                            Comprar
                                         </button>
                                     </>
                                 )
                                 : (
                                     <button
-                                        className="mt-2 w-full h-9 bg-primary text-white font-bold text-xs py-2 rounded-sm flex items-center justify-center transition-colors cursor-pointer z-11"
+                                        className="mt-2 w-full h-9 bg-primary text-secondary font-medium text-xs py-2 flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase"
                                         onClick={handleComprar}
                                     >
-                                        <span className="flex items-center">
-                                            COMPRAR
-                                        </span>
+                                        Comprar
                                     </button>
                                 )
                     }
@@ -268,3 +262,4 @@ export function ProductCard({ produto }: ProductCardProps) {
         </div>
     );
 }
+

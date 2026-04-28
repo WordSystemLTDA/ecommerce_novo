@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaBars, FaChevronRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router';
-import config from '~/config/config';
 import type { Categoria } from '~/features/categoria/types';
 import { gerarSlug } from '~/utils/formatters';
 
 export default function DepartmentMenu(props: { categorias: Categoria[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [categoriaAtiva, setCategoriaAtiva] = useState<Categoria | null>(null);
-  const isPrietoKouros = config.EMPRESAS.includes('3');
 
   let navigate = useNavigate();
 
@@ -43,25 +41,22 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
 
       <button
         onClick={toggleMenu}
-        className={`flex h-full items-center gap-2 rounded-sm px-6 py-1.5 text-xs font-bold transition-colors cursor-pointer hover:opacity-80 ${isPrietoKouros
-          ? 'bg-primary text-secondary border border-primary'
-          : 'border border-secondary text-secondary'
-          }`}
+        className="flex h-full items-center gap-2 px-6 py-2 text-[10px] uppercase tracking-[0.2em] font-medium transition-colors duration-500 cursor-pointer border border-primary bg-secondary text-primary hover:bg-primary hover:text-secondary"
       >
         <FaBars />
         <p>Departamentos</p>
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full z-50 flex bg-white shadow-xl border border-gray-100">
+        <div className="absolute left-0 top-full z-50 flex bg-secondary shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-primary/15">
 
-          <div className="w-64 border-r border-gray-200 bg-white py-2">
+          <div className="w-64 border-r border-primary/10 bg-secondary py-2">
             <ul className="max-h-[500px] overflow-y-auto">
               {props.categorias.map((categoria) => (
                 <li key={categoria.id}>
                   <a
                     onMouseEnter={() => lidarComEntradaMouseCategoria(categoria)}
-                    className={`flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-primary cursor-pointer hover:text-white transition-colors ${categoriaAtiva?.id === categoria.id ? 'bg-primary text-white' : ''
+                    className={`flex items-center justify-between px-4 py-3 text-sm text-primary hover:bg-primary/8 cursor-pointer hover:text-primary transition-colors ${categoriaAtiva?.id === categoria.id ? 'bg-primary text-secondary hover:text-secondary' : ''
                       }`}
 
                     onClick={() => navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`)}
@@ -74,12 +69,12 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
             </ul>
           </div>
 
-          <div className="w-72 bg-gray-50 min-h-full">
+          <div className="w-72 bg-primary/6 min-h-full">
 
             {categoriaAtiva ? (
               <div className="p-4">
-                <div className="mb-3 pb-2 border-b border-gray-200">
-                  <a href={categoriaAtiva.nome} className="text-sm font-bold text-primary hover:underline">
+                <div className="mb-3 pb-2 border-b border-primary/15">
+                  <a href={categoriaAtiva.nome} className="text-sm font-medium text-primary hover:text-terciary transition-colors duration-300">
                     Ver tudo em {categoriaAtiva.nome}
                   </a>
                 </div>
@@ -89,14 +84,14 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
                     <li key={sub.id}>
                       <a
                         href={sub.nome}
-                        className="block text-sm text-gray-600 hover:text-secondary hover:translate-x-1 transition-all"
+                        className="block text-sm text-primary/70 hover:text-terciary hover:translate-x-1 transition-all duration-300"
                       >
                         {sub.nome}
                       </a>
                     </li>
                   ))}
                   {(!categoriaAtiva.subCategorias || categoriaAtiva.subCategorias.length === 0) && (
-                    <li className="text-xs text-gray-400 italic">
+                    <li className="text-xs text-primary/70 italic">
                       Nenhuma subcategoria encontrada.
                     </li>
                   )}
@@ -108,10 +103,10 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
                   <img
                     src="https://placehold.co/200x150/EEE/31343C?text=Ofertas"
                     alt="Destaque"
-                    className="rounded-md"
+                    className="border border-primary/10"
                   />
                 </div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-primary/70">
                   Selecione uma categoria para ver mais opções.
                 </p>
               </div>

@@ -10,11 +10,10 @@ import type { Categoria } from "~/features/categoria/types";
 export function ButtonEntreOuCadastrese() {
     let navigate = useNavigate();
     let { isAuthenticated, cliente } = useAuth();
-    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     return (
         <div
-            className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity max-lg:hidden"
+            className="flex items-center gap-2 cursor-pointer text-primary hover:text-terciary transition-colors duration-500 max-lg:hidden"
             onClick={() => {
                 if (isAuthenticated) {
                     navigate('/minha-conta');
@@ -23,20 +22,20 @@ export function ButtonEntreOuCadastrese() {
                 }
             }}
         >
-            <div className={`p-1 border-2 rounded-full ${isPrietoKouros ? 'border-primary' : 'border-white'}`}>
-                <MdPerson size={20} className={isPrietoKouros ? 'text-primary' : 'text-white'} />
+            <div className="p-1 border border-primary/25">
+                <MdPerson size={18} className="text-primary" />
             </div>
 
             {isAuthenticated ? (
-                <div>
-                    <span className="text-tiny uppercase font-bold">Olá, <span className={`font-bold ${isPrietoKouros ? 'text-primary' : 'text-white'}`}>{cliente?.nome}</span></span>
+                <div className="hidden 2xl:block">
+                    <span className="text-tiny uppercase font-medium tracking-[0.2em]">Olá, <span className="font-medium">{cliente?.nome}</span></span>
                 </div>
             )
                 :
                 (
-                    <div className="flex flex-col leading-none sm:hidden lg:flex">
-                        <span className="text-tiny uppercase font-bold opacity-80">Olá, faça seu login</span>
-                        <span className="text-xs font-bold">ou cadastre-se</span>
+                    <div className="hidden xl:flex flex-col leading-none">
+                        <span className="text-tiny uppercase font-medium tracking-[0.2em] text-primary/70">Olá, faça seu login</span>
+                        <span className="text-xs font-medium">ou cadastre-se</span>
                     </div>
                 )
 
@@ -45,18 +44,16 @@ export function ButtonEntreOuCadastrese() {
     );
 }
 
-import config from "~/config/config";
 import { useFavorito } from "~/features/favoritos/context/FavoritoContext";
 import { gerarSlug } from "~/utils/formatters";
 
 export function ButtonFavoritos() {
     let navigate = useNavigate();
     const { quantidade } = useFavorito();
-    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     return (
         <div
-            className={`cursor-pointer transition-colors relative ${isPrietoKouros ? 'hover:text-primary/80' : 'hover:text-gray-200'}`}
+            className="cursor-pointer transition-colors duration-500 relative text-primary hover:text-terciary"
             onClick={() => navigate('/minha-conta/favoritos')}
         >
             <MdOutlineFavorite size={24} />
@@ -74,10 +71,9 @@ interface ButtonBuscarProps {
 }
 
 export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
-    const isPrietoKouros = config.EMPRESAS.includes('3');
     return (
         <div
-            className={`cursor-pointer transition-colors relative ${isPrietoKouros ? 'hover:text-primary/80' : 'hover:text-gray-200'}`}
+            className="cursor-pointer transition-colors duration-500 relative text-primary hover:text-terciary"
             onClick={aoClicar}
         >
             <MdOutlineSearch size={24} />
@@ -89,11 +85,10 @@ export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
 export function ButtonConta() {
     let navigate = useNavigate();
     let { isAuthenticated } = useAuth();
-    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     return (
         <div
-            className={`cursor-pointer transition-colors relative ${isPrietoKouros ? 'hover:text-primary/80' : 'hover:text-gray-200'}`}
+            className="cursor-pointer transition-colors duration-500 relative text-primary hover:text-terciary"
             onClick={() => {
                 if (isAuthenticated) {
                     navigate('/minha-conta');
@@ -115,11 +110,10 @@ export function ButtonConta() {
 export function ButtonCarrinho() {
     let navigate = useNavigate();
     let { produtos } = useCarrinho();
-    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     return (
         <div
-            className={`cursor-pointer transition-colors relative ${isPrietoKouros ? 'hover:text-primary/80' : 'hover:text-gray-200'}`}
+            className="cursor-pointer transition-colors duration-500 relative text-primary hover:text-terciary"
             onClick={() => navigate('/carrinho')}
         >
             <FaShoppingCart size={20} className="max-lg:hidden" />
@@ -135,18 +129,16 @@ export function ButtonCarrinho() {
 }
 
 export function ButtonMaisVendidos() {
-    const isPrietoKouros = config.EMPRESAS.includes('3');
     return (
-        <div className={`${isPrietoKouros ? 'bg-primary hover:bg-terciary text-secondary' : 'bg-primary hover:bg-terciary text-white'} px-4 py-1.5 rounded text-xs font-bold cursor-pointer transition-colors whitespace-nowrap`}>
+        <div className="bg-primary hover:bg-terciary text-secondary px-5 py-2 text-[10px] uppercase tracking-[0.2em] font-medium cursor-pointer transition-colors duration-500 whitespace-nowrap border border-primary">
             Mais Vendidos
         </div>
     );
 }
 
 export function ButtonOthers({ titulo }: { titulo: string }) {
-    const isPrietoKouros = config.EMPRESAS.includes('3');
     return (
-        <a href="#" className={`${isPrietoKouros ? 'text-primary' : 'text-white'} text-xs font-bold hover:underline whitespace-nowrap px-2`}>
+        <a href="#" className="text-xs uppercase tracking-[0.15em] font-medium text-primary/70 hover:text-terciary whitespace-nowrap px-2 transition-colors duration-500">
             {titulo}
         </a>
     );
@@ -155,7 +147,6 @@ export function ButtonOthers({ titulo }: { titulo: string }) {
 
 export function ButtonMore({ hiddenCategories }: { hiddenCategories: Categoria[] }) {
     const [isHovered, setIsHovered] = useState(false);
-    const isPrietoKouros = config.EMPRESAS.includes('3');
 
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -183,15 +174,15 @@ export function ButtonMore({ hiddenCategories }: { hiddenCategories: Categoria[]
 
     return (
         <div
-            className={`flex items-center gap-0 cursor-pointer relative ${isPrietoKouros ? 'text-primary hover:text-primary/80' : 'text-white hover:text-gray-200'}`}
+            className="flex items-center gap-0 cursor-pointer relative text-primary hover:text-terciary"
             ref={menuRef} onMouseLeave={handleMouseLeave}
         >
 
             <button
                 onClick={toggleMenu}
-                className={`flex h-full items-center py-1.5 text-xs font-bold transition-colors cursor-pointer ${isPrietoKouros ? 'text-primary' : 'text-secondary'}`}
+                className="flex h-full items-center py-1.5 text-[10px] uppercase tracking-[0.2em] font-medium transition-colors duration-500 cursor-pointer"
             >
-                <span className="text-xs font-bold">Mais</span>
+                <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Mais</span>
 
                 <MdKeyboardArrowDown
                     size={16}
@@ -200,18 +191,17 @@ export function ButtonMore({ hiddenCategories }: { hiddenCategories: Categoria[]
             </button>
 
             {isHovered && (
-                <div className="absolute left-0 top-full mt-0 w-64 h-96 bg-white border border-gray-200 shadow-xl z-50 text-gray-800">
-                    {/* Descomentei seu código original para mostrar como ficaria dentro da caixa corrigida */}
+                <div className="absolute left-0 top-full mt-1 w-64 h-96 bg-secondary border border-primary/15 shadow-[0_8px_24px_rgba(0,0,0,0.06)] z-50 text-primary">
                     <div className="w-full h-full py-2">
                         <ul className="max-h-[375px] overflow-y-auto">
                             {hiddenCategories.map((categoria) => (
                                 <li key={categoria.id}>
                                     <a
                                         onMouseEnter={() => { }}
-                                        className="flex items-center justify-between px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors"
+                                        className="flex items-center justify-between px-4 py-3 text-sm text-primary hover:bg-primary/8 cursor-pointer transition-colors duration-300"
                                         onClick={() => navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`)}
                                     >
-                                        <span className="font-medium">{categoria.nome}</span>
+                                        <span className="font-normal">{categoria.nome}</span>
                                         {(categoria.subCategorias?.length > 0) && <FaChevronRight size={10} />}
                                     </a>
                                 </li>

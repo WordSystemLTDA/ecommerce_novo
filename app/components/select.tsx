@@ -5,7 +5,7 @@ export default function CustomSelect(props: CustomSelectProps) {
     return (
         <select
             {...props}
-            className="w-full rounded-md border border-gray-400 bg-white p-3 text-gray-900 placeholder-gray-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+            className={`w-full appearance-none bg-transparent border-0 border-b border-primary/30 py-3 px-0 pr-6 text-sm text-primary focus:border-terciary focus:outline-none transition-colors duration-500 ${props.className ?? ''}`}
         >
             {props.children}
         </select>

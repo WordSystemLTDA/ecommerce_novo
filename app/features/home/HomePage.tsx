@@ -12,6 +12,7 @@ import { HiOutlineSparkles } from "react-icons/hi2";
 import { MdLocalFireDepartment, MdNewReleases, MdTrendingUp, MdWorkspacePremium } from "react-icons/md";
 import { useNavigate } from "react-router";
 import FilterToolbar from "~/components/filter_toolbar";
+import FilterSidebar from "~/components/FilterSidebar";
 import Footer from "~/components/footer";
 import LazySection from "~/components/lazy_section";
 import { OptimizedImage } from "~/components/OptimizedImage";
@@ -20,14 +21,12 @@ import { SectionHeader } from "~/components/SectionHeader";
 import { SkeletonBanner, SkeletonImageCard, SkeletonMainBanner } from "~/components/skeleton_banner";
 import { SkeletonCategoryCard } from "~/components/skeleton_category_card";
 import { SkeletonProductCard } from "~/components/skeleton_product_card";
-import config from "~/config/config";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { gerarSlug } from "~/utils/formatters";
 import type { Categoria } from "../categoria/types";
 import type { Marca } from "../marca/types";
 import type { Banner } from "../produto/types";
-import { FilterContent } from "./components/FilterContent";
 import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 import { useHome } from "./context/HomeContext";
 
@@ -55,9 +54,8 @@ function TrustBadge({ icon, title, description, accent }: TrustBadgeProps) {
 }
 
 export function HomePage() {
-  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos, sectionCategories, setSectionCategories, sectionMarcas, setSectionMarcas, banners, secondaryBanners, isInitialDataLoaded } = useHome();
+  const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos, sectionCategories, setSectionCategories, sectionMarcas, setSectionMarcas, banners, secondaryBanners, isInitialDataLoaded, isLoadingSidebarFilters } = useHome();
   const navigate = useNavigate();
-  const isPrietoKouros = config.EMPRESAS.includes('3');
 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -120,50 +118,29 @@ export function HomePage() {
   };
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-main-bg min-h-screen relative">
       <Header />
 
-      <main className="flex items-center justify-center pt-0 pb-0">
-        <div className={`flex-1 flex flex-col items-center gap-0 min-h-0 w-full`}>
-          {banners && banners.length > 0 ? (
-            <CarouselBannersPrincipais images={banners} canLoadImages={canLoadImages} />
-          ) : (
-            <SkeletonMainBanner />
-          )}
+      <main className="w-full">
+        {banners && banners.length > 0 ? (
+          <CarouselBannersPrincipais images={banners} canLoadImages={canLoadImages} />
+        ) : (
+          <SkeletonMainBanner />
+        )}
 
-          {/* <section className="w-full px-4 lg:px-12 mt-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <TrustBadge
-                icon={<MdOutlineLocalShipping size={22} />}
-                title="Entrega rápida"
-                description="Despacho ágil para todo Brasil"
-                accent="text-sky-600 bg-sky-50 border-sky-100"
-              />
-              <TrustBadge
-                icon={<MdOutlineSecurity size={22} />}
-                title="Compra segura"
-                description="Pagamento criptografado"
-                accent="text-emerald-600 bg-emerald-50 border-emerald-100"
-              />
-              <TrustBadge
-                icon={<MdSupportAgent size={22} />}
-                title="Suporte humano"
-                description="Atendimento especializado"
-                accent="text-violet-600 bg-violet-50 border-violet-100"
-              />
-              <TrustBadge
-                icon={<MdWorkspacePremium size={22} />}
-                title="Selo de qualidade"
-                description="Marcas oficiais e originais"
-                accent="text-amber-600 bg-amber-50 border-amber-100"
+        <div className="max-w-387 mx-auto px-0 mb-8 lg:mt-4 lg:mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-1">
+              <FilterSidebar
+                filterOptions={filterOptions}
+                activeFilters={activeFilters}
+                onFilterChange={applyFilters}
+                isLoading={isLoadingSidebarFilters}
+                className="hidden lg:block"
               />
             </div>
-          </section> */}
 
-          <div className="flex flex-col lg:flex-row mt-6 lg:mt-8 mx-0 lg:pl-10 mb-10 w-full">
-            <Sidebar />
-
-            <main className="flex-1 w-full bg-transparent min-w-0 lg:rounded-tl-3xl">
+            <div className="lg:col-span-4">
               <FilterToolbar totalProdutos={produtos?.length ?? 0} onOpenMobileFilter={() => setIsMobileFilterOpen(true)} />
 
               <ProductSection
@@ -193,14 +170,14 @@ export function HomePage() {
               />
 
               {(secondaryBanners.length === 0) ? (
-                <section className="mx-4 lg:mx-12 mt-6">
+                <section className="mt-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                     <SkeletonBanner />
                     <SkeletonBanner />
                   </div>
                 </section>
               ) : (pos0Banners.length > 0 || pos1Banners.length > 0) && (
-                <section className="mx-4 lg:mx-12 mt-6">
+                <section className="mt-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                     {pos0Banners.length > 0 && (
                       <Swiper
@@ -210,11 +187,11 @@ export function HomePage() {
                         loop={true}
                         effect="fade"
                         autoplay={{ delay: 5000, disableOnInteraction: false }}
-                        className="w-full rounded-2xl overflow-hidden shadow-sm"
+                        className="w-full overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
                       >
                         {pos0Banners.map((banner, index) => (
-                          <SwiperSlide key={index}>
-                            <div className="relative aspect-[16/7] bg-slate-100">
+                          <SwiperSlide key={index} className="h-auto!">
+                            <div className="relative h-40 md:h-[200px] lg:h-40 bg-primary/8 overflow-hidden">
                               <OptimizedImage
                                 src={banner.imagemUrl}
                                 className="w-full h-full object-cover"
@@ -235,11 +212,11 @@ export function HomePage() {
                         loop={true}
                         effect="fade"
                         autoplay={{ delay: 6000, disableOnInteraction: false }}
-                        className="w-full rounded-2xl overflow-hidden shadow-sm"
+                        className="w-full overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
                       >
                         {pos1Banners.map((banner, index) => (
-                          <SwiperSlide key={index}>
-                            <div className="relative aspect-[16/7] bg-slate-100">
+                          <SwiperSlide key={index} className="h-auto!">
+                            <div className="relative h-40 md:h-[200px] lg:h-40 bg-primary/8 overflow-hidden">
                               <OptimizedImage
                                 src={banner.imagemUrl}
                                 className="w-full h-full object-cover"
@@ -294,11 +271,11 @@ export function HomePage() {
               </section>
 
               {secondaryBanners.length === 0 ? (
-                <section className="mx-4 lg:mx-12 mt-10">
+                <section className="mt-10">
                   <SkeletonBanner aspect="aspect-[21/7]" />
                 </section>
               ) : pos2Banners.length > 0 && (
-                <section className="mx-4 lg:mx-12 mt-10">
+                <section className="mt-10">
                   <Swiper
                     modules={[EffectFade, Navigation, Autoplay]}
                     spaceBetween={10}
@@ -306,11 +283,11 @@ export function HomePage() {
                     loop={true}
                     effect="fade"
                     autoplay={{ delay: 7000, disableOnInteraction: false }}
-                    className="w-full rounded-2xl overflow-hidden shadow-sm"
+                    className="w-full overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
                   >
                     {pos2Banners.map((banner, index) => (
-                      <SwiperSlide key={index}>
-                        <div className="relative aspect-[21/7] bg-slate-100">
+                      <SwiperSlide key={index} className="h-auto!">
+                        <div className="relative h-[170px] md:h-[220px] lg:h-[200px] bg-primary/8 overflow-hidden">
                           <OptimizedImage
                             src={banner.imagemUrl}
                             className="w-full h-full object-cover"
@@ -367,11 +344,9 @@ export function HomePage() {
                 selectedCategoryId={sectionCategories['maisvendidos']}
                 onCategoryChange={handleSectionCategoryClick}
               />
-            </main>
-
+            </div>
           </div>
         </div>
-
       </main>
 
       <Footer />
@@ -409,13 +384,16 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
     }
   });
 
-  // Dica: Se não houver banners para o dispositivo, evite renderizar o Swiper vazio
+  // Enquanto o dispositivo não foi determinado, mostra skeleton
+  if (isMobile === null) return <SkeletonMainBanner />;
+
+  // Se não houver banners para o dispositivo, não renderiza nada
   if (bannersFiltrados.length === 0) return null;
 
   return (
-    <div className="relative group w-full">
+    <div className="relative group w-full h-[200px] md:h-[300px] lg:h-[450px]">
       <Swiper
-        className="main-banner-carousel"
+        className="main-banner-carousel w-full h-full"
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         effect="fade"
         slidesPerView={1}
@@ -433,10 +411,10 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
         }}
       >
         {bannersFiltrados.map((image, index) => (
-          <SwiperSlide key={index}>
+          <SwiperSlide key={index} className="h-full!">
             <OptimizedImage
               src={image.imagemUrl}
-              className="w-full object-cover min-h-[200px] h-[200px] md:h-[300px] lg:h-[450px]"
+              className="w-full h-full object-cover"
               priority={index === 0}
               allowNetworkLoad={canLoadImages}
               alt={`Banner principal ${index + 1}`}
@@ -446,14 +424,14 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
       </Swiper>
 
       <div
-        className={`${prevButtonId} absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-white  flex justify-center items-center p-2 opacity-0 group-hover:opacity-100 transition-opacity`}
+        className={`${prevButtonId} absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-secondary/70 bg-primary/35 hover:bg-primary/80 hover:border-terciary flex justify-center items-center p-3 opacity-0 group-hover:opacity-100 transition-all duration-500`}
       >
-        <SlArrowLeft color="white" size={18} />
+        <SlArrowLeft color="white" size={14} />
       </div>
       <div
-        className={`${nextButtonId} absolute right-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-white  flex justify-center items-center p-2 opacity-0 group-hover:opacity-100 transition-opacity`}
+        className={`${nextButtonId} absolute right-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-secondary/70 bg-primary/35 hover:bg-primary/80 hover:border-terciary flex justify-center items-center p-3 opacity-0 group-hover:opacity-100 transition-all duration-500`}
       >
-        <SlArrowRight color="white" size={18} />
+        <SlArrowRight color="white" size={14} />
       </div>
     </div>
   );
@@ -491,6 +469,7 @@ function ProductSection({
   let { listarProdutos, produtos } = useHome();
   const { cliente } = useAuth();
   const bannerData = produtos.find((e) => e.id == id);
+  const hasLoadedEmptyState = !!bannerData && (!bannerData.produtos || bannerData.produtos.length === 0);
 
   useEffect(() => {
     const fetchWithFilters = async () => {
@@ -533,14 +512,9 @@ function ProductSection({
     fetchWithFilters();
   }, [globalFilters, selectedCategoryId, filtros]); // Added filtros to deps
 
-  // If data is LOADED and EMPTY, return null.
-  if (bannerData && (!bannerData.produtos || bannerData.produtos.length === 0)) {
-    return null;
-  }
-
   // If loading or has data, render.
   return (
-    <section className="my-6 ml-4 mr-4 rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm py-3 shadow-[0_4px_24px_rgba(15,23,42,0.05)] section-shell fade-in-up">
+    <section className="my-6 rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm py-3 shadow-[0_4px_24px_rgba(15,23,42,0.05)] section-shell fade-in-up">
       <SectionHeader
         eyebrow={eyebrow}
         title={title}
@@ -562,19 +536,17 @@ function ProductSection({
 
       <section className="my-4">
         <LazySection forceVisible={!!bannerData}>
-          <CarouselBannersSecundarios
-            id={id}
-            filtros={filtros} // Pass filtros even though we fetched? Yes, for identifying inside if needed, but fetch logic moved here?
-            // Actually CarouselBannersSecundarios duplicates the fetch logic currently.
-            // We should make CarouselBannersSecundarios NOT fetch if we fetch here.
-            // Or just let it render the data from store since we populated it.
-            // If we remove fetch from CarouselBannersSecundarios, we break other usages?
-            // Let's rely on the fact that if data is already there, generic fetch might just overwrite same data.
-            // Optimized approach: Pass a flag or just modify CarouselBannersSecundarios to not fetch if 'noFetch' prop?
-            // But for now, keeping compat, I will pass `skipFetch={true}` if I modify it.
-            // Let's modify CarouselBannersSecundarios to accept skipFetch.
-            skipFetch={true}
-          />
+          {hasLoadedEmptyState ? (
+            <div className="border border-dashed border-primary/20 bg-product-bg px-6 py-10 text-center text-sm text-primary/70">
+              Nenhum produto foi encontrado para essa categoria. Escolha outra opção para continuar.
+            </div>
+          ) : (
+            <CarouselBannersSecundarios
+              id={id}
+              filtros={filtros}
+              skipFetch={true}
+            />
+          )}
         </LazySection>
       </section>
     </section>
@@ -604,15 +576,15 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoad
 
   return (
     <div
-      className={`flex flex-col items-center gap-1 px-3 py-3 text-center rounded-2xl cursor-pointer bg-white border border-slate-200 lift-hover ${isSelected ? 'border-primary ring-2 ring-primary/30' : ''}`}
+      className={`flex w-52 flex-col items-center gap-1 px-3 py-3 text-center rounded-2xl cursor-pointer bg-white border border-slate-200 lift-hover ${isSelected ? 'border-primary ring-2 ring-primary/30' : ''}`}
       onClick={() => {
         navigate('/categoria/' + categoria.id);
       }}
     >
-      <div className="flex items-center justify-center w-full h-32 overflow-hidden rounded-xl bg-slate-50">
-        <OptimizedImage src={categoria.imagem} allowNetworkLoad={canLoadImages} className="max-h-32 min-w-48 max-w-48 object-contain transition-transform duration-300 hover:scale-105" alt={categoria.nome} />
+      <div className="flex h-32 w-full items-center justify-center overflow-hidden rounded-xl bg-slate-50 p-3">
+        <OptimizedImage src={categoria.imagem} allowNetworkLoad={canLoadImages} className="h-full w-full object-contain transition-transform duration-300 hover:scale-105" alt={categoria.nome} />
       </div>
-      <p className="text-sm font-medium text-slate-700 mt-1 truncate max-w-[12rem]">{categoria.nome}</p>
+      <p className="text-sm font-medium text-slate-700 mt-1 truncate max-w-48">{categoria.nome}</p>
     </div>
   );
 }
@@ -624,18 +596,41 @@ interface MarcaCardProps {
   canLoadImages?: boolean;
 }
 
+function getMarcaPlaceholder(nome: string) {
+  const safeName = nome?.trim() || 'Marca';
+  const placeholderSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 240" role="img" aria-label="Sem imagem para ${safeName}">
+      <rect width="480" height="240" fill="#f8fafc" />
+      <rect x="24" y="24" width="432" height="192" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+      <path d="M182 124l33-33 27 27 44-44 54 54" fill="none" stroke="#94a3b8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="195" cy="88" r="13" fill="#cbd5e1" />
+      <text x="240" y="166" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569">Sem imagem</text>
+      <text x="240" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="600" fill="#0f172a">${safeName}</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(placeholderSvg)}`;
+}
+
 export function MarcaCardComImagem({ marca, onClick, isSelected, canLoadImages = true }: MarcaCardProps) {
   let navigate = useNavigate();
+  const fallbackMarcaImage = getMarcaPlaceholder(marca.nome);
 
   return (
     <div
-      className={`flex flex-col h-full border border-slate-200 text-center rounded-2xl overflow-hidden bg-white cursor-pointer lift-hover group ${isSelected ? 'ring-2 ring-amber-400/50 border-amber-300' : ''}`}
+      className={`flex h-full w-72 flex-col border border-slate-200 text-center rounded-2xl overflow-hidden bg-white cursor-pointer lift-hover group ${isSelected ? 'ring-2 ring-amber-400/50 border-amber-300' : ''}`}
       onClick={() => {
         navigate(`/marca/${marca.id}/${gerarSlug(marca.nome)}`);
       }}
     >
-      <div className="flex items-center justify-center w-full h-40 overflow-hidden bg-slate-50">
-        <OptimizedImage src={marca.imagem} allowNetworkLoad={canLoadImages} className="max-h-40 min-w-72 max-w-72 object-contain transition-transform duration-300 group-hover:scale-105" alt={marca.nome} />
+      <div className="flex h-40 w-full items-center justify-center overflow-hidden bg-slate-50 p-4">
+        <OptimizedImage
+          src={marca.imagem}
+          fallbackSrc={fallbackMarcaImage}
+          allowNetworkLoad={canLoadImages}
+          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+          alt={marca.nome}
+        />
       </div>
       <p className="px-2 py-2 text-sm font-medium text-slate-700 border-t border-slate-100">{marca.nome}</p>
     </div>
@@ -691,16 +686,16 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
 
   if (isLoading) {
     return (
-      <div className="relative w-full mx-auto px-4 lg:px-12">
+      <div className="relative w-full">
         {/* Mobile Grid Skeleton */}
-        <div className="grid grid-cols-2 gap-4 lg:hidden">
+        <div className="grid grid-cols-2 gap-4 lg:hidden px-4 lg:px-0">
           {Array.from({ length: 4 }).map((_, index) => (
             <SkeletonProductCard key={index} />
           ))}
         </div>
 
         {/* Desktop Swiper Skeleton */}
-        <div className="hidden lg:block">
+        <div className="hidden md:block">
           <Swiper
             modules={[Navigation]}
             loop={false}
@@ -709,7 +704,9 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
             breakpoints={{
               320: { slidesPerView: 2, spaceBetween: 10 },
               768: { slidesPerView: 3, spaceBetween: 10 },
-              1024: { slidesPerView: 5, spaceBetween: 8 }
+              1024: { slidesPerView: 3, spaceBetween: 10 },
+              1280: { slidesPerView: 4, spaceBetween: 10 },
+              1536: { slidesPerView: 5, spaceBetween: 8 }
             }}
             className="select-none"
           >
@@ -726,23 +723,23 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
 
   if (!bannerData?.produtos || bannerData.produtos.length === 0) {
     return (
-      <div className="mx-4 lg:mx-12">
-        <p>Não foi encontrado nenhum produto dispónivel</p>
+      <div>
+        <p>Não foi encontrado nenhum produto disponível</p>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full mx-auto px-2 lg:px-12">
+    <div className="relative w-full px-2 lg:px-0">
       {/* Mobile Grid */}
-      <div className="grid grid-cols-2 gap-2 lg:hidden px-2">
+      <div className="grid grid-cols-2 gap-2 md:hidden px-0">
         {bannerData.produtos.map((produto) => (
           <ProductCard key={produto.id} produto={produto} />
         ))}
       </div>
 
       {/* Desktop Swiper */}
-      <div className="hidden lg:block">
+      <div className="hidden md:block">
         <Swiper
           modules={[Navigation]}
           navigation={{
@@ -755,7 +752,9 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
           breakpoints={{
             320: { slidesPerView: 2, spaceBetween: 10 },
             768: { slidesPerView: 3, spaceBetween: 10 },
-            1024: { slidesPerView: 5, spaceBetween: 8 }
+            1024: { slidesPerView: 3, spaceBetween: 10 },
+            1280: { slidesPerView: 4, spaceBetween: 10 },
+            1536: { slidesPerView: 5, spaceBetween: 8 }
           }}
           className="select-none"
         >
@@ -808,7 +807,7 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
 
   if (isLoading) {
     return (
-      <div className="relative w-full mx-auto px-4 lg:px-12">
+      <div className="relative w-full">
         <Swiper
           modules={[Navigation]}
           loop={false}
@@ -833,14 +832,14 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
 
   if (!bannerData?.categorias || bannerData.categorias.length <= 0) {
     return (
-      <div className="mx-4 lg:mx-12">
-        <p>Não foi encontrado nenhuma categoria dispónivel</p>
+      <div>
+        <p>Não foi encontrado nenhuma categoria disponível</p>
       </div>
     );
   }
 
   return (
-    <div className="relative w-full mx-auto px-4 lg:px-12">
+    <div className="relative w-full">
       <Swiper
         modules={[Navigation]}
         navigation={{
@@ -894,8 +893,8 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId, c
 
   if (!categorias || categorias.length <= 0) {
     return (
-      <div className="relative w-full mx-auto px-4 lg:px-12">
-        <div className="flex gap-3 overflow-hidden">
+      <div className="relative w-full">
+        <div className="flex gap-3 overflow-hidden px-4 lg:px-0">
           {Array.from({ length: 8 }).map((_, index) => (
             <SkeletonImageCard key={index} width="min-w-[13rem] max-w-[13rem]" height="h-32" />
           ))}
@@ -905,7 +904,7 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId, c
   }
 
   return (
-    <div className="relative w-full mx-auto px-4 lg:px-12">
+    <div className="relative w-full">
       <Swiper
         modules={[Navigation]}
         navigation={{
@@ -964,8 +963,8 @@ export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId, canLoadI
 
   if (!marcas || marcas.length <= 0) {
     return (
-      <div className="relative w-full mx-auto px-4 lg:px-12">
-        <div className="flex gap-3 overflow-hidden">
+      <div className="relative w-full">
+        <div className="flex gap-3 overflow-hidden px-4 lg:px-0">
           {Array.from({ length: 6 }).map((_, index) => (
             <SkeletonImageCard key={index} width="min-w-[20rem] max-w-[20rem]" height="h-40" />
           ))}
@@ -975,7 +974,7 @@ export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId, canLoadI
   }
 
   return (
-    <div className="relative w-full mx-auto px-4 lg:px-12">
+    <div className="relative w-full">
       <Swiper
         modules={[Navigation]}
         navigation={{
@@ -1018,19 +1017,4 @@ export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId, canLoadI
   );
 };
 
-export function Sidebar() {
-  const { filterOptions, activeFilters, applyFilters } = useHome();
-
-  return (
-    <aside className="hidden lg:block lg:col-span-1 w-full lg:w-64 min-w-[250px]">
-      <div className="bg-white/95 backdrop-blur p-4 rounded-2xl shadow-sm border border-slate-100 sticky top-4">
-        <FilterContent
-          activeFilters={activeFilters}
-          filterOptions={filterOptions}
-          onFilterChange={applyFilters}
-        />
-      </div>
-    </aside>
-  );
-};
 

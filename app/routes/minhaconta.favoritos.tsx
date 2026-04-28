@@ -1,15 +1,15 @@
+import { Heart } from "lucide-react";
 import { useEffect, useState } from "react";
+import { BsCartPlus } from "react-icons/bs";
 import { Link, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import Button from "~/components/button";
 import Loader from "~/components/loader";
 import { useAuth } from "~/features/auth/context/AuthContext";
+import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
 import { favoritoService } from "~/features/favoritos/services/favoritoService";
 import type { Produto } from "~/features/produto/types";
-import { Heart } from "lucide-react";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
-import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
-import { BsCartPlus } from "react-icons/bs";
 
 import { useFavorito } from "~/features/favoritos/context/FavoritoContext";
 
@@ -74,7 +74,7 @@ const FavoriteItem = ({ produto, onRemove }: { produto: Produto, onRemove: (id: 
                         <button
                             onClick={handleAdicionarCarrinho}
                             className={`flex items-center gap-2 text-sm font-medium transition-colors ${estaNoCarrinho
-                                ? "text-green-600 hover:text-green-700"
+                                ? "text-(--dynamic-success) hover:text-(--dynamic-success-strong)"
                                 : "text-primary hover:text-secondary"
                                 }`}
                         >

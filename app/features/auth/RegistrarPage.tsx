@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { FaUserPlus } from 'react-icons/fa'
+import { FaBuilding } from 'react-icons/fa'
+import { FiFileText, FiLock, FiMail, FiUser, FiUserPlus } from 'react-icons/fi'
+import { useNavigate } from 'react-router'
 import Button from '~/components/button'
 import Footer from '~/components/footer'
-import Header from '~/components/header';
-import IconCircle from '~/components/icon_circle'
+import Header from '~/components/header'
 import CustomInput from '~/components/input'
 import InputIE from '~/components/input_ie'
 import PasswordInput from '~/components/password_input'
@@ -27,187 +28,278 @@ export default function RegistrarPage() {
     const [cnpj, setCnpj] = useState('');
     const [ie, setIe] = useState('');
     const [isentoIE, setIsentoIE] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const navigate = useNavigate();
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault()
+        setErrorMessage(null);
+        setIsSubmitting(true);
 
-        await authService.registrar({
-            doc: tipoPessoa === 'Física' ? cpf : cnpj,
-            email,
-            ie,
-            nome,
-            razao_social: razaoSocial,
-            rg,
-            senha: password,
-            tipo_pessoa: tipoPessoa
-        });
+        try {
+            const response = await authService.registrar({
+                doc: tipoPessoa === 'Física' ? cpf : cnpj,
+                email,
+                ie,
+                nome,
+                razao_social: razaoSocial,
+                rg,
+                senha: password,
+                tipo_pessoa: tipoPessoa
+            });
+
+            if (!response?.sucesso) {
+                setErrorMessage(response?.mensagem ?? 'Nao foi possivel finalizar seu cadastro.');
+                return;
+            }
+
+            navigate('/entrar');
+        } catch (error) {
+            const apiMessage =
+                (error as any)?.response?.data?.mensagem ||
+                (error as any)?.response?.data?.message;
+
+            setErrorMessage(apiMessage ?? 'Ocorreu um erro ao criar a conta. Tente novamente.');
+            console.error(error);
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
-        <div>
+        <div className="min-h-screen flex flex-col bg-main-bg">
             <Header />
 
-            <div className="relative flex flex-col items-center bg-white p-4 py-4 text-gray-700">
+            <main className="flex-1 flex items-start justify-center px-4 py-12">
+                <div className="w-full max-w-5xl">
+                    <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-6">
+                        <aside className="rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8 flex flex-col">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary mb-4">
+                                <FiUserPlus size={18} />
+                            </div>
+                            <p className="text-xs uppercase tracking-widest text-primary/50 font-medium">Cadastro</p>
+                            <h2 className="font-serif text-2xl font-semibold text-slate-800 mt-1">Sua conta em minutos</h2>
+                            <p className="text-sm text-slate-500 leading-relaxed mt-4">
+                                Finalize seu cadastro para acompanhar pedidos, salvar enderecos e ter uma experiencia de compra mais rapida.
+                            </p>
 
-                <main className="w-full max-w-387">
-                    <div className="flex flex-col">
-                        <IconCircle icon={FaUserPlus} color="primary" />
-                        <h2 className="mb-2 text-center text-2xl font-semibold text-gray-900">
-                            Criar minha conta
-                        </h2>
-                        <p className="mb-6 text-center text-sm">
-                            Informe os seus dados abaixo para criar sua conta.
-                        </p>
-
-                        <form onSubmit={handleRegister} className="flex flex-col gap-4">
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
-                                <CustomSelect
-                                    value={tipoPessoa}
-                                    onChange={(e) => setTipoPessoa(e.target.value)}
-                                    required
-                                >
-                                    <option value="Física">Pessoa Física</option>
-                                    <option value="Jurídica">Pessoa Jurídica</option>
-                                </CustomSelect>
+                            <div className="mt-8 space-y-3 text-sm text-slate-600">
+                                <div className="rounded-xl border border-slate-100 bg-white/80 px-4 py-3">Checkout mais rapido</div>
+                                <div className="rounded-xl border border-slate-100 bg-white/80 px-4 py-3">Historico completo de pedidos</div>
+                                <div className="rounded-xl border border-slate-100 bg-white/80 px-4 py-3">Promocoes e ofertas exclusivas</div>
                             </div>
 
-                            {tipoPessoa === 'Física' && (
-                                <>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
-                                        <CustomInput
-                                            type="text"
-                                            placeholder="Nome *"
-                                            value={nome}
-                                            onChange={(e) => setNome(e.target.value)}
-                                            required
-                                        />
+                            <p className="text-sm text-slate-500 mt-auto pt-6">
+                                Ja possui cadastro?{' '}
+                                <a href="/entrar" className="text-primary hover:underline underline-offset-2 transition-colors">
+                                    Entrar agora
+                                </a>
+                            </p>
+                        </aside>
+
+                        <section className="rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
+                                    <FiUserPlus size={18} />
+                                </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-widest text-primary/50 font-medium">Novo por aqui?</p>
+                                    <h2 className="font-serif text-xl font-semibold text-slate-800">Criar minha conta</h2>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleRegister} className="flex flex-col gap-6">
+                                {errorMessage && (
+                                    <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                                        {errorMessage}
                                     </div>
+                                )}
 
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <CustomInput
-                                            type="text"
-                                            placeholder="CPF *"
-                                            value={cpf}
-                                            onChange={(e) => setCpf(normalizeCpf(e.target.value))}
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs uppercase tracking-wider text-primary/60 font-medium">Tipo de pessoa</label>
+                                    <CustomSelect
+                                        value={tipoPessoa}
+                                        onChange={(e) => setTipoPessoa(e.target.value)}
+                                        required
+                                    >
+                                        <option value="Física">Pessoa Física</option>
+                                        <option value="Jurídica">Pessoa Jurídica</option>
+                                    </CustomSelect>
+                                </div>
+
+                                {tipoPessoa === 'Física' && (
+                                    <>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                                <FiUser size={12} /> Nome completo
+                                            </label>
+                                            <CustomInput
+                                                type="text"
+                                                placeholder="Seu nome completo"
+                                                value={nome}
+                                                onChange={(e) => setNome(e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                                    <FiFileText size={12} /> CPF
+                                                </label>
+                                                <CustomInput
+                                                    type="text"
+                                                    placeholder="000.000.000-00"
+                                                    value={cpf}
+                                                    onChange={(e) => setCpf(normalizeCpf(e.target.value))}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                                    <FiFileText size={12} /> RG
+                                                </label>
+                                                <CustomInput
+                                                    type="text"
+                                                    placeholder="00.000.000-0"
+                                                    value={rg}
+                                                    onChange={(e) => setRg(normalizeRg(e.target.value))}
+                                                />
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                {tipoPessoa === 'Jurídica' && (
+                                    <>
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                                    <FaBuilding size={12} /> Nome fantasia
+                                                </label>
+                                                <CustomInput
+                                                    type="text"
+                                                    placeholder="Nome fantasia"
+                                                    value={nome}
+                                                    onChange={(e) => setNome(e.target.value)}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-xs uppercase tracking-wider text-primary/60 font-medium">Razão social</label>
+                                                <CustomInput
+                                                    type="text"
+                                                    placeholder="Razão social"
+                                                    value={razaoSocial}
+                                                    onChange={(e) => setRazaoSocial(e.target.value)}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                                    <FiFileText size={12} /> CNPJ
+                                                </label>
+                                                <CustomInput
+                                                    type="text"
+                                                    placeholder="00.000.000/0000-00"
+                                                    value={cnpj}
+                                                    onChange={(e) => setCnpj(normalizeCnpj(e.target.value))}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-xs uppercase tracking-wider text-primary/60 font-medium">Inscrição estadual</label>
+                                                <InputIE
+                                                    value={ie}
+                                                    onChange={(e) => setIe(e.target.value)}
+                                                    isento={isentoIE}
+                                                    onIsentoChange={(e) => {
+                                                        setIe(e.target.checked ? 'ISENTO' : '');
+                                                        setIsentoIE(e.target.checked);
+                                                    }}
+                                                    required={!isentoIE}
+                                                />
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                <div className="border-t border-slate-100" />
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                        <FiMail size={12} /> E-mail
+                                    </label>
+                                    <CustomInput
+                                        type="email"
+                                        placeholder="seu@email.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                        <FiLock size={12} /> Senha
+                                    </label>
+                                    <PasswordInput
+                                        placeholder="Crie uma senha segura"
+                                        show={showPassword}
+                                        onToggle={() => setShowPassword(!showPassword)}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="border-t border-slate-100" />
+
+                                <div className="flex flex-col gap-3">
+                                    <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-600">
+                                        <input
+                                            type="checkbox"
+                                            checked={aceitaMarketing}
+                                            onChange={(e) => setAceitaMarketing(e.target.checked)}
+                                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-primary/30 accent-primary"
+                                        />
+                                        <span>Aceito receber comunicações e novidades por e-mail</span>
+                                    </label>
+
+                                    <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-600">
+                                        <input
+                                            type="checkbox"
+                                            checked={aceitaTermos}
+                                            onChange={(e) => setAceitaTermos(e.target.checked)}
+                                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-primary/30 accent-primary"
                                             required
                                         />
-                                        <CustomInput
-                                            type="text"
-                                            placeholder="RG"
-                                            value={rg}
-                                            onChange={(e) => setRg(normalizeRg(e.target.value))}
-                                        />
-                                    </div>
-                                </>
-                            )}
+                                        <span>
+                                            Li e concordo com os{' '}
+                                            <a href="#" className="text-primary underline-offset-2 hover:underline">termos de uso</a>{' '}e{' '}
+                                            <a href="#" className="text-primary underline-offset-2 hover:underline">política de privacidade</a>
+                                        </span>
+                                    </label>
+                                </div>
 
-                            {tipoPessoa === 'Jurídica' && (
-                                <>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <CustomInput
-                                            type="text"
-                                            placeholder="Nome Fantasia *"
-                                            value={nome}
-                                            onChange={(e) => setNome(e.target.value)}
-                                            required
-                                        />
-                                        <CustomInput
-                                            type="text"
-                                            placeholder="Razão Social *"
-                                            value={razaoSocial}
-                                            onChange={(e) => setRazaoSocial(e.target.value)}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                        <CustomInput
-                                            type="text"
-                                            placeholder="CNPJ *"
-                                            value={cnpj}
-                                            onChange={(e) => setCnpj(normalizeCnpj(e.target.value))}
-                                            required
-                                        />
-                                        <InputIE
-                                            value={ie}
-                                            onChange={(e) => setIe(e.target.value)}
-                                            isento={isentoIE}
-                                            onIsentoChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setIe('ISENTO');
-                                                } else {
-                                                    setIe('');
-                                                }
+                                <Button variant="primary" type="submit" className="mt-2" disabled={isSubmitting}>
+                                    {isSubmitting ? 'CRIANDO CONTA...' : 'CRIAR CONTA'}
+                                </Button>
 
-                                                setIsentoIE(e.target.checked);
-                                            }}
-                                            required={!isentoIE}
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            <CustomInput
-                                type="email"
-                                placeholder="E-mail *"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-
-                            <PasswordInput
-                                placeholder="Senha *"
-                                show={showPassword}
-                                onToggle={() => setShowPassword(!showPassword)}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                            />
-
-                            <label className="flex cursor-pointer items-center gap-2 text-sm">
-                                <input
-                                    type="checkbox"
-                                    checked={aceitaMarketing}
-                                    onChange={(e) => setAceitaMarketing(e.target.checked)}
-                                    className="h-4 w-4 rounded border-gray-400 bg-white text-primary focus:ring-terciary"
-                                />
-                                <span className="text-primary">Aceito receber comunicação de marketing da Word System</span>
-                            </label>
-
-                            <label className="flex cursor-pointer items-center gap-2 text-sm">
-                                <input
-                                    type="checkbox"
-                                    checked={aceitaTermos}
-                                    onChange={(e) => setAceitaTermos(e.target.checked)}
-                                    className="h-4 w-4 rounded border-gray-400 bg-white text-primary focus:ring-terciary"
-                                    required
-                                />
-                                <span>
-                                    Estou ciente e CONCORDO com os{' '}
-                                    <a href="#" className="font-semibold text-gray-900 hover:underline">
-                                        termos de aceite
-                                    </a>{' '}
-                                    e{' '}
-                                    <a href="#" className="font-semibold text-gray-900 hover:underline">
-                                        políticas de privacidade
-                                    </a>{' '}
-                                    da Word System.
-                                </span>
-                            </label>
-
-                            <Button variant="primary" type="submit" className="mt-4">
-                                CRIAR CONTA
-                            </Button>
-
-                            <a
-                                href="/entrar"
-                                className="mt-2 text-center text-sm text-gray-600 hover:text-gray-900 hover:underline"
-                            >
-                                Voltar para o login
-                            </a>
-                        </form>
+                                <p className="text-center text-sm text-slate-500 lg:hidden">
+                                    Ja tem conta?{' '}
+                                    <a href="/entrar" className="text-primary hover:underline underline-offset-2 transition-colors">
+                                        Acessar agora
+                                    </a>
+                                </p>
+                            </form>
+                        </section>
                     </div>
-                </main>
-            </div>
+                </div>
+            </main>
 
             <Footer />
         </div>

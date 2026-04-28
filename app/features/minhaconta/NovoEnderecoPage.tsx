@@ -1,5 +1,5 @@
-import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
-import { MapPin, Lock } from 'lucide-react';
+import { Lock, MapPin } from 'lucide-react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify';
 import { useAuth } from '../auth/context/AuthContext';
@@ -13,7 +13,7 @@ interface AddressFormData {
   bairro: string;
   cidade: string;
   uf: string;
-  padrao: string;
+  padrao: boolean;
 }
 
 interface FormErrors {
@@ -49,7 +49,7 @@ export default function NovoEnderecoPage() {
     bairro: '',
     cidade: '',
     uf: '',
-    padrao: 'Não',
+    padrao: false,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -72,7 +72,7 @@ export default function NovoEnderecoPage() {
               bairro: address.nome_bairro,
               cidade: address.nome_cidade,
               uf: address.sigla_estado,
-              padrao: address.padrao,
+              padrao: ['sim', '1', 'true'].includes(String(address.padrao).toLowerCase()),
             });
           }
         } catch (error) {
@@ -327,7 +327,7 @@ export default function NovoEnderecoPage() {
                 type="checkbox"
                 name="padrao"
                 id="padrao"
-                checked={formData.padrao === 'Sim'}
+                checked={formData.padrao}
                 onChange={handleChange}
                 className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
               />
