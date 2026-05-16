@@ -70,9 +70,62 @@ const URBAN_BOY_IDENTIDADE = {
     }
 };
 
+type FooterCompanyConfig = {
+    nome: string;
+    nomeExibicao: string;
+    cnpj: string;
+    email: string;
+    telefone: string;
+    atendimento: string;
+    lojaFisica: string;
+    enderecoResumo: string;
+    enderecoCompleto: string;
+};
+
+const DEFAULT_FOOTER_CONFIG: FooterCompanyConfig = {
+    nome: 'WORD SYSTEM LTDA',
+    nomeExibicao: 'Word System',
+    cnpj: '09.376.495/0001-22',
+    email: 'sac@pichau.com.br',
+    telefone: '(44) 9118-8369',
+    atendimento: 'Seg-Sex 8h-12h / 14h-18h',
+    lojaFisica: 'Santa Fé - PR · Seg-Sex 9h-19h / Sáb 9h-13h',
+    enderecoResumo: 'Rua Luiz Roncalha, 169 · Jardim Itália · Santa Fé - PR',
+    enderecoCompleto: 'Rua Luiz Roncalha, 169 · Jardim Italia · Santa Fé - PR · 86770-000'
+};
+
+const PRIETO_KOUROS_FOOTER_CONFIG: FooterCompanyConfig = {
+    nome: 'PRIETO KOUROS',
+    nomeExibicao: 'Prieto Kouros',
+    cnpj: '05.836.833/0001-00',
+    email: 'crispkouros@hotmail.com',
+    telefone: '(44) 99926-4055',
+    atendimento: 'Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
+    lojaFisica: 'Colorado - PR · Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
+    enderecoResumo: 'Avenida Brasil, 1170 · Centro · Colorado - PR · 86690-000',
+    enderecoCompleto: 'Avenida Brasil, 1170 · Centro · Colorado - PR · 86690-000'
+};
+
+const URBAN_BOY_FOOTER_CONFIG: FooterCompanyConfig = {
+    nome: 'URBAN BOY',
+    nomeExibicao: 'Urban Boy',
+    cnpj: DEFAULT_FOOTER_CONFIG.cnpj,
+    email: DEFAULT_FOOTER_CONFIG.email,
+    telefone: DEFAULT_FOOTER_CONFIG.telefone,
+    atendimento: DEFAULT_FOOTER_CONFIG.atendimento,
+    lojaFisica: DEFAULT_FOOTER_CONFIG.lojaFisica,
+    enderecoResumo: DEFAULT_FOOTER_CONFIG.enderecoResumo,
+    enderecoCompleto: DEFAULT_FOOTER_CONFIG.enderecoCompleto
+};
+
 const EMPRESAS_IDENTIDADE = {
     '3': PRIETO_KOUROS_IDENTIDADE,
     '135': URBAN_BOY_IDENTIDADE,
+};
+
+const EMPRESAS_FOOTER_CONFIG: Record<string, FooterCompanyConfig> = {
+    '3': PRIETO_KOUROS_FOOTER_CONFIG,
+    '135': URBAN_BOY_FOOTER_CONFIG,
 };
 
 const config = {
@@ -102,6 +155,9 @@ const config = {
     get LOGO_MASK() {
         return this.IDENTIDADE_VISUAL.LOGO_MASK;
     },
+    get FOOTER_CONFIG() {
+        return this.getFooterConfigAtivo();
+    },
     getIdentidadeVisualAtiva() {
         const empresaAtiva = this.EMPRESAS.find((empresaId) => EMPRESAS_IDENTIDADE[empresaId as keyof typeof EMPRESAS_IDENTIDADE]);
         if (!empresaAtiva) {
@@ -109,6 +165,14 @@ const config = {
         }
 
         return EMPRESAS_IDENTIDADE[empresaAtiva as keyof typeof EMPRESAS_IDENTIDADE];
+    },
+    getFooterConfigAtivo() {
+        const empresaAtiva = this.EMPRESAS.find((empresaId) => EMPRESAS_FOOTER_CONFIG[empresaId as keyof typeof EMPRESAS_FOOTER_CONFIG]);
+        if (!empresaAtiva) {
+            return DEFAULT_FOOTER_CONFIG;
+        }
+
+        return EMPRESAS_FOOTER_CONFIG[empresaAtiva as keyof typeof EMPRESAS_FOOTER_CONFIG];
     },
     getCoresAtivas() {
         return this.getIdentidadeVisualAtiva().CORES;

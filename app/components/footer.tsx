@@ -11,6 +11,7 @@ import {
     FaYoutube
 } from 'react-icons/fa';
 import { SiApple, SiGoogleplay } from 'react-icons/si';
+import config from '~/config/config';
 
 const departamentosColuna1 = [
     'Hardware',
@@ -84,6 +85,8 @@ const FooterInfoCard = ({ icon: Icon, label, value }: { icon: React.ComponentTyp
 );
 
 export function Footer() {
+    const footerConfig = config.FOOTER_CONFIG;
+
     return (
         <footer className="bg-footer-bg text-secondary relative overflow-hidden border-t border-secondary/5">
             <div className="absolute inset-0 pointer-events-none opacity-100">
@@ -97,28 +100,28 @@ export function Footer() {
                     <FooterInfoCard
                         icon={FaClock}
                         label="Atendimento"
-                        value={<span>Seg-Sex 8h-12h / 14h-18h</span>}
+                        value={<span>{footerConfig.atendimento}</span>}
                     />
                     <FooterInfoCard
                         icon={FaPhoneAlt}
                         label="Telefone"
-                        value={<span>(44) 9118-8369</span>}
+                        value={<span>{footerConfig.telefone}</span>}
                     />
                     <FooterInfoCard
                         icon={FaEnvelope}
                         label="E-mail"
-                        value={<span>sac@pichau.com.br</span>}
+                        value={<span>{footerConfig.email}</span>}
                     />
                     <FooterInfoCard
                         icon={FaHome}
                         label="Loja física"
-                        value={<span>Santa Fé - PR · Seg-Sex 9h-19h / Sáb 9h-13h</span>}
+                        value={<span>{footerConfig.lojaFisica}</span>}
                     />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 py-14 lg:py-18">
                     <div className="lg:col-span-4 xl:col-span-3">
-                        <p className="text-tiny uppercase tracking-[0.3em] text-terciary mb-4">Word System</p>
+                        <p className="text-tiny uppercase tracking-[0.3em] text-terciary mb-4">{footerConfig.nomeExibicao}</p>
                         <h2 className="font-serif text-3xl leading-none text-white mb-4">Informações e atendimento</h2>
                         <p className="text-sm text-secondary/62 leading-7 max-w-md">
                             Consulte contato, endereço, links institucionais, departamentos e canais oficiais da loja em um único lugar.
@@ -127,11 +130,11 @@ export function Footer() {
                         <div className="mt-8 space-y-3">
                             <div className="border border-secondary/16 bg-white/10 px-4 py-4">
                                 <p className="text-tiny uppercase tracking-[0.2em] text-secondary/50 mb-1">Endereço</p>
-                                <p className="text-sm text-secondary/82 leading-relaxed">Rua Luiz Roncalha, 169 · Jardim Itália · Santa Fé - PR</p>
+                                <p className="text-sm text-secondary/82 leading-relaxed">{footerConfig.enderecoResumo}</p>
                             </div>
                             <div className="border border-secondary/16 bg-white/10 px-4 py-4">
                                 <p className="text-tiny uppercase tracking-[0.2em] text-secondary/50 mb-1">Empresa</p>
-                                <p className="text-sm text-secondary/82 leading-relaxed">WORD SYSTEM LTDA · CNPJ 09.376.495/0001-22</p>
+                                <p className="text-sm text-secondary/82 leading-relaxed">{footerConfig.nome} · CNPJ {footerConfig.cnpj}</p>
                             </div>
                         </div>
                     </div>
@@ -250,10 +253,10 @@ export function Footer() {
                 <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-16 py-7 lg:py-8">
                     <div className="flex flex-col md:flex-row justify-between gap-8 md:items-end">
                         <div className="flex-1">
-                            <p className="text-tiny uppercase tracking-[0.25em] text-terciary mb-2">Word System</p>
+                            <p className="text-tiny uppercase tracking-[0.25em] text-terciary mb-2">{footerConfig.nomeExibicao}</p>
                             <p className="text-xs text-secondary/72 leading-relaxed max-w-md">
-                                WORD SYSTEM LTDA · CNPJ 09.376.495/0001-22<br />
-                                Rua Luiz Roncalha, 169 · Jardim Italia · Santa Fé - PR · 86770-000
+                                {footerConfig.nome} · CNPJ {footerConfig.cnpj}<br />
+                                {footerConfig.enderecoCompleto}
                             </p>
                             <p className="text-xs text-secondary/58 mt-3 leading-relaxed max-w-xl">
                                 Preços e condições exclusivos para compras via internet. Fotos meramente ilustrativas. Ofertas válidas até o término de estoques.
