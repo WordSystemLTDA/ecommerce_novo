@@ -31,7 +31,7 @@ export const authService = {
         const { data } = await apiClient.post('/auth/registrar', userData);
 
         if (data.sucesso) {
-            toast.error(data.mensagem, { position: 'top-center' });
+            toast.success(data.mensagem, { position: 'top-center' });
         }
 
         return data;

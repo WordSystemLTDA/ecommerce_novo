@@ -4,6 +4,8 @@ import {
     FaCheck,
     FaCheckCircle,
     FaCreditCard,
+    FaExclamationCircle,
+    FaLock,
     FaMapMarkerAlt,
     FaRegFileAlt,
     FaShoppingCart,
@@ -18,29 +20,127 @@ import { carrinhoService } from './services/carrinhoService';
 import { useAuth } from '../auth/context/AuthContext';
 import { toast } from 'react-toastify';
 
-const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
-    const steps = [
-        { name: 'Carrinho', icon: FaShoppingCart },
-        { name: 'Endereço', icon: FaMapMarkerAlt },
-        { name: 'Entrega', icon: FaTruck },
-        { name: 'Pagamento', icon: FaCreditCard },
-        { name: 'Confirmação', icon: FaCheckCircle },
-        { name: 'Concluído', icon: FaCheckCircle },
+const steps = [
+    { name: 'Carrinho', route: '', icon: FaShoppingCart },
+    { name: 'Endereço', route: 'endereco', icon: FaMapMarkerAlt },
+    { name: 'Entrega', route: 'entrega', icon: FaTruck },
+    { name: 'Pagamento', route: 'pagamento', icon: FaCreditCard },
+    { name: 'Confirmação', route: 'confirmacao', icon: FaCheckCircle },
+];
+
+const formatAddress = (endereco: ReturnType<typeof useCarrinho>['enderecoSelecionado']) => {
+    if (!endereco) {
+        return 'Nenhum endereço selecionado';
+    }
+
+    const street = [endereco.endereco, endereco.numero].filter(Boolean).join(', ');
+    const city = [endereco.nome_cidade, endereco.sigla_estado].filter(Boolean).join(', ');
+    const details = [street, endereco.nome_bairro, city].filter(Boolean).join(' - ');
+
+    return [details, endereco.cep ? `CEP ${endereco.cep}` : '']
+        .filter(Boolean)
+        .join(', ');
+};
+
+const getActionLabel = (step: number) => {
+    switch (step) {
+        case 1:
+            return 'Ir para endereço';
+        case 2:
+            return 'Escolher entrega';
+        case 3:
+            return 'Ir para pagamento';
+        case 4:
+            return 'Revisar pedido';
+        case 5:
+            return 'Finalizar pedido';
+        default:
+            return 'Continuar';
+    }
+};
+
+const getOrderIdFromResponse = (response: any) => {
+    const candidates = [
+        response?.data?.id_venda ??
+        response?.data?.idVenda,
+        response?.data?.id,
+        response?.data?.venda?.id_venda,
+        response?.data?.venda?.idVenda,
+        response?.data?.venda?.id,
+        response?.id_venda,
+        response?.idVenda,
+        response?.venda?.id_venda,
+        response?.venda?.idVenda,
+        response?.venda?.id,
+        response?.id,
+        typeof response?.data === 'number' || typeof response?.data === 'string'
+            ? response.data
+            : undefined,
     ];
 
+    const parsedOrderId = candidates
+        .map((candidate) => Number(candidate))
+        .find((candidate) => Number.isFinite(candidate) && candidate > 0);
+
+    return parsedOrderId ?? null;
+};
+
+const CheckoutStepper = ({
+    activeStep,
+    canVisitStep,
+    onStepSelect,
+}: {
+    activeStep: number;
+    canVisitStep: (step: number) => boolean;
+    onStepSelect: (step: number) => void;
+}) => {
+    const progress = ((activeStep - 1) / (steps.length - 1)) * 100;
+
     return (
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-            <div className="flex justify-between items-center py-4 px-2 overflow-x-auto whitespace-nowrap">
+        <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
+            <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/70">
+                        Compra segura
+                    </p>
+                    <h1 className="text-xl font-bold text-gray-900">
+                        Finalize seu pedido
+                    </h1>
+                </div>
+
+                <span className="hidden rounded-full bg-primary/8 px-3 py-1 text-xs font-semibold text-primary sm:inline">
+                    Etapa {activeStep} de {steps.length}
+                </span>
+            </div>
+
+            <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+                <div
+                    className="h-full rounded-full bg-primary transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                />
+            </div>
+
+            <div className="mt-4 flex items-start gap-3 overflow-x-auto pb-1 whitespace-nowrap">
                 {steps.map((step, index) => {
                     const stepNumber = index + 1;
                     const isActive = stepNumber === activeStep;
                     const isCompleted = stepNumber < activeStep;
-
-                    if (step.name === 'Concluído') return null;
+                    const isAvailable = canVisitStep(stepNumber);
+                    const Icon = step.icon;
 
                     return (
                         <React.Fragment key={step.name}>
-                            <div className="flex flex-col items-center">
+                            <button
+                                type="button"
+                                disabled={!isAvailable}
+                                onClick={() => onStepSelect(stepNumber)}
+                                className={`
+                                    min-w-24 flex flex-col items-center rounded-md p-2
+                                    transition-colors
+                                    ${isAvailable ? 'cursor-pointer hover:bg-primary/5' : 'cursor-not-allowed opacity-55'}
+                                `}
+                                aria-current={isActive ? 'step' : undefined}
+                            >
                                 <div
                                     className={`
                                         w-10 h-10 rounded-full flex items-center justify-center border-2  
@@ -49,7 +149,7 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                                         ${!isActive && !isCompleted ? 'border-gray-300 text-gray-400' : ''}
                                     `}
                                 >
-                                    {isCompleted ? <FaCheck size={20} /> : <step.icon size={20} />}
+                                    {isCompleted ? <FaCheck size={18} /> : <Icon size={18} />}
                                 </div>
                                 <span
                                     className={`
@@ -59,9 +159,14 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                                 >
                                     {step.name}
                                 </span>
-                            </div>
-                            {index < steps.length - 2 && (
-                                <div className={`flex-auto h-0.5 mx-2 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                                {!isAvailable && !isActive && (
+                                    <span className="mt-1 flex items-center gap-1 text-[10px] text-gray-400">
+                                        <FaLock size={9} /> Bloqueada
+                                    </span>
+                                )}
+                            </button>
+                            {index < steps.length - 1 && (
+                                <div className={`mt-7 h-0.5 min-w-8 flex-1 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
                             )}
                         </React.Fragment>
                     );
@@ -86,26 +191,75 @@ const CartSummary = ({
     const [termsAccepted, setTermsAccepted] = React.useState(false);
 
     const isConfirmationStep = step === 5;
-    const isDisabled = () => {
-        if (loading) return true;
+    const selectedProducts = produtos.filter((produto) =>
+        selectedItems.includes(produto.internalId)
+    );
+
+    React.useEffect(() => {
+        if (!isConfirmationStep) {
+            setTermsAccepted(false);
+        }
+    }, [isConfirmationStep]);
+
+    const getBlockedMessage = () => {
+        if (loading) return '';
         switch (step) {
             case 1:
-                return produtos.filter(p => selectedItems.includes(p.internalId)).length === 0;
+                return selectedProducts.length === 0
+                    ? 'Selecione ao menos um produto para continuar.'
+                    : '';
             case 2:
-                return enderecoSelecionado == undefined;
+                return enderecoSelecionado == undefined
+                    ? 'Escolha o endereço de entrega.'
+                    : '';
             case 3:
-                return tipoDeEntregaSelecionada == undefined;
+                return tipoDeEntregaSelecionada == undefined
+                    ? 'Escolha uma forma de entrega.'
+                    : '';
             case 4:
-                return pagamentoSelecionado == undefined;
+                return pagamentoSelecionado == undefined
+                    ? 'Escolha uma forma de pagamento.'
+                    : '';
             case 5:
-                return !termsAccepted;
+                return !termsAccepted
+                    ? 'Aceite os termos para finalizar.'
+                    : '';
             default:
-                return false;
+                return '';
         }
     };
+    const blockedMessage = getBlockedMessage();
+    const isDisabled = loading || blockedMessage !== '';
+
+    const summaryItems = [
+        {
+            label: 'Produtos',
+            value: `${selectedProducts.length} item${selectedProducts.length === 1 ? '' : 's'} selecionado${selectedProducts.length === 1 ? '' : 's'}`,
+            done: selectedProducts.length > 0,
+        },
+        {
+            label: 'Endereço',
+            value: enderecoSelecionado
+                ? formatAddress(enderecoSelecionado)
+                : 'Pendente',
+            done: enderecoSelecionado != undefined,
+        },
+        {
+            label: 'Entrega',
+            value: tipoDeEntregaSelecionada
+                ? tipoDeEntregaSelecionada.name
+                : 'Pendente',
+            done: tipoDeEntregaSelecionada != undefined,
+        },
+        {
+            label: 'Pagamento',
+            value: pagamentoSelecionado?.nome || pagamentoSelecionado?.tipo || 'Pendente',
+            done: pagamentoSelecionado != undefined,
+        },
+    ];
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 sticky top-38">
+        <aside className="bg-white rounded-lg shadow-md p-6 lg:sticky lg:top-6">
             <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4 border-b pb-2">
                 <FaRegFileAlt /> RESUMO
             </h2>
@@ -138,11 +292,28 @@ const CartSummary = ({
                 </div>
             </div>
 
-            {step < 5 ? (
-                <></>
-            ) : (
-                <></>
-            )}
+            <div className="mt-5 space-y-3 border-t border-gray-200 pt-4">
+                {summaryItems.map((item) => (
+                    <div key={item.label} className="flex items-start gap-3">
+                        <span
+                            className={`
+                                mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full
+                                ${item.done ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}
+                            `}
+                        >
+                            {item.done ? <FaCheck size={11} /> : <FaLock size={9} />}
+                        </span>
+                        <div className="min-w-0">
+                            <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">
+                                {item.label}
+                            </p>
+                            <p className="line-clamp-2 text-sm text-gray-800">
+                                {item.value}
+                            </p>
+                        </div>
+                    </div>
+                ))}
+            </div>
 
             {(step >= 2 && step <= 4) && (
                 <div className="mt-4">
@@ -163,8 +334,7 @@ const CartSummary = ({
                         <FaTruck /> ENTREGA
                     </h3>
                     <div className="text-sm text-gray-600 space-y-1">
-                        <p>{enderecoSelecionado?.endereco}</p>
-                        <p>Número {enderecoSelecionado?.numero}, {enderecoSelecionado?.complemento}, CEP {enderecoSelecionado?.cep} - {enderecoSelecionado?.nome_cidade}, {enderecoSelecionado?.sigla_estado}</p>
+                        <p>{formatAddress(enderecoSelecionado)}</p>
                         <div className="flex justify-between items-center border border-gray-300 rounded p-2">
                             <span>{tipoDeEntregaSelecionada?.name}</span>
                             <span className="font-bold">{currencyFormatter.format(parseFloat(tipoDeEntregaSelecionada?.price ?? '0'))}</span>
@@ -175,22 +345,27 @@ const CartSummary = ({
             )}
 
             <div className="mt-6 space-y-3">
+                {blockedMessage && (
+                    <p className="flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+                        <FaExclamationCircle /> {blockedMessage}
+                    </p>
+                )}
                 <button
                     onClick={onContinue}
-                    disabled={isDisabled()}
-                    className={`w-full ${isDisabled() ? 'bg-gray-500' : 'bg-primary hover:bg-secondary'} text-white font-bold py-3 rounded-md transition-colors flex justify-center items-center gap-2`}
+                    disabled={isDisabled}
+                    className={`w-full ${isDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-terciary'} text-white font-bold py-3 rounded-md transition-colors flex justify-center items-center gap-2`}
                 >
                     {loading ? (
                         <>Processando...</>
                     ) : (
-                        isConfirmationStep ? 'FINALIZAR' : 'CONTINUAR'
+                        getActionLabel(step)
                     )}
                 </button>
                 {step > 1 && (
                     <button
                         onClick={onBack}
                         disabled={loading}
-                        className={`w-full bg-white text-primary border border-primary font-bold py-3 rounded-md hover:bg-secondary transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-full bg-white text-primary border border-primary font-bold py-3 rounded-md hover:bg-primary/5 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         VOLTAR
                     </button>
@@ -215,7 +390,7 @@ const CartSummary = ({
                     </label>
                 </div>
             )}
-        </div>
+        </aside>
     );
 };
 
@@ -224,6 +399,7 @@ export default function CheckoutLayout() {
     const navigate = useNavigate();
 
     const [loading, setLoading] = React.useState(false);
+    const [orderCompleted, setOrderCompleted] = React.useState(false);
 
     const { cliente } = useAuth();
     const { produtos, selectedItems, pagamentoSelecionado, enderecoSelecionado, tipoDeEntregaSelecionada, valorFrete, retornarValorFinal, removerProdutosSelecionados } = useCarrinho();
@@ -238,47 +414,80 @@ export default function CheckoutLayout() {
     };
 
     const activeStep = getActiveStep(location.pathname);
-    const stepsRoutes = ['', 'endereco', 'entrega', 'pagamento', 'confirmacao'];
+    const selectedProducts = produtos.filter((produto) =>
+        selectedItems.includes(produto.internalId)
+    );
+
+    const canVisitStep = (step: number) => {
+        if (step === 1) return true;
+        if (!cliente?.id || selectedProducts.length === 0) return false;
+        if (step === 2) return true;
+        if (step === 3) return enderecoSelecionado != undefined;
+        if (step === 4) return tipoDeEntregaSelecionada != undefined;
+        if (step === 5) return pagamentoSelecionado != undefined;
+        return false;
+    };
+
+    const navigateToStep = (step: number) => {
+        if (!canVisitStep(step)) {
+            return;
+        }
+
+        navigate(`/carrinho/${steps[step - 1].route}`);
+    };
 
     const handleContinue = async () => {
-        const nextStepIndex = activeStep;
+        if (selectedProducts.length === 0) {
+            toast.info('Selecione ao menos um produto para continuar.', { position: 'top-center' });
+            return;
+        }
 
         if (activeStep === 1 && !cliente?.id) {
-            // toast.dismiss();
-            // toast.info("Faça login para continuar.", { position: 'top-center' });
             navigate("/entrar");
             return;
         }
 
-        if (enderecoSelecionado == undefined) {
-            // toast.dismiss();
-            // toast.error("Selecione um endereço", { position: 'top-center' });
+        if (activeStep === 1) {
             navigate("/carrinho/endereco");
             return;
         }
 
-        if (tipoDeEntregaSelecionada == undefined) {
-            // toast.dismiss();
-            // toast.error("Selecione um tipo de entrega", { position: 'top-center' });
+        if (activeStep === 2) {
+            if (enderecoSelecionado == undefined) {
+                toast.error("Selecione um endereço.", { position: 'top-center' });
+                return;
+            }
+
             navigate("/carrinho/entrega");
             return;
         }
 
-        if (pagamentoSelecionado == undefined) {
-            // toast.dismiss();
-            // toast.error("Selecione um pagamento", { position: 'top-center' });
+        if (activeStep === 3) {
+            if (tipoDeEntregaSelecionada == undefined) {
+                toast.error("Selecione uma forma de entrega.", { position: 'top-center' });
+                return;
+            }
+
             navigate("/carrinho/pagamento");
             return;
         }
 
-        if (nextStepIndex < stepsRoutes.length) {
-            navigate(`/carrinho/${stepsRoutes[nextStepIndex]}`);
-        } else {
+        if (activeStep === 4) {
+            if (pagamentoSelecionado == undefined) {
+                toast.error("Selecione uma forma de pagamento.", { position: 'top-center' });
+                return;
+            }
+
+            navigate("/carrinho/confirmacao");
+            return;
+        }
+
+        if (activeStep === 5) {
             const produtosSelecionados = produtos.filter(p => selectedItems.includes(p.internalId));
 
             setLoading(true);
             try {
-                var response = await carrinhoService.gerarVenda(
+                const response = await carrinhoService.gerarVenda(
                     cliente!,
                     produtosSelecionados.map(p => ({
                         id: p.id,
@@ -299,11 +508,26 @@ export default function CheckoutLayout() {
                 );
 
                 if (response.sucesso) {
-                    removerProdutosSelecionados();
+                    const orderId = getOrderIdFromResponse(response);
+                    setOrderCompleted(true);
 
-                    navigate(`/pedido/sucesso/${response.data.id_venda}`);
+                    toast.success("Pedido realizado com sucesso!", { position: 'top-center' });
+
+                    if (orderId != null) {
+                        navigate(`/pedido/sucesso/${orderId}`, { replace: true });
+                    } else {
+                        toast.info(
+                            "Seu pedido foi gerado, mas não recebemos o número para abrir o comprovante.",
+                            { position: 'top-center' }
+                        );
+                        navigate("/minha-conta/pedidos", { replace: true });
+                    }
+
+                    window.setTimeout(() => {
+                        void removerProdutosSelecionados();
+                    }, 500);
                 } else {
-                    toast.error(response.mensagem, { position: 'top-center' });
+                    toast.error(response.mensagem || "Não foi possível finalizar o pedido.", { position: 'top-center' });
                 }
             } catch (error) {
                 console.error(error);
@@ -315,9 +539,9 @@ export default function CheckoutLayout() {
     };
 
     const handleBack = () => {
-        const prevStepIndex = activeStep - 2;
-        if (prevStepIndex >= 0) {
-            navigate(`/carrinho/${stepsRoutes[prevStepIndex]}`);
+        const previousStep = activeStep - 1;
+        if (previousStep >= 1) {
+            navigateToStep(previousStep);
         }
     };
 
@@ -329,13 +553,33 @@ export default function CheckoutLayout() {
         return <Navigate to="/entrar" replace />;
     }
 
+    if (!orderCompleted && activeStep > 1 && selectedProducts.length === 0) {
+        return <Navigate to="/carrinho" replace />;
+    }
+
+    if (!orderCompleted && activeStep >= 3 && enderecoSelecionado == undefined) {
+        return <Navigate to="/carrinho/endereco" replace />;
+    }
+
+    if (!orderCompleted && activeStep >= 4 && tipoDeEntregaSelecionada == undefined) {
+        return <Navigate to="/carrinho/entrega" replace />;
+    }
+
+    if (!orderCompleted && activeStep >= 5 && pagamentoSelecionado == undefined) {
+        return <Navigate to="/carrinho/pagamento" replace />;
+    }
+
     return (
         <div>
             <Header />
 
             <div className="bg-gray-100 min-h-screen py-8">
                 <div className="max-w-387 mx-auto px-4">
-                    <CheckoutStepper activeStep={activeStep} />
+                    <CheckoutStepper
+                        activeStep={activeStep}
+                        canVisitStep={canVisitStep}
+                        onStepSelect={navigateToStep}
+                    />
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2">

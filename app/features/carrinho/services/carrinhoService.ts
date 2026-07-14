@@ -3,6 +3,30 @@ import type { Produto } from "~/features/produto/types";
 import apiClient from "~/services/api";
 import type { Pagamento, PagamentoResponse } from "~/types/Pagamento";
 
+function getProdutoGradeId(produto: Produto) {
+    const item = produto as Produto & Record<string, any>;
+    const gradeId =
+        produto.tamanhoSelecionado?.id ??
+        item.id_grade ??
+        item.idGrade ??
+        item.id_tamanho ??
+        item.idTamanho ??
+        item.grade?.id ??
+        0;
+
+    return Number(gradeId) || 0;
+}
+
+function parseProdutoPrice(preco: string) {
+    const normalizedPrice = preco
+        .replace(/[^\d,.]/g, '')
+        .replace(/\.(?=\d{3}(?:\D|$))/g, '')
+        .replace(',', '.');
+    const parsedPrice = Number(normalizedPrice);
+
+    return Number.isFinite(parsedPrice) ? parsedPrice : null;
+}
+
 export const carrinhoService = {
     listar: async (id_cliente: number) => {
         const response = await apiClient.get<any>(`/carrinho/${id_cliente}`);
@@ -17,32 +41,36 @@ export const carrinhoService = {
     },
 
     adicionarNovoItem: async (id_cliente: number, produto: Produto) => {
+        const quantidade = produto.quantidade || 1;
+        const preco = parseProdutoPrice(produto.preco);
         const response = await apiClient.post(`/carrinho/${produto.id}`, {
             id_cliente,
             nome_do_produto: produto.nome,
             valor: produto.preco,
-            quantidade: 1,
-            total: produto.preco,
+            quantidade,
+            total: preco == null ? produto.preco : preco * quantidade,
             idPromocoesEcommerce: produto.idPromocoesEcommerce,
-            id_grade: produto.tamanhoSelecionado?.id || 0
+            id_grade: getProdutoGradeId(produto)
         });
         return response.data;
     },
 
-    removerItem: async (id_cliente: number, id_produto: number) => {
-        const response = await apiClient.delete(`/carrinho/${id_produto}`, {
+    removerItem: async (id_cliente: number, produto: Produto) => {
+        const response = await apiClient.delete(`/carrinho/${produto.id}`, {
             data: {
                 id_cliente,
-                quantidade: 1
+                quantidade: produto.quantidade || 1,
+                id_grade: getProdutoGradeId(produto)
             }
         });
         return response.data;
     },
 
-    editarQuantidadeItem: async (id_cliente: number, id_produto: number, quantidade: number) => {
-        const response = await apiClient.put(`/carrinho/${id_produto}`, {
+    editarQuantidadeItem: async (id_cliente: number, produto: Produto, quantidade: number) => {
+        const response = await apiClient.put(`/carrinho/${produto.id}`, {
             id_cliente,
-            quantidade
+            quantidade,
+            id_grade: getProdutoGradeId(produto)
         });
         return response.data;
     },

@@ -1,4 +1,4 @@
-import { Lock, MapPin } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, Lock, MapPin, Save } from 'lucide-react';
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify';
@@ -200,24 +200,55 @@ export default function NovoEnderecoPage() {
   };
 
   if (isLoadingData) {
-    return <div className="flex justify-center py-10">Carregando...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center rounded-lg border border-primary/10 bg-main-bg py-16">
+        <LoaderCircle className="animate-spin text-primary" size={34} />
+        <p className="mt-3 text-sm text-primary/55">Carregando endereço...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="flex items-center justify-center py-5 px-0">
-
-      <div className="max-w-387 relative flex flex-col justify-center items-center w-full">
-
-        <div className="px-0 pt-0 pb-4 w-full">
-          <div className="flex items-center gap-2 mb-6">
-            <MapPin className="text-primary" size={24} />
-            <h2 className="text-xl font-bold text-gray-700 uppercase tracking-wide">
-              {isEditing ? 'Editar Endereço' : 'Novo Endereço'}
-            </h2>
-          </div>
+    <div>
+      <div className="mb-6 flex flex-col gap-3 border-b border-primary/10 pb-5 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="overline-label flex items-center gap-2">
+            <MapPin size={15} />
+            Endereços
+          </p>
+          <h1 className="mt-1 text-xl font-semibold text-primary md:text-2xl">
+            {isEditing ? 'Editar endereço' : 'Novo endereço'}
+          </h1>
+          <p className="mt-1 text-sm text-primary/55">
+            Informe o CEP para preencher cidade, estado, bairro e logradouro automaticamente quando disponível.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-0 pb-8 w-full">
+        <button
+          type="button"
+          onClick={() => navigate('/minha-conta/enderecos')}
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-primary px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-primary/5"
+        >
+          <ArrowLeft size={17} />
+          Voltar
+        </button>
+      </div>
+
+      <div className="rounded-lg border border-primary/10 bg-white p-5">
+        <form onSubmit={handleSubmit} className="w-full">
+          <div className="mb-5 rounded-md bg-main-bg p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <MapPin size={18} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-primary">Dados de entrega</p>
+                <p className="mt-1 text-xs text-primary/55">
+                  Campos com * são obrigatórios para calcular frete e enviar pedidos.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="space-y-5">
 
@@ -225,18 +256,23 @@ export default function NovoEnderecoPage() {
               <label className={`block text-sm font-medium mb-1 ${errors.cep ? 'text-red-600' : 'text-gray-600'}`}>
                 CEP*
               </label>
-              <input
-                type="text"
-                name="cep"
-                maxLength={9}
-                placeholder="00000-000"
-                value={formData.cep}
-                onChange={handleChange}
-                className={`w-full p-3 border rounded text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary transition-colors
-                  ${errors.cep ? 'border-red-500 bg-red-50' : 'border-gray-300'}
-                  ${isLoadingCep ? 'opacity-70' : ''}
-                `}
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name="cep"
+                  maxLength={9}
+                  placeholder="00000-000"
+                  value={formData.cep}
+                  onChange={handleChange}
+                  className={`w-full p-3 border rounded text-gray-700 focus:outline-none focus:ring-1 focus:ring-primary transition-colors
+                    ${errors.cep ? 'border-red-500 bg-red-50' : 'border-gray-300'}
+                    ${isLoadingCep ? 'opacity-70' : ''}
+                  `}
+                />
+                {isLoadingCep && (
+                  <LoaderCircle className="absolute right-3 top-3.5 animate-spin text-primary" size={18} />
+                )}
+              </div>
               {isLoadingCep && <p className="text-xs text-primary mt-1">Buscando endereço...</p>}
               {errors.cep && (
                 <div className="flex items-center gap-1 mt-1 text-red-500 text-sm">
@@ -253,8 +289,11 @@ export default function NovoEnderecoPage() {
                 name="logradouro"
                 value={formData.logradouro}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                className={`w-full p-3 border rounded text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${errors.logradouro ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
               />
+              {errors.logradouro && (
+                <p className="mt-1 text-sm text-red-500">{errors.logradouro}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -266,8 +305,11 @@ export default function NovoEnderecoPage() {
                   name="numero"
                   value={formData.numero}
                   onChange={handleChange}
-                  className="w-full p-3 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className={`w-full p-3 border rounded text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${errors.numero ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                 />
+                {errors.numero && (
+                  <p className="mt-1 text-sm text-red-500">{errors.numero}</p>
+                )}
               </div>
               <div>
                 <label className="block text-gray-500 text-sm mb-1">Complemento</label>
@@ -288,8 +330,11 @@ export default function NovoEnderecoPage() {
                 name="bairro"
                 value={formData.bairro}
                 onChange={handleChange}
-                className="w-full p-3 border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                className={`w-full p-3 border rounded text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary ${errors.bairro ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
               />
+              {errors.bairro && (
+                <p className="mt-1 text-sm text-red-500">{errors.bairro}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -322,31 +367,48 @@ export default function NovoEnderecoPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="padrao"
-                id="padrao"
-                checked={formData.padrao}
-                onChange={handleChange}
-                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-              />
-              <label htmlFor="padrao" className="text-sm text-gray-600">Definir como endereço padrão</label>
+            <div className="rounded-md border border-primary/10 bg-main-bg p-4">
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="padrao"
+                  id="padrao"
+                  checked={formData.padrao}
+                  onChange={handleChange}
+                  className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-primary">
+                    Definir como endereço padrão
+                  </span>
+                  <span className="mt-1 block text-xs text-primary/55">
+                    Esse endereço aparecerá em destaque nas próximas compras.
+                  </span>
+                </span>
+              </label>
             </div>
 
           </div>
 
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => navigate('/minha-conta/enderecos')}
+              className="rounded border border-primary px-6 py-3 text-sm font-bold text-primary transition-colors hover:bg-primary/5"
+            >
+              Cancelar
+            </button>
             <button
               type="submit"
               disabled={!isFormValid}
               className={`
-                px-8 py-3 rounded font-bold uppercase tracking-wide transition-all duration-300 w-full
+                inline-flex items-center justify-center gap-2 px-8 py-3 rounded font-bold transition-all duration-300
                 ${isFormValid
-                  ? 'bg-gray-400 hover:bg-primary text-white shadow-md'
+                  ? 'bg-primary hover:bg-terciary text-white shadow-md'
                   : 'bg-gray-300 text-white cursor-not-allowed'}
               `}
             >
+              <Save size={17} />
               {isEditing ? 'Salvar Alterações' : 'Cadastrar Endereço'}
             </button>
           </div>

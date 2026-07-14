@@ -24,6 +24,7 @@ import { SkeletonProductCard } from "~/components/skeleton_product_card";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { useIsMobile } from "~/hooks/useIsMobile";
 import { gerarSlug } from "~/utils/formatters";
+import { getBannerImageFallback, getBrandImageFallback, getCategoryImageFallback } from "~/utils/imagePlaceholders";
 import type { Categoria } from "../categoria/types";
 import type { Marca } from "../marca/types";
 import type { Banner } from "../produto/types";
@@ -124,6 +125,11 @@ export function HomePage() {
       <main className="w-full">
         {banners && banners.length > 0 ? (
           <CarouselBannersPrincipais images={banners} canLoadImages={canLoadImages} />
+        ) : isInitialDataLoaded ? (
+          <FallbackBannerCard
+            title="Ofertas em destaque"
+            className="h-[200px] md:h-[300px] lg:h-[450px]"
+          />
         ) : (
           <SkeletonMainBanner />
         )}
@@ -171,10 +177,17 @@ export function HomePage() {
 
               {(secondaryBanners.length === 0) ? (
                 <section className="mt-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-                    <SkeletonBanner />
-                    <SkeletonBanner />
-                  </div>
+                  {isInitialDataLoaded ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                      <FallbackBannerCard title="Promocoes especiais" className="h-40 md:h-[200px] lg:h-40" />
+                      <FallbackBannerCard title="Novidades da loja" className="h-40 md:h-[200px] lg:h-40" />
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                      <SkeletonBanner />
+                      <SkeletonBanner />
+                    </div>
+                  )}
                 </section>
               ) : (pos0Banners.length > 0 || pos1Banners.length > 0) && (
                 <section className="mt-8">
@@ -194,6 +207,7 @@ export function HomePage() {
                             <div className="relative h-40 md:h-[200px] lg:h-40 bg-primary/8 overflow-hidden">
                               <OptimizedImage
                                 src={banner.imagemUrl}
+                                fallbackSrc={getBannerImageFallback(`Banner promocional ${index + 1}`)}
                                 className="w-full h-full object-cover"
                                 alt={`Banner promocional ${index + 1}`}
                                 allowNetworkLoad={canLoadImages}
@@ -219,6 +233,7 @@ export function HomePage() {
                             <div className="relative h-40 md:h-[200px] lg:h-40 bg-primary/8 overflow-hidden">
                               <OptimizedImage
                                 src={banner.imagemUrl}
+                                fallbackSrc={getBannerImageFallback(`Banner promocional ${index + 1}`)}
                                 className="w-full h-full object-cover"
                                 alt={`Banner promocional ${index + 1}`}
                                 allowNetworkLoad={canLoadImages}
@@ -272,7 +287,11 @@ export function HomePage() {
 
               {secondaryBanners.length === 0 ? (
                 <section className="mt-10">
-                  <SkeletonBanner aspect="aspect-[21/7]" />
+                  {isInitialDataLoaded ? (
+                    <FallbackBannerCard title="Destaques selecionados" className="h-[170px] md:h-[220px] lg:h-[200px]" />
+                  ) : (
+                    <SkeletonBanner aspect="aspect-[21/7]" />
+                  )}
                 </section>
               ) : pos2Banners.length > 0 && (
                 <section className="mt-10">
@@ -290,6 +309,7 @@ export function HomePage() {
                         <div className="relative h-[170px] md:h-[220px] lg:h-[200px] bg-primary/8 overflow-hidden">
                           <OptimizedImage
                             src={banner.imagemUrl}
+                            fallbackSrc={getBannerImageFallback(`Banner destaque ${index + 1}`)}
                             className="w-full h-full object-cover"
                             alt={`Banner destaque ${index + 1}`}
                             allowNetworkLoad={canLoadImages}
@@ -362,6 +382,24 @@ export function HomePage() {
   )
 }
 
+interface FallbackBannerCardProps {
+  title: string;
+  className: string;
+}
+
+function FallbackBannerCard({ title, className }: FallbackBannerCardProps) {
+  return (
+    <div className={`relative w-full overflow-hidden bg-primary/8 shadow-[0_4px_24px_rgba(0,0,0,0.08)] ${className}`}>
+      <OptimizedImage
+        src={undefined}
+        fallbackSrc={getBannerImageFallback(title)}
+        className="h-full w-full object-cover"
+        alt={title}
+      />
+    </div>
+  );
+}
+
 interface CarouselBannersPrincipaisProps {
   images: Banner[];
   canLoadImages: boolean;
@@ -388,7 +426,14 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
   if (isMobile === null) return <SkeletonMainBanner />;
 
   // Se não houver banners para o dispositivo, não renderiza nada
-  if (bannersFiltrados.length === 0) return null;
+  if (bannersFiltrados.length === 0) {
+    return (
+      <FallbackBannerCard
+        title="Ofertas em destaque"
+        className="h-[200px] md:h-[300px] lg:h-[450px]"
+      />
+    );
+  }
 
   return (
     <div className="relative group w-full h-[200px] md:h-[300px] lg:h-[450px]">
@@ -414,6 +459,7 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
           <SwiperSlide key={index} className="h-full!">
             <OptimizedImage
               src={image.imagemUrl}
+              fallbackSrc={getBannerImageFallback(`Banner principal ${index + 1}`)}
               className="w-full h-full object-cover"
               priority={index === 0}
               allowNetworkLoad={canLoadImages}
@@ -582,7 +628,13 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoad
       }}
     >
       <div className="flex h-32 w-full items-center justify-center overflow-hidden rounded-xl bg-slate-50 p-3">
-        <OptimizedImage src={categoria.imagem} allowNetworkLoad={canLoadImages} className="h-full w-full object-contain transition-transform duration-300 hover:scale-105" alt={categoria.nome} />
+        <OptimizedImage
+          src={categoria.imagem}
+          fallbackSrc={getCategoryImageFallback(categoria.nome)}
+          allowNetworkLoad={canLoadImages}
+          className="h-full w-full object-contain transition-transform duration-300 hover:scale-105"
+          alt={categoria.nome}
+        />
       </div>
       <p className="text-sm font-medium text-slate-700 mt-1 truncate max-w-48">{categoria.nome}</p>
     </div>
@@ -596,25 +648,9 @@ interface MarcaCardProps {
   canLoadImages?: boolean;
 }
 
-function getMarcaPlaceholder(nome: string) {
-  const safeName = nome?.trim() || 'Marca';
-  const placeholderSvg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 240" role="img" aria-label="Sem imagem para ${safeName}">
-      <rect width="480" height="240" fill="#f8fafc" />
-      <rect x="24" y="24" width="432" height="192" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
-      <path d="M182 124l33-33 27 27 44-44 54 54" fill="none" stroke="#94a3b8" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
-      <circle cx="195" cy="88" r="13" fill="#cbd5e1" />
-      <text x="240" y="166" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#475569">Sem imagem</text>
-      <text x="240" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="600" fill="#0f172a">${safeName}</text>
-    </svg>
-  `;
-
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(placeholderSvg)}`;
-}
-
 export function MarcaCardComImagem({ marca, onClick, isSelected, canLoadImages = true }: MarcaCardProps) {
   let navigate = useNavigate();
-  const fallbackMarcaImage = getMarcaPlaceholder(marca.nome);
+  const fallbackMarcaImage = getBrandImageFallback(marca.nome);
 
   return (
     <div

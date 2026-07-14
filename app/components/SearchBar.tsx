@@ -5,6 +5,8 @@ import { useNavigate } from "react-router";
 import { produtoService } from "~/features/produto/services/produtoService";
 import type { Produto } from "~/features/produto/types";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
+import { getProductImageFallback } from "~/utils/imagePlaceholders";
+import { OptimizedImage } from "./OptimizedImage";
 
 export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | null> }) {
     const [searchTerm, setSearchTerm] = useState("");
@@ -94,15 +96,12 @@ export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | nul
                                     className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
                                 >
                                     <div className="w-12 h-12 shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
-                                        {produto.imagens && produto.imagens.length > 0 ? (
-                                            <img
-                                                src={produto.imagens[0]}
-                                                alt={produto.nome}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="text-xs text-gray-400">Sem img</div>
-                                        )}
+                                        <OptimizedImage
+                                            src={produto.imagens?.[0] ?? produto.fotos?.m?.[0]}
+                                            fallbackSrc={getProductImageFallback(produto.nome)}
+                                            alt={produto.nome}
+                                            className="w-full h-full object-cover"
+                                        />
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-sm font-medium text-gray-800 line-clamp-1">{produto.nome}</span>

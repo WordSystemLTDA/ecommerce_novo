@@ -13,7 +13,7 @@ import type { Route } from "./+types/root";
 import Loader from "./components/loader";
 import Loading from "./components/loading";
 import config from "./config/config";
-import { AuthProvider } from "./features/auth/context/AuthContext";
+import { AuthProvider } from "~/features/auth/context/AuthProvider";
 import { ProdutoProvider } from "./features/produto/context/ProdutoContext";
 
 import rangeSliderStyles from 'react-range-slider-input/dist/style.css?url';

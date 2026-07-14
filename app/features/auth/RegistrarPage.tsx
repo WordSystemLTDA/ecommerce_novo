@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { FaBuilding } from 'react-icons/fa'
-import { FiFileText, FiLock, FiMail, FiUser, FiUserPlus } from 'react-icons/fi'
+import { FiFileText, FiLock, FiMail, FiPhone, FiUser, FiUserPlus } from 'react-icons/fi'
 import { useNavigate } from 'react-router'
 import Button from '~/components/button'
 import Footer from '~/components/footer'
@@ -9,13 +9,14 @@ import CustomInput from '~/components/input'
 import InputIE from '~/components/input_ie'
 import PasswordInput from '~/components/password_input'
 import CustomSelect from '~/components/select'
-import { normalizeCnpj, normalizeCpf, normalizeRg } from '~/utils/masks'
+import { normalizeCnpj, normalizeCpf, normalizePhone, normalizeRg } from '~/utils/masks'
 import { authService } from './services/authService'
 
 export default function RegistrarPage() {
     const [nome, setNome] = useState('');
     const [tipoPessoa, setTipoPessoa] = useState('Física');
     const [email, setEmail] = useState('');
+    const [celular, setCelular] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [aceitaMarketing, setAceitaMarketing] = useState(true);
@@ -37,17 +38,30 @@ export default function RegistrarPage() {
         e.preventDefault()
         setErrorMessage(null);
         setIsSubmitting(true);
+        const isPessoaFisica = tipoPessoa.startsWith('F');
+        const isPessoaJuridica = tipoPessoa.startsWith('J');
 
         try {
-            const response = await authService.registrar({
-                doc: tipoPessoa === 'Física' ? cpf : cnpj,
-                email,
-                ie,
-                nome,
-                razao_social: razaoSocial,
-                rg,
+            const payload = {
+                doc: isPessoaFisica ? cpf : cnpj,
+                celular,
+                email: email.trim(),
+                nome: nome.trim(),
                 senha: password,
                 tipo_pessoa: tipoPessoa
+            };
+
+            const response = await authService.registrar({
+                ...payload,
+                ...(isPessoaFisica && rg.trim()
+                    ? { rg: rg.trim() }
+                    : {}),
+                ...(isPessoaJuridica
+                    ? {
+                        razao_social: razaoSocial.trim(),
+                        ...(ie.trim() ? { ie: ie.trim() } : {}),
+                    }
+                    : {}),
             });
 
             if (!response?.sucesso) {
@@ -57,11 +71,21 @@ export default function RegistrarPage() {
 
             navigate('/entrar');
         } catch (error) {
+            const errorPayload =
+                (error as any)?.response?.data ||
+                (error as any)?.error ||
+                error;
+            const camposFaltantes = errorPayload?.data?.campos_faltantes;
             const apiMessage =
-                (error as any)?.response?.data?.mensagem ||
-                (error as any)?.response?.data?.message;
+                errorPayload?.mensagem ||
+                errorPayload?.message ||
+                errorPayload?.error;
 
-            setErrorMessage(apiMessage ?? 'Ocorreu um erro ao criar a conta. Tente novamente.');
+            setErrorMessage(
+                camposFaltantes?.length
+                    ? `${apiMessage ?? 'Dados incompletos'}: ${camposFaltantes.join(', ')}.`
+                    : apiMessage ?? 'Ocorreu um erro ao criar a conta. Tente novamente.'
+            );
             console.error(error);
         } finally {
             setIsSubmitting(false);
@@ -158,7 +182,7 @@ export default function RegistrarPage() {
                                             </div>
                                             <div className="flex flex-col gap-1">
                                                 <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
-                                                    <FiFileText size={12} /> RG
+                                                    <FiFileText size={12} /> RG <span className="normal-case tracking-normal text-primary/40">(opcional)</span>
                                                 </label>
                                                 <CustomInput
                                                     type="text"
@@ -229,17 +253,32 @@ export default function RegistrarPage() {
 
                                 <div className="border-t border-slate-100" />
 
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
-                                        <FiMail size={12} /> E-mail
-                                    </label>
-                                    <CustomInput
-                                        type="email"
-                                        placeholder="seu@email.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                    />
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                            <FiMail size={12} /> E-mail
+                                        </label>
+                                        <CustomInput
+                                            type="email"
+                                            placeholder="seu@email.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                            <FiPhone size={12} /> Celular
+                                        </label>
+                                        <CustomInput
+                                            type="tel"
+                                            placeholder="(00) 00000-0000"
+                                            value={celular}
+                                            onChange={(e) => setCelular(normalizePhone(e.target.value))}
+                                            required
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-col gap-1">

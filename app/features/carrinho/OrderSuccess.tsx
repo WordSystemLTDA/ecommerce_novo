@@ -92,11 +92,25 @@ const Step6_Success = () => {
   const loadOrder = async (orderId: number) => {
     try {
       const response = await carrinhoService.pegarVenda(orderId);
+
       if (response && response.sucesso) {
         setVenda(response.data);
+        return;
       }
+
+      if (response) {
+        setVenda(response);
+        return;
+      }
+
+      toast.error('Não conseguimos carregar os dados do pedido.', {
+        position: 'top-center',
+      });
     } catch (error) {
       console.error("Erro ao carregar venda", error);
+      toast.error('Erro ao carregar os dados do pedido.', {
+        position: 'top-center',
+      });
     } finally {
       setLoading(false);
     }
@@ -150,7 +164,25 @@ const Step6_Success = () => {
   }
 
   if (!venda) {
-    return <div className="p-8 text-center">Pedido não encontrado.</div>;
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+        <FaExclamationCircle className="mx-auto mb-4 text-4xl text-amber-500" />
+        <h1 className="text-xl font-bold text-gray-800">
+          Não conseguimos abrir o comprovante do pedido.
+        </h1>
+        <p className="mt-2 text-sm text-gray-600">
+          Verifique seus pedidos ou tente atualizar a página.
+        </p>
+        <button
+          className="mt-5 rounded-md bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-terciary"
+          onClick={() => {
+            navigate('/minha-conta/pedidos');
+          }}
+        >
+          Ir para meus pedidos
+        </button>
+      </div>
+    );
   }
 
   const isPix = venda.pagamento && venda.pagamento.tipo === 'PIX';

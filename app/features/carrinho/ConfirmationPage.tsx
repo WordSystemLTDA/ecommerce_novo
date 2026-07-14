@@ -1,13 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FaBoxes, FaRegUserCircle } from 'react-icons/fa';
+import { FaBoxes, FaCreditCard, FaRegUserCircle, FaTruck } from 'react-icons/fa';
 import { useCarrinho } from './context/CarrinhoContext';
 import { useAuth } from '../auth/context/AuthContext';
 import { currencyFormatter } from '~/utils/formatters';
+import { OptimizedImage } from '~/components/OptimizedImage';
+import { getProductImageFallback } from '~/utils/imagePlaceholders';
 
 
 export default function ConfirmationPage() {
   let { cliente } = useAuth();
-  let { produtos, enderecoSelecionado, selectedItems } = useCarrinho();
+  let {
+    produtos,
+    enderecoSelecionado,
+    selectedItems,
+    tipoDeEntregaSelecionada,
+    pagamentoSelecionado,
+  } = useCarrinho();
 
   if (cliente == undefined) {
     return (
@@ -37,6 +45,44 @@ export default function ConfirmationPage() {
         </div>
       </div>
 
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
+            <FaTruck /> ENTREGA
+          </h2>
+          <div className="space-y-2 text-sm text-gray-700">
+            <p className="font-bold">{tipoDeEntregaSelecionada?.name}</p>
+            <p>
+              {enderecoSelecionado?.endereco}, {enderecoSelecionado?.numero}
+              {enderecoSelecionado?.complemento && ` - ${enderecoSelecionado.complemento}`}
+            </p>
+            <p>
+              {enderecoSelecionado?.nome_bairro}
+              {enderecoSelecionado?.nome_bairro && ' - '}
+              {enderecoSelecionado?.nome_cidade}, {enderecoSelecionado?.sigla_estado}
+            </p>
+            <p>CEP {enderecoSelecionado?.cep}</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
+            <FaCreditCard /> PAGAMENTO
+          </h2>
+          <div className="space-y-2 text-sm text-gray-700">
+            <p className="font-bold">
+              {pagamentoSelecionado?.nome || pagamentoSelecionado?.tipo}
+            </p>
+            {pagamentoSelecionado?.nome_banco && (
+              <p>{pagamentoSelecionado.nome_banco}</p>
+            )}
+            <p className="text-gray-500">
+              Confira os dados antes de finalizar o pedido.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
           <FaBoxes /> LISTA DE PRODUTOS
@@ -45,8 +91,13 @@ export default function ConfirmationPage() {
 
         {produtos.filter(p => selectedItems.includes(p.internalId)).map((produto) => {
           return (
-            <div className="flex gap-4 border-b pb-4 mb-4">
-              <img src={produto.fotos.m[0]} alt={produto.nome} className="w-16 h-16 object-contain rounded" />
+            <div key={produto.internalId} className="flex gap-4 border-b pb-4 mb-4">
+              <OptimizedImage
+                src={produto.fotos?.m?.[0]}
+                fallbackSrc={getProductImageFallback(produto.nome)}
+                alt={produto.nome}
+                className="w-16 h-16 object-contain rounded bg-gray-50"
+              />
               <div className="grow">
                 <p className="text-sm text-gray-700">{produto.nome}</p>
                 {produto.tamanhoSelecionado != null && <p className="text-xs text-gray-500">Tamanho: {produto.tamanhoSelecionado?.tamanho}</p>}

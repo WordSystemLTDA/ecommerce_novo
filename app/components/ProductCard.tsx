@@ -10,6 +10,7 @@ import { favoritoService } from '~/features/favoritos/services/favoritoService';
 import type { Produto } from "~/features/produto/types";
 import { useSecondTicker } from "~/hooks/useSecondTicker";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
+import { getProductImageFallback } from "~/utils/imagePlaceholders";
 import { OptimizedImage } from "./OptimizedImage";
 
 interface ProductCardProps {
@@ -21,6 +22,7 @@ export function ProductCard({ produto }: ProductCardProps) {
     const { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
     const estaNoCarrinho = verificarAdicionadoCarrinho(produto);
     const now = useSecondTicker();
+    const productImageFallback = getProductImageFallback(produto.nome);
 
     const { cliente } = useAuth();
     const [isFavorite, setIsFavorite] = useState(false);
@@ -155,7 +157,7 @@ export function ProductCard({ produto }: ProductCardProps) {
                     src={produto.fotos?.m?.[0]}
                     alt={produto.nome}
                     className={`w-full min-h-48 max-h-48 object-contain px-4 pt-4 pb-0 transition-all duration-900 ease-out group-hover:scale-[1.03] ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
-                    fallbackSrc="/logo.png"
+                    fallbackSrc={productImageFallback}
                     onLoad={() => setIsImageLoading(false)}
                 />
             </div>

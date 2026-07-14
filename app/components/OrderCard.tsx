@@ -1,4 +1,15 @@
-import { CheckCircle, ChevronDown, ChevronUp, Clock, Package, Truck, XCircle } from "lucide-react";
+import {
+    CalendarDays,
+    CheckCircle,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    CreditCard,
+    Hash,
+    Package,
+    Truck,
+    XCircle,
+} from "lucide-react";
 import { currencyFormatter } from "~/utils/formatters";
 
 interface OrderCardProps {
@@ -10,8 +21,30 @@ interface OrderCardProps {
 export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
     const formatDate = (dateString: string) => {
         if (!dateString) return "-";
+
+        const date = new Date(dateString);
+
+        if (!Number.isNaN(date.getTime())) {
+            return new Intl.DateTimeFormat("pt-BR").format(date);
+        }
+
         const [year, month, day] = dateString.split('-');
-        return `${day}/${month}/${year}`;
+        return day && month && year ? `${day}/${month}/${year}` : dateString;
+    };
+
+    const formatMoney = (value: unknown) => {
+        const parsedValue = Number(value);
+
+        return currencyFormatter.format(Number.isFinite(parsedValue) ? parsedValue : 0);
+    };
+
+    const formatStatus = (status: string) => {
+        if (!status) return "Pendente";
+
+        return status
+            .toLowerCase()
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (letter) => letter.toUpperCase());
     };
 
     const getStatusColor = (status: string) => {
@@ -35,38 +68,67 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
     };
 
     return (
-        <div className="bg-white border rounded-lg overflow-hidden transition-shadow hover:shadow-md">
-            <div
-                className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center cursor-pointer bg-gray-50/50"
+        <article className="bg-white border border-primary/10 rounded-lg overflow-hidden transition-shadow hover:shadow-md">
+            <button
+                type="button"
+                className="w-full p-4 sm:p-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between cursor-pointer bg-gray-50/50 text-left"
                 onClick={onToggle}
+                aria-expanded={isExpanded}
             >
-                <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                        <span className="font-bold text-lg text-gray-800 mr-3">Pedido #{pedido.id}</span>
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="font-bold text-lg text-gray-800">Pedido #{pedido.id}</span>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium border flex items-center ${getStatusColor(pedido.status)}`}>
                             {getStatusIcon(pedido.status)}
-                            {pedido.status || 'Pendente'}
+                            {formatStatus(pedido.status)}
                         </span>
                     </div>
-                    <div className="text-sm text-gray-500 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                        <span>Data: {formatDate(pedido.data_lanc)}</span>
-                        <span className="hidden sm:inline">•</span>
-                        <span>Total: <span className="font-semibold text-gray-800">{currencyFormatter.format(Number(pedido.valor))}</span></span>
-                        <span className="hidden sm:inline">•</span>
-                        <span>{pedido.itens?.length || 0} itens</span>
+                    <div className="grid grid-cols-1 gap-3 text-sm text-gray-500 sm:grid-cols-2 xl:grid-cols-4">
+                        <OrderMeta icon={CalendarDays} label="Data" value={formatDate(pedido.data_lanc)} />
+                        <OrderMeta
+                            icon={Package}
+                            label="Itens"
+                            value={`${pedido.itens?.length || 0} item${pedido.itens?.length === 1 ? "" : "s"}`}
+                        />
+                        <OrderMeta
+                            icon={CreditCard}
+                            label="Pagamento"
+                            value={pedido.pagamento?.nome || pedido.pagamento?.tipo || pedido.forma_pagamento || "-"}
+                        />
+                        <OrderMeta
+                            icon={Hash}
+                            label="Total"
+                            value={formatMoney(pedido.valor)}
+                            strong
+                        />
                     </div>
                 </div>
-                <div className="mt-4 sm:mt-0 text-gray-400">
-                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                <div className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-600">
+                    {isExpanded ? "Ocultar detalhes" : "Ver detalhes"}
+                    {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </div>
-            </div>
+            </button>
 
             {isExpanded && (
-                <div className="border-t p-4 sm:p-6 bg-white">
-                    <h4 className="font-medium text-gray-700 mb-4">Itens do Pedido</h4>
-                    <div className="space-y-4">
-                        {pedido.itens?.map((item: any) => (
-                            <div key={item.id} className="flex items-start py-2 border-b last:border-0">
+                <div className="border-t border-primary/10 p-4 sm:p-6 bg-white">
+                    <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h4 className="font-semibold text-gray-800">Itens do pedido</h4>
+                            <p className="text-sm text-gray-500">
+                                Conferência de produtos e valores deste pedido.
+                            </p>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-800">
+                            {formatMoney(pedido.valor)}
+                        </span>
+                    </div>
+
+                    <div className="overflow-hidden rounded-lg border border-gray-100">
+                        {pedido.itens?.map((item: any, index: number) => (
+                            <div
+                                key={`${item.id ?? item.produto ?? item.nome_do_produto}-${index}`}
+                                className="flex items-start gap-4 border-b border-gray-100 p-4 last:border-0"
+                            >
                                 <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center shrink-0 mr-4">
                                     <Package size={24} className="text-gray-400" />
                                 </div>
@@ -76,34 +138,57 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
                                         {item.nome_do_produto || `${item.nome} #${item.produto}`}
                                     </h5>
                                     <div className="text-sm text-gray-500 mt-1">
-                                        {item.quantidade}x {currencyFormatter.format(Number(item.valor))}
+                                        {item.quantidade || 1}x {formatMoney(item.valor)}
                                     </div>
                                 </div>
-                                <div className="text-right font-medium text-gray-800">
-                                    {currencyFormatter.format(Number(item.total))}
+                                <div className="shrink-0 text-right font-semibold text-gray-800">
+                                    {formatMoney(item.total)}
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="mt-6 pt-4 border-t flex justify-end">
+                    <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
                         <div className="w-full sm:w-64 space-y-2">
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>Subtotal</span>
-                                <span>{currencyFormatter.format(Number(pedido.subtotal || pedido.valor))}</span>
+                                <span>{formatMoney(pedido.subtotal || pedido.valor)}</span>
                             </div>
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>Frete</span>
-                                <span>{currencyFormatter.format(Number(pedido.valor_do_frete || 0))}</span>
+                                <span>{formatMoney(pedido.valor_do_frete || 0)}</span>
                             </div>
                             <div className="flex justify-between font-bold text-lg text-gray-800 pt-2 border-t">
                                 <span>Total</span>
-                                <span>{currencyFormatter.format(Number(pedido.valor))}</span>
+                                <span>{formatMoney(pedido.valor)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-        </div>
+        </article>
+    );
+}
+
+interface OrderMetaProps {
+    icon: typeof CalendarDays;
+    label: string;
+    value: string;
+    strong?: boolean;
+}
+
+function OrderMeta({ icon: Icon, label, value, strong = false }: OrderMetaProps) {
+    return (
+        <span className="flex items-start gap-2">
+            <Icon className="mt-0.5 shrink-0 text-primary/55" size={16} />
+            <span className="min-w-0">
+                <span className="block text-xs font-bold uppercase tracking-[0.12em] text-gray-400">
+                    {label}
+                </span>
+                <span className={`block truncate ${strong ? "font-bold text-gray-900" : "text-gray-600"}`}>
+                    {value}
+                </span>
+            </span>
+        </span>
     );
 }

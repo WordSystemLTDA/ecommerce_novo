@@ -5,8 +5,8 @@ import NovoEnderecoPage from "~/features/minhaconta/NovoEnderecoPage";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Cadastrar Novo Endereço - Word System" },
-    { name: "description", content: "Seja bem-vindo ao nosso e-commerce!" },
+    { title: "Editar Endereço - Word System" },
+    { name: "description", content: "Atualize seu endereço de entrega." },
   ];
 }
 

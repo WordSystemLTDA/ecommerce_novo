@@ -31,6 +31,7 @@ import RatingStars from '~/components/rating_stars';
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 import type { TipoDeEntrega } from '~/types/TipoDeEntrega';
 import { currencyFormatter, gerarSlug } from '~/utils/formatters';
+import { getProductImageFallback } from '~/utils/imagePlaceholders';
 import { produtoService } from './services/produtoService';
 import type { Produto } from './types';
 
@@ -41,6 +42,13 @@ interface ProdutoProps {
 export default function ProdutoPage({ produto }: ProdutoProps) {
     const { id, slug } = useParams();
     const { tamanhoSelecionado, setTamanhoSelecionado } = useCarrinho();
+    const productImages = produto.imagens?.length
+        ? produto.imagens
+        : produto.fotos?.g?.length
+            ? produto.fotos.g
+            : produto.fotos?.m?.length
+                ? produto.fotos.m
+                : [getProductImageFallback(produto.nome)];
 
     const [erroTamanho, setErroTamanho] = useState(false);
 
@@ -76,11 +84,13 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                             <ProdutoNameInfo produto={produto} />
                         </div>
 
-                        {produto.imagens != null &&
-                            <div className='lg:col-span-5'>
-                                <ProdutoGallery images={produto.imagens} produtoId={produto.id} />
-                            </div>
-                        }
+                        <div className='lg:col-span-5'>
+                            <ProdutoGallery
+                                images={productImages}
+                                produtoId={produto.id}
+                                produtoNome={produto.nome}
+                            />
+                        </div>
 
                         <div className='lg:col-span-4'>
                             <ProdutoInfo
@@ -154,11 +164,13 @@ import { favoritoService } from '~/features/favoritos/services/favoritoService';
 
 interface ProdutoGalleryProps {
     images: string[],
-    produtoId: number
+    produtoId: number,
+    produtoNome: string
 }
 
-function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
+function ProdutoGallery({ images, produtoId, produtoNome }: ProdutoGalleryProps) {
     let { atualizarQuantidade } = useFavorito();
+    const productImageFallback = getProductImageFallback(produtoNome);
     const [thumbsSwiper, setThumbsSwiper] =
         useState<SwiperInstance | null>(null)
 
@@ -239,6 +251,7 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
                                 alt={`Imagem ${index + 1} do produto`}
                                 className="lg:h-130! max-lg:min-h-96! lg:w-full! w-full! object-contain! p-4 lg:p-6"
                                 priority={index === 0}
+                                fallbackSrc={productImageFallback}
                             />
                         </SwiperSlide>
                     ))}
@@ -265,6 +278,7 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
                                 src={img}
                                 alt={`Miniatura ${index + 1}`}
                                 className="h-full! w-full! object-contain! p-2"
+                                fallbackSrc={productImageFallback}
                             />
                         </SwiperSlide>
                     ))}
@@ -273,7 +287,7 @@ function ProdutoGallery({ images, produtoId }: ProdutoGalleryProps) {
 
             <div className='lg:hidden flex gap-1 items-center justify-center'>
                 {images.map((img, index) => (
-                    <div className='bg-primary/35 w-1.5 h-1.5'></div>
+                    <div key={`${img}-${index}`} className='bg-primary/35 w-1.5 h-1.5'></div>
                 ))}
             </div>
         </div>
@@ -313,7 +327,12 @@ function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps)
                                     className="group relative w-24 min-h-24 max-h-32 cursor-pointer"
                                 >
                                     <div className={`p-1 w-full h-full border overflow-hidden ${cor.id == produto.id ? 'border-terciary' : 'border-primary/20 group-hover:border-primary/35'}`}>
-                                        <OptimizedImage src={cor.imagem} alt={cor.nome} className="w-full max-h-20 object-cover" />
+                                        <OptimizedImage
+                                            src={cor.imagem}
+                                            fallbackSrc={getProductImageFallback(cor.nome)}
+                                            alt={cor.nome}
+                                            className="w-full max-h-20 object-cover"
+                                        />
                                         <p className="text-tiny text-center mt-1">{cor.nome}</p>
                                     </div>
 
@@ -567,7 +586,7 @@ function PurchaseSidebar({ produto, setErroTamanho }: PurchaseSidebarProps) {
                                 }}
                             >
                                 <ShoppingBag className="w-6 h-6 stroke-[1.5]" />
-                                {verificarAdicionadoCarrinho(produto) ? 'Remover' : 'Adicionar'} ao Carrinho
+                                Adicionar ao Carrinho
                             </Button>
                         </div>
                     )

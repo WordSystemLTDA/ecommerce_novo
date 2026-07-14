@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { Plus, MapPin } from "lucide-react";
+import { LoaderCircle, Plus, MapPin } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { minhacontaService } from "~/features/minhaconta/services/minhacontaService";
@@ -66,31 +66,34 @@ export default function EnderecosPage() {
   };
 
   if (loading) {
-    return <div className="flex justify-center py-10">Carregando endereços...</div>;
+    return (
+      <div>
+        <PageHeader
+          count={0}
+          loading
+        />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-primary/10 bg-main-bg py-16">
+          <LoaderCircle className="animate-spin text-primary" size={34} />
+          <p className="mt-3 text-sm text-primary/55">Carregando endereços...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Meus Endereços</h1>
-        <Link
-          to="/minha-conta/enderecos/novo"
-          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={18} />
-          Novo Endereço
-        </Link>
-      </div>
+      <PageHeader count={enderecos.length} />
 
       {enderecos.length === 0 ? (
-        <div className="text-center py-10 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-          <MapPin className="mx-auto text-gray-400 mb-3" size={48} />
-          <h3 className="text-lg font-medium text-gray-700">Nenhum endereço cadastrado</h3>
-          <p className="text-gray-500 mb-4">Cadastre um endereço para agilizar suas compras.</p>
+        <div className="text-center py-12 bg-main-bg rounded-lg border border-dashed border-primary/20">
+          <MapPin className="mx-auto text-primary/35 mb-3" size={48} />
+          <h3 className="text-lg font-semibold text-primary">Nenhum endereço cadastrado</h3>
+          <p className="text-primary/55 mb-5">Cadastre um endereço para agilizar suas compras.</p>
           <Link
             to="/minha-conta/enderecos/novo"
-            className="text-primary font-medium hover:underline"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-terciary"
           >
+            <Plus size={16} />
             Cadastrar agora
           </Link>
         </div>
@@ -115,6 +118,41 @@ export default function EnderecosPage() {
         confirmText={isDeleting ? "Excluindo..." : "Sim, Excluir"}
         isLoading={isDeleting}
       />
+    </div>
+  );
+}
+
+interface PageHeaderProps {
+  count: number;
+  loading?: boolean;
+}
+
+function PageHeader({ count, loading = false }: PageHeaderProps) {
+  return (
+    <div className="mb-6 flex flex-col gap-3 border-b border-primary/10 pb-5 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p className="overline-label flex items-center gap-2">
+          <MapPin size={15} />
+          Entrega
+        </p>
+        <h1 className="mt-1 text-xl font-semibold text-primary md:text-2xl">
+          Meus endereços
+        </h1>
+        <p className="mt-1 text-sm text-primary/55">
+          {loading
+            ? "Buscando seus endereços cadastrados."
+            : count > 0
+              ? `${count} endereço${count === 1 ? "" : "s"} cadastrado${count === 1 ? "" : "s"}.`
+              : "Cadastre endereços para escolher a entrega no checkout."}
+        </p>
+      </div>
+      <Link
+        to="/minha-conta/enderecos/novo"
+        className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-terciary"
+      >
+        <Plus size={18} />
+        Novo Endereço
+      </Link>
     </div>
   );
 }

@@ -16,6 +16,7 @@ export interface CartItem extends Produto {
 interface CarrinhoContextType {
     produtos: CartItem[];
     tipoDeEntregas: TipoDeEntrega[];
+    erroTipoDeEntregas: string | null;
     enderecos: Endereco[],
     pagamentos: Pagamento[],
 
@@ -58,6 +59,7 @@ interface CarrinhoContextType {
 }
 
 const CarrinhoContext = createContext<CarrinhoContextType | undefined>(undefined);
+const GUEST_CART_STORAGE_KEY = 'carrinho_guest';
 
 // Helper para gerar UUID (Safari fallback)
 function generateUUID() {
@@ -71,11 +73,104 @@ function generateUUID() {
     });
 }
 
+function getCartItemGradeId(produto: Produto) {
+    const cartItem = produto as Produto & Record<string, any>;
+    const gradeId =
+        produto.tamanhoSelecionado?.id ??
+        cartItem.id_grade ??
+        cartItem.idGrade ??
+        cartItem.id_tamanho ??
+        cartItem.idTamanho ??
+        cartItem.grade?.id ??
+        0;
+
+    return Number(gradeId) || 0;
+}
+
+function isSameCartItem(first: Produto, second: Produto) {
+    return first.id === second.id &&
+        getCartItemGradeId(first) === getCartItemGradeId(second);
+}
+
+function createCartItem(produto: Produto, internalId = generateUUID()): CartItem {
+    return {
+        ...produto,
+        quantidade: produto.quantidade || 1,
+        internalId
+    };
+}
+
+function removeCartItem(produtos: CartItem[], produto: Produto) {
+    const cartItem = produto as Partial<CartItem>;
+
+    if (cartItem.internalId) {
+        return produtos.filter((value) => value.internalId !== cartItem.internalId);
+    }
+
+    return produtos.filter((value) => !isSameCartItem(value, produto));
+}
+
+function getCartStorageKey(clienteId?: number) {
+    return clienteId ? `carrinho_cliente_${clienteId}` : GUEST_CART_STORAGE_KEY;
+}
+
+function readStoredCart(storageKey: string) {
+    const savedCart = localStorage.getItem(storageKey);
+
+    if (!savedCart) {
+        return [];
+    }
+
+    try {
+        const parsed: Produto[] = JSON.parse(savedCart);
+        return parsed.map((produto) => {
+            const cartItem = produto as Partial<CartItem>;
+            return createCartItem(produto, cartItem.internalId);
+        });
+    } catch (error) {
+        console.error("Error parsing stored cart", error);
+        localStorage.removeItem(storageKey);
+        return [];
+    }
+}
+
+function parseCartPrice(preco: string | number) {
+    if (typeof preco === 'number') {
+        return preco;
+    }
+
+    const normalizedPrice = preco
+        .replace(/[^\d,.]/g, '')
+        .replace(/\.(?=\d{3}(?:\D|$))/g, '')
+        .replace(',', '.');
+    const parsedPrice = Number(normalizedPrice);
+
+    return Number.isFinite(parsedPrice) ? parsedPrice : 0;
+}
+
+function getErrorMessage(error: unknown) {
+    const payload = error as {
+        originalError?: string;
+        error?: {
+            error?: string;
+            message?: string;
+            mensagem?: string;
+        };
+    };
+
+    return payload.originalError ??
+        payload.error?.error ??
+        payload.error?.message ??
+        payload.error?.mensagem ??
+        'Não foi possível calcular o frete para este endereço.';
+}
+
 export function CarrinhoProvider({ children }: { children: ReactNode }) {
     let { cliente } = useAuth();
 
     const [produtos, setProdutos] = useState<CartItem[]>([]);
     const [tipoDeEntregas, setTipoDeEntregas] = useState<TipoDeEntrega[]>([]);
+    const [erroTipoDeEntregas, setErroTipoDeEntregas] = useState<string | null>(null);
     const [enderecos, setEnderecos] = useState<Endereco[]>([]);
     const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
 
@@ -90,92 +185,91 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     const [carregandoEnderecos, setCarregandoEnderecos] = useState(false);
     const [carregandoTipoDeEntregas, setCarregandoTipoDeEntregas] = useState(false);
     const [carregandoPagamentos, setCarregandoPagamentos] = useState(false);
+    const [cartLoaded, setCartLoaded] = useState(false);
 
     useEffect(() => {
-        if (cliente?.id) {
-            syncCart();
-        } else {
-            const savedCart = localStorage.getItem('carrinho_guest');
-            if (savedCart) {
-                try {
-                    const parsed: Produto[] = JSON.parse(savedCart);
-                    const withIds = parsed.map(p => ({ ...p, internalId: (p as any).internalId || generateUUID() }));
-                    setProdutos(withIds);
-                } catch (e) {
-                    console.error("Error parsing local cart", e);
-                }
-            }
-        }
-    }, [cliente]);
+        const storageKey = getCartStorageKey(cliente?.id);
+        let storedCart = readStoredCart(storageKey);
 
-    useEffect(() => {
-        if (!cliente?.id) {
-            localStorage.setItem('carrinho_guest', JSON.stringify(produtos));
-        }
-    }, [produtos, cliente]);
+        if (cliente?.id && storedCart.length === 0) {
+            storedCart = readStoredCart(GUEST_CART_STORAGE_KEY);
 
-    useEffect(() => {
-        if (selectedItems.length === 0 && produtos.length > 0) {
-            setSelectedItems(produtos.map(p => p.internalId));
-        }
-    }, [produtos.length]);
-
-    const syncCart = async () => {
-        if (!cliente?.id) return;
-
-        const savedCart = localStorage.getItem('carrinho_guest');
-        if (savedCart) {
-            try {
-                const localProducts: Produto[] = JSON.parse(savedCart);
-                for (const prod of localProducts) {
-                    try {
-                        await carrinhoService.adicionarNovoItem(cliente.id, prod);
-                    } catch (err) {
-                        console.error("Error syncing product", prod.id, err);
-                    }
-                }
-                localStorage.removeItem('carrinho_guest');
-            } catch (e) {
-                console.error("Error parsing local cart for sync", e);
+            if (storedCart.length > 0) {
+                localStorage.setItem(storageKey, JSON.stringify(storedCart));
+                localStorage.removeItem(GUEST_CART_STORAGE_KEY);
             }
         }
 
-        loadCartFromDb();
-    };
+        setProdutos(storedCart);
+        setSelectedItems(storedCart.map((produto) => produto.internalId));
+        setCartLoaded(true);
+    }, [cliente?.id]);
 
-    const loadCartFromDb = async () => {
+    useEffect(() => {
+        if (!cartLoaded) {
+            return;
+        }
+
+        localStorage.setItem(
+            getCartStorageKey(cliente?.id),
+            JSON.stringify(produtos)
+        );
+    }, [produtos, cliente?.id, cartLoaded]);
+
+    useEffect(() => {
+        setSelectedItems((previousSelectedItems) => {
+            const cartItemIds = produtos.map((produto) => produto.internalId);
+
+            if (cartItemIds.length === 0) {
+                return [];
+            }
+
+            const selectedStillInCart = previousSelectedItems.filter((id) =>
+                cartItemIds.includes(id)
+            );
+
+            return selectedStillInCart.length > 0
+                ? selectedStillInCart
+                : cartItemIds;
+        });
+    }, [produtos]);
+
+    const readBackendCartDisabled = async () => {
         if (!cliente?.id) return;
         try {
             const items = await carrinhoService.listar(cliente.id);
             if (items) {
                 setProdutos((currentProdutos) => {
                     const claimedIndices = new Set<number>();
-                    const newIds: string[] = [];
-
                     const mappedItems: CartItem[] = items.map(p => {
                         // Tenta encontrar um item existente correspondente para preservar o internalId
                         // A correspondência deve considerar ID do produto e talvez tamanho/atributos se for o caso
                         // Aqui assumimos que ID do produto + ordem relativa (claimedIndices) é suficiente para estabilidade basica
                         const matchIndex = currentProdutos.findIndex((cp, idx) =>
-                            cp.id === p.id && !claimedIndices.has(idx)
+                            isSameCartItem(cp, p) && !claimedIndices.has(idx)
                             // Adicionar verificação de variação se necessário (ex: tamanho)
                             // && cp.tamanhoSelecionado?.id === p.tamanhoSelecionado?.id
                         );
 
                         if (matchIndex !== -1) {
                             claimedIndices.add(matchIndex);
-                            return { ...p, internalId: currentProdutos[matchIndex].internalId };
+                            return createCartItem(p, currentProdutos[matchIndex].internalId);
                         } else {
-                            const newId = generateUUID();
-                            newIds.push(newId);
-                            return { ...p, internalId: newId };
+                            return createCartItem(p);
                         }
                     });
 
                     // Atualiza selectedItems para incluir APENAS os novos itens (preservando seleção dos antigos)
-                    if (newIds.length > 0) {
-                        setSelectedItems(prev => [...prev, ...newIds]);
-                    }
+                    setSelectedItems((previousSelectedItems) => {
+                        const validIds = mappedItems.map((produto) => produto.internalId);
+                        const selectedStillInCart = previousSelectedItems.filter((id) =>
+                            validIds.includes(id)
+                        );
+
+                        return selectedStillInCart.length > 0
+                            ? selectedStillInCart
+                            : validIds;
+                    });
 
                     return mappedItems;
                 });
@@ -225,7 +319,9 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     const retornarValorProdutos = () => {
         const produtosSelecionados = produtos.filter(p => selectedItems.includes(p.internalId));
         return parseFloat(produtosSelecionados.reduce((accumulator: number, currentItem) => {
-            return accumulator + (Number(currentItem.preco) * Number(currentItem.quantidade));
+            return accumulator + (
+                parseCartPrice(currentItem.preco) * Number(currentItem.quantidade)
+            );
         }, 0).toFixed(2));
     }
 
@@ -237,10 +333,12 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     const listarTipoDeEntregas = async (cepDestino: string) => {
         try {
             setCarregandoTipoDeEntregas(true);
+            setErroTipoDeEntregas(null);
 
             var produtosParaCalculo = produtos.filter(p => selectedItems.includes(p.internalId));
             if (produtosParaCalculo.length === 0) {
                 setTipoDeEntregas([]);
+                setErroTipoDeEntregas('Selecione ao menos um produto no carrinho para calcular o frete.');
                 setValorFrete(0);
                 return;
             }
@@ -255,6 +353,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error("Erro ao listar tipoDeEntregas:", error);
             setTipoDeEntregas([]);
+            setErroTipoDeEntregas(getErrorMessage(error));
         } finally {
             setCarregandoTipoDeEntregas(false);
         }
@@ -298,36 +397,49 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
 
     const adicionarNovoProduto = async (produto: Produto) => {
         try {
-            const isAdded = verificarAdicionadoCarrinho(produto);
+            const existingItem = produtos.find((value) => isSameCartItem(value, produto));
+            const quantityToAdd = 1;
 
-            if (isAdded) {
+            if (existingItem) {
+                const quantidade = Number(existingItem.quantidade || 1) + quantityToAdd;
+                const updatedItem = { ...existingItem, quantidade };
+
+                setProdutos((oldState) => oldState.map((value) =>
+                    value.internalId === existingItem.internalId ? updatedItem : value
+                ));
+                setSelectedItems((previousSelectedItems) =>
+                    previousSelectedItems.includes(existingItem.internalId)
+                        ? previousSelectedItems
+                        : [...previousSelectedItems, existingItem.internalId]
+                );
+
                 if (cliente?.id) {
-                    await carrinhoService.removerItem(cliente.id, produto.id);
-
-                    await loadCartFromDb();
-                } else {
-                    setProdutos((oldState) => oldState.filter((value) => value.id !== produto.id));
-                }
-                // toast.info("Produto removido do carrinho.", { position: 'top-center' });
-                return true;
-            } else {
-                if (cliente?.id) {
-                    await carrinhoService.adicionarNovoItem(cliente.id, produto);
-
-                    await loadCartFromDb();
-                } else {
-                    const newItem: CartItem = { ...produto, internalId: generateUUID() };
-                    setProdutos((oldState) => [...oldState, newItem]);
-                    // Adiciona aos selecionados
-                    setSelectedItems(prev => [...prev, newItem.internalId]);
+                    void carrinhoService
+                        .editarQuantidadeItem(cliente.id, updatedItem, quantidade)
+                        .catch((error) => {
+                            console.error("Erro ao sincronizar quantidade:", error);
+                        });
                 }
 
-                // toast.success("Produto adicionado ao carrinho!", { position: 'top-center' });
                 return true;
             }
+
+            const newItem = createCartItem({ ...produto, quantidade: quantityToAdd });
+            setProdutos((oldState) => [...oldState, newItem]);
+            setSelectedItems(prev => [...prev, newItem.internalId]);
+
+            if (cliente?.id) {
+                void carrinhoService
+                    .adicionarNovoItem(cliente.id, newItem)
+                    .catch((error) => {
+                        console.error("Erro ao sincronizar produto:", error);
+                    });
+            }
+
+            return true;
         } catch (error) {
             console.error("Erro ao adicionar/remover produto:", error);
-            toast.error(`Erro ao adicionar/remover produto: ${error}`, { position: 'top-center' });
+            toast.error("Erro ao adicionar produto ao carrinho.", { position: 'top-center' });
             return false;
         }
     }
@@ -336,28 +448,46 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         try {
             setProdutos([]);
             setSelectedItems([]);
+            setTipoDeEntregaSelecionada(undefined);
+            setValorFrete(0);
 
             if (cliente?.id) {
-                await carrinhoService.limparCarrinho(cliente.id);
+                void carrinhoService
+                    .limparCarrinho(cliente.id)
+                    .catch((error) => {
+                        console.error("Erro ao sincronizar limpeza do carrinho:", error);
+                    });
             } else {
-                localStorage.removeItem('carrinho_guest');
+                localStorage.removeItem(GUEST_CART_STORAGE_KEY);
             }
         } catch (error) {
             console.error("Erro ao remover todos os produtos:", error);
+            toast.error("Erro ao remover todos os produtos.", { position: 'top-center' });
         }
     }
 
     const removerProduto = async (produto: Produto) => {
         try {
-            setProdutos((oldState) => oldState.filter((value) => value.id !== produto.id));
+            const cartItem = produto as Partial<CartItem>;
+            setProdutos((oldState) => removeCartItem(oldState, produto));
+            setSelectedItems((previousSelectedItems) =>
+                cartItem.internalId
+                    ? previousSelectedItems.filter((id) => id !== cartItem.internalId)
+                    : previousSelectedItems
+            );
+            setTipoDeEntregaSelecionada(undefined);
+            setValorFrete(0);
 
             if (cliente?.id) {
-                await carrinhoService.removerItem(cliente.id, produto.id);
-            } else {
-                localStorage.removeItem('carrinho_guest');
+                void carrinhoService
+                    .removerItem(cliente.id, produto)
+                    .catch((error) => {
+                        console.error("Erro ao sincronizar remoção do produto:", error);
+                    });
             }
         } catch (error) {
             console.error("Erro ao remover produto:", error);
+            toast.error("Erro ao remover produto do carrinho.", { position: 'top-center' });
         }
     }
 
@@ -376,17 +506,19 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             if (cliente?.id) {
                 // Loop para remover do backend (idealmente seria um endpoint de batch delete)
                 // Usando Promise.all para paralelizar
-                await Promise.all(itemsToRemove.map(p => carrinhoService.removerItem(cliente!.id, p.id)));
+                void Promise
+                    .all(itemsToRemove.map(p => carrinhoService.removerItem(cliente!.id, p)))
+                    .catch((error) => {
+                        console.error("Erro ao sincronizar produtos removidos:", error);
+                    });
             } else {
                 // Para guest, salvar o estado atualizado (já filtrado acima, mas precisamos pegar o valor correto)
                 // O setProdutos é async, então pegamos o filtered array
                 const newProducts = produtos.filter(p => !selectedItems.includes(p.internalId));
-                localStorage.setItem('carrinho_guest', JSON.stringify(newProducts));
+                localStorage.setItem(GUEST_CART_STORAGE_KEY, JSON.stringify(newProducts));
             }
         } catch (error) {
             console.error("Erro ao remover produtos selecionados:", error);
-            // Em caso de erro, recomenda-se recarregar o carrinho
-            await loadCartFromDb();
         }
     }
 
@@ -399,21 +531,26 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
                     if (cartItem.internalId && value.internalId === cartItem.internalId) {
                         return { ...value, quantidade: produto.quantidade };
                     }
-                    if (value.id === produto.id && !cartItem.internalId) {
+                    if (isSameCartItem(value, produto) && !cartItem.internalId) {
                         // Fallback if no internalId passed (should not happen in CartPage)
                         return { ...value, quantidade: produto.quantidade };
                     }
                     return value;
                 });
 
-                if (!cliente?.id) {
-                    localStorage.setItem('carrinho_guest', JSON.stringify(newState));
-                }
+                localStorage.setItem(
+                    getCartStorageKey(cliente?.id),
+                    JSON.stringify(newState)
+                );
                 return newState;
             });
 
             if (cliente?.id) {
-                await carrinhoService.editarQuantidadeItem(cliente.id, produto.id, produto.quantidade);
+                void carrinhoService
+                    .editarQuantidadeItem(cliente.id, produto, produto.quantidade)
+                    .catch((error) => {
+                        console.error("Erro ao sincronizar quantidade:", error);
+                    });
             }
         } catch (error) {
             console.error("Erro ao editar produto:", error);
@@ -431,9 +568,13 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             setValorDesconto(0);
 
             if (cliente?.id) {
-                await carrinhoService.limparCarrinho(cliente.id);
+                void carrinhoService
+                    .limparCarrinho(cliente.id)
+                    .catch((error) => {
+                        console.error("Erro ao sincronizar reset do carrinho:", error);
+                    });
             } else {
-                localStorage.removeItem('carrinho_guest');
+                localStorage.removeItem(GUEST_CART_STORAGE_KEY);
             }
         } catch (error) {
             console.error("Erro ao resetar carrinho:", error);
@@ -441,13 +582,14 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     }
 
     const verificarAdicionadoCarrinho = (produto: Produto) => {
-        return produtos.filter((value) => value.id == produto.id).length > 0;
+        return produtos.some((value) => isSameCartItem(value, produto));
     }
 
     return (
         <CarrinhoContext.Provider value={{
             produtos,
             tipoDeEntregas,
+            erroTipoDeEntregas,
             enderecos,
             pagamentos,
 

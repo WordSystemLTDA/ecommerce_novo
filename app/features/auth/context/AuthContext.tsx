@@ -1,10 +1,7 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { toast } from 'react-toastify';
-import Loading from '~/components/loading';
-import { authService } from '~/features/auth/services/authService';
+import { createContext, useContext } from 'react';
 import type { Cliente } from '~/features/auth/types';
 
-interface AuthContextType {
+export interface AuthContextType {
     cliente: Cliente | null;
     isAuthenticated: boolean;
     isLoading: boolean;
@@ -12,88 +9,7 @@ interface AuthContextType {
     logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-    const [cliente, setCliente] = useState<Cliente | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        async function checkUser() {
-            try {
-                const response = await authService.eu();
-
-                if (response.sucesso) {
-                    setCliente(response.data.cliente);
-                }
-            } catch (error) {
-                setCliente(null);
-                localStorage.removeItem('token');
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        checkUser();
-    }, []);
-
-    const login = async (credentials: any) => {
-        try {
-            const response = await authService.entrar(credentials);
-
-            if (!response.sucesso) {
-                throw {
-                    response: {
-                        data: {
-                            mensagem: response.mensagem ?? 'Email ou senha invalidos.'
-                        }
-                    }
-                };
-            }
-
-            const token = response.data.token;
-            if (token) {
-                localStorage.setItem('token', token);
-            }
-            setCliente(response.data.cliente);
-            // toast.success('Bem-vindo de volta!', { position: 'top-center' });
-        } catch (error) {
-            const mensagem =
-                (error as any)?.response?.data?.mensagem ||
-                (error as any)?.response?.data?.message ||
-                'Erro ao fazer login';
-
-            toast.error(mensagem, { position: 'top-center' });
-            throw error;
-        }
-    };
-
-    const logout = async () => {
-        try {
-            await authService.sair();
-            localStorage.removeItem('token');
-            setCliente(null);
-        } catch (error) {
-            console.error('Erro ao sair', error);
-        }
-    };
-
-    if (isLoading) {
-        return <Loading titulo='Carregando' subtitulo='Carregando sessão...' />
-    }
-
-    return (
-        <AuthContext.Provider value={{
-            cliente,
-            isAuthenticated: !!cliente,
-            isLoading,
-            login,
-            logout
-        }}>
-            {children}
-        </AuthContext.Provider>
-    );
-}
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function useAuth() {
     const context = useContext(AuthContext);

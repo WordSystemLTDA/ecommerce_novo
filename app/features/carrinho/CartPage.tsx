@@ -1,37 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  FaMinus,
-  FaPlus,
-  FaTrash
+  FaCheckSquare,
+  FaShoppingBag,
+  FaTrash,
 } from 'react-icons/fa';
+import { Link } from 'react-router';
 
 import { OptimizedImage } from '~/components/OptimizedImage';
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 import { currencyFormatter } from '~/utils/formatters';
+import { getProductImageFallback } from '~/utils/imagePlaceholders';
 import type { CartItem as CartItemType } from './context/CarrinhoContext';
 
-
-// const TimerMessage = () => (
-//   <div className="bg-blue-100 border border-blue-300 text-blue-800 p-4 rounded-md flex items-center gap-3">
-//     <span className="shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs">!</span>
-//     <p className="text-sm">
-//       <span className="font-bold">Não deixe seus itens acabarem 02h 58m 31s.</span>
-//       <span className="text-blue-700"> Corra! Itens podem esgotar. Finalize a compra e garanta agora</span>
-//     </p>
-//   </div>
-// );
-
-const QuantityInput = ({ quantity, onDecrease, onIncrease }: { quantity: number, onDecrease: () => void, onIncrease: () => void }) => (
-  <div className="flex items-center border border-gray-300 rounded overflow-hidden h-8">
-    <button onClick={onDecrease} className="px-2 text-gray-500 hover:bg-gray-100 h-full"><FaMinus size={10} /></button>
-    <span className="px-4 text-sm font-medium">{quantity}</span>
-    <button onClick={onIncrease} className="px-2 text-primary hover:bg-gray-100 h-full"><FaPlus size={10} /></button>
-  </div>
-);
 
 const CartItem = ({ produto }: { produto: CartItemType }) => {
   const [quantity, setQuantity] = useState(produto.quantidade); // Initialize with product quantity
   let { removerProduto, editarQuantidadeProduto, toggleProdutoSelecao, verificarProdutoSelecionado } = useCarrinho(); // Get editarQuantidadeProduto
+
+  useEffect(() => {
+    setQuantity(produto.quantidade);
+  }, [produto.quantidade]);
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity);
@@ -55,7 +43,8 @@ const CartItem = ({ produto }: { produto: CartItemType }) => {
         {/* Imagem */}
         <div className="shrink-0">
           <OptimizedImage
-            src={produto.fotos.m[0]}
+            src={produto.fotos?.m?.[0]}
+            fallbackSrc={getProductImageFallback(produto.nome)}
             alt={produto.nome}
             className="w-20 h-20 object-contain rounded bg-gray-50 mix-blend-multiply"
           />
@@ -98,7 +87,7 @@ const CartItem = ({ produto }: { produto: CartItemType }) => {
 
             <div className="text-right">
               <span className="text-sm text-primary font-semibold">
-                {currencyFormatter.format(parseFloat(parseFloat(produto.preco).toFixed(2)))}
+                {currencyFormatter.format(parseCartPrice(produto.preco))}
               </span>
             </div>
           </div>
@@ -108,6 +97,20 @@ const CartItem = ({ produto }: { produto: CartItemType }) => {
     </div>
   );
 };
+
+function parseCartPrice(preco: string | number) {
+  if (typeof preco === 'number') {
+    return preco;
+  }
+
+  const normalizedPrice = preco
+    .replace(/[^\d,.]/g, '')
+    .replace(/\.(?=\d{3}(?:\D|$))/g, '')
+    .replace(',', '.');
+  const parsedPrice = Number(normalizedPrice);
+
+  return Number.isFinite(parsedPrice) ? parsedPrice : 0;
+}
 
 interface QuantitySelectorProps {
   quantity: number;
@@ -153,26 +156,75 @@ const QuantitySelector = ({ quantity, onChange }: QuantitySelectorProps) => {
 };
 
 export default function CartPage() {
-  let { produtos, removerTodosProdutos } = useCarrinho();
+  let {
+    produtos,
+    removerTodosProdutos,
+    selecionarTodos,
+    deselecionarTodos,
+    selectedItems,
+  } = useCarrinho();
+
+  const allSelected = produtos.length > 0 && selectedItems.length === produtos.length;
 
   return (
     <div className="space-y-6">
-      {/* <TimerMessage /> */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <h2 className="text-base font-semibold text-gray-800">Produtos</h2>
-          <button
-            className="flex items-center gap-2 text-xs text-red-500 hover:text-red-700 font-medium"
-            onClick={() => {
-              removerTodosProdutos();
-            }}
-          >
-            <FaTrash /> REMOVER TODOS OS PRODUTOS
-          </button>
+        <div className="flex flex-col gap-3 p-4 border-b border-gray-200 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-gray-800">Produtos</h2>
+            <p className="text-xs text-gray-500">
+              {selectedItems.length} de {produtos.length} selecionado{produtos.length === 1 ? '' : 's'}
+            </p>
+          </div>
+
+          {produtos.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                className="flex items-center gap-2 text-xs font-bold text-primary hover:text-terciary"
+                onClick={() => {
+                  allSelected ? deselecionarTodos() : selecionarTodos();
+                }}
+              >
+                <FaCheckSquare />
+                {allSelected ? 'DESMARCAR TODOS' : 'SELECIONAR TODOS'}
+              </button>
+              <button
+                type="button"
+                className="flex items-center gap-2 text-xs text-red-500 hover:text-red-700 font-medium"
+                onClick={() => {
+                  removerTodosProdutos();
+                }}
+              >
+                <FaTrash /> REMOVER TODOS
+              </button>
+            </div>
+          )}
         </div>
-        {produtos.map(produto => (
-          <CartItem key={produto.internalId} produto={produto} />
-        ))}
+
+        {produtos.length === 0 ? (
+          <div className="p-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/8 text-primary">
+              <FaShoppingBag />
+            </div>
+            <h3 className="mt-4 text-base font-bold text-gray-800">
+              Seu carrinho está vazio
+            </h3>
+            <p className="mt-1 text-sm text-gray-600">
+              Adicione produtos para iniciar uma compra.
+            </p>
+            <Link
+              to="/"
+              className="mt-5 inline-flex items-center justify-center rounded-md bg-primary px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-terciary"
+            >
+              Ver produtos
+            </Link>
+          </div>
+        ) : (
+          produtos.map(produto => (
+            <CartItem key={produto.internalId} produto={produto} />
+          ))
+        )}
       </div>
     </div>
   );

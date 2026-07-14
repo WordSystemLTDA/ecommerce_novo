@@ -28,10 +28,11 @@ export interface RegistrarRequest {
     senha: string,
     tipo_pessoa: string,
     nome: string,
-    rg: string,
     doc: string,
-    razao_social: string,
-    ie: string,
+    celular: string,
+    rg?: string,
+    razao_social?: string,
+    ie?: string,
 }
 
 export interface RegistrarResponse extends DefaultResponse {
