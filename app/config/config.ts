@@ -129,10 +129,10 @@ const EMPRESAS_FOOTER_CONFIG: Record<string, FooterCompanyConfig> = {
 };
 
 const config = {
-    API: 'http://127.0.0.1/sistema/apis_restaurantes/api_e_commerce/api1',
-    // API: 'https://eadsagestart.com.br/sistema/apis_restaurantes/api_e_commerce/api1',
+    // API: 'http://127.0.0.1/sistema/apis_restaurantes/api_e_commerce/api1',
+    API: 'https://eadsagestart.com.br/sistema/apis_restaurantes/api_e_commerce/api1',
     EMPRESAS: [
-        '1001', // TESTE
+        '2', // TESTE
         // '166', // TESTE
         // '135', // URBAN BOY
         // '3', // PRIETO KOUROS

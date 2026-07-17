@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { FaCheck, FaStore, FaTruck } from 'react-icons/fa';
 import Loader from '~/components/loader';
+import { getDeliveryPrice, getDeliveryTime } from '~/utils/delivery';
 import { calcularDataChegada, currencyFormatter } from '~/utils/formatters';
 import { useCarrinho } from './context/CarrinhoContext';
 import type { TipoDeEntrega } from '~/types/TipoDeEntrega';
@@ -158,12 +159,12 @@ export default function DeliveryPage() {
                           </div>
 
                           {tipoDeEntrega.error == null && (
-                            <p className="text-gray-600">Chegará até {calcularDataChegada(new Date(), tipoDeEntrega.delivery_time)}</p>
+                            <p className="text-gray-600">Chegará até {calcularDataChegada(new Date(), getDeliveryTime(tipoDeEntrega))}</p>
                           )}
                         </div>
                       </div>
 
-                      <span className="shrink-0 text-sm font-bold">{currencyFormatter.format(parseFloat(tipoDeEntrega.price))}</span>
+                      <span className="shrink-0 text-sm font-bold">{currencyFormatter.format(getDeliveryPrice(tipoDeEntrega))}</span>
                     </div>
                   </label>
                 )

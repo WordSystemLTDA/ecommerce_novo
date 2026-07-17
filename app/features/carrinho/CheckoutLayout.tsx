@@ -15,6 +15,7 @@ import { Navigate, Outlet, useLocation, useNavigate } from 'react-router';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
+import { getDeliveryPrice } from '~/utils/delivery';
 import { currencyFormatter } from '~/utils/formatters';
 import { carrinhoService } from './services/carrinhoService';
 import { useAuth } from '../auth/context/AuthContext';
@@ -83,6 +84,19 @@ const getOrderIdFromResponse = (response: any) => {
         .find((candidate) => Number.isFinite(candidate) && candidate > 0);
 
     return parsedOrderId ?? null;
+};
+
+const getCheckoutUrlFromResponse = (response: any) => {
+    const payload = response?.data ?? response;
+    if (!payload?.redirect_payment) {
+        return null;
+    }
+
+    if (payload.sandbox && payload.sandbox_init_point) {
+        return payload.sandbox_init_point;
+    }
+
+    return payload.init_point || payload.checkout_url || null;
 };
 
 const CheckoutStepper = ({
@@ -337,7 +351,7 @@ const CartSummary = ({
                         <p>{formatAddress(enderecoSelecionado)}</p>
                         <div className="flex justify-between items-center border border-gray-300 rounded p-2">
                             <span>{tipoDeEntregaSelecionada?.name}</span>
-                            <span className="font-bold">{currencyFormatter.format(parseFloat(tipoDeEntregaSelecionada?.price ?? '0'))}</span>
+                            <span className="font-bold">{currencyFormatter.format(getDeliveryPrice(tipoDeEntregaSelecionada))}</span>
                         </div>
                         <p className="text-xs text-gray-500">*Mediante a confirmação de pagamento até às 13 horas.</p>
                     </div>
@@ -505,11 +519,24 @@ export default function CheckoutLayout() {
                     '',
                     tipoDeEntregaSelecionada!.name,
                     retornarValorFinal(),
+                    tipoDeEntregaSelecionada,
                 );
 
                 if (response.sucesso) {
                     const orderId = getOrderIdFromResponse(response);
+                    const checkoutUrl = getCheckoutUrlFromResponse(response);
                     setOrderCompleted(true);
+
+                    if (checkoutUrl) {
+                        toast.success("Pedido criado. Voce sera redirecionado para o Mercado Pago.", { position: 'top-center' });
+
+                        window.setTimeout(() => {
+                            void removerProdutosSelecionados().finally(() => {
+                                window.location.assign(checkoutUrl);
+                            });
+                        }, 400);
+                        return;
+                    }
 
                     toast.success("Pedido realizado com sucesso!", { position: 'top-center' });
 

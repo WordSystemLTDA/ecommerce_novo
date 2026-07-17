@@ -9,10 +9,11 @@ import {
   FaQrcode,
   FaRegCopy,
   FaShoppingCart,
-  FaTruck
+  FaTruck,
+  FaExternalLinkAlt
 } from 'react-icons/fa';
 import QRCode from 'react-qr-code';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import Footer from '~/components/footer';
 import Header from '~/components/header';
 
@@ -77,6 +78,7 @@ const Step6_Success = () => {
   const { id } = useParams();
   const { cliente } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [loading, setLoading] = React.useState(true);
   const [venda, setVenda] = React.useState<any>(null);
@@ -126,6 +128,17 @@ const Step6_Success = () => {
           // O backend pode não retornar a imagem base64 salva, então o front gerará o QRCode a partir do copia_cola
         });
       }
+    }
+  }, [venda]);
+
+  React.useEffect(() => {
+    const status = venda?.pagamento_ecommerce?.status || venda?.pagamento?.status;
+    if (status === 'approved') {
+      setPagamentoStatus('aprovado');
+    } else if (status === 'rejected') {
+      setPagamentoStatus('recusado');
+    } else if (status) {
+      setPagamentoStatus('pendente');
     }
   }, [venda]);
 
@@ -186,7 +199,15 @@ const Step6_Success = () => {
   }
 
   const isPix = venda.pagamento && venda.pagamento.tipo === 'PIX';
+  const isMercadoPago = venda.pagamento?.tipo === 'MERCADO_PAGO' || venda.pagamento_ecommerce?.gateway === 'mercado_pago';
   const showPix = isPix && venda.pagamento.pix_dinamico === 'Sim';
+  const routeState = location.pathname.includes('/falha')
+    ? 'falha'
+    : location.pathname.includes('/pendente')
+      ? 'pendente'
+      : 'sucesso';
+  const entrega = venda.entrega;
+  const trackingCode = entrega?.codigo_rastreio || entrega?.melhor_envio_order_id;
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-8 max-w-4xl mx-auto">
@@ -201,6 +222,19 @@ const Step6_Success = () => {
           ) : (
             <p className="text-lg text-gray-600">AGORA É SÓ REALIZAR O PAGAMENTO</p>
           )
+        ) : isMercadoPago ? (
+          <div className={`mt-4 p-4 rounded text-lg font-bold ${pagamentoStatus === 'aprovado'
+            ? 'bg-(--dynamic-success-bg) text-(--dynamic-success-strong)'
+            : routeState === 'falha' || pagamentoStatus === 'recusado'
+              ? 'bg-red-50 text-red-700'
+              : 'bg-amber-50 text-amber-700'
+            }`}>
+            {pagamentoStatus === 'aprovado'
+              ? 'PAGAMENTO CONFIRMADO!'
+              : routeState === 'falha' || pagamentoStatus === 'recusado'
+                ? 'PAGAMENTO NAO APROVADO'
+                : 'PAGAMENTO EM ANALISE'}
+          </div>
         ) : (
           <p className="text-lg text-gray-600">AGORA É SÓ ESPERAR O PEDIDO CHEGAR</p>
         )}
@@ -296,6 +330,38 @@ const Step6_Success = () => {
           </div>
         )}
       </div>
+
+      {entrega && (
+        <div className="mt-8 rounded-lg border border-primary/10 bg-primary/5 p-5">
+          <h3 className="flex items-center gap-2 text-lg font-bold text-gray-800">
+            <FaTruck className="text-primary" /> Entrega
+          </h3>
+          <div className="mt-3 grid gap-3 text-sm text-gray-700 sm:grid-cols-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">Servico</p>
+              <p className="font-semibold">{entrega.servico_nome || 'Envio'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">Status</p>
+              <p className="font-semibold">{entrega.status || 'Aguardando postagem'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-gray-500">Rastreio</p>
+              <p className="font-semibold">{trackingCode || 'Ainda nao informado'}</p>
+            </div>
+          </div>
+          {entrega.tracking_url && (
+            <a
+              href={entrega.tracking_url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-bold text-primary shadow-sm hover:text-terciary"
+            >
+              Abrir rastreio <FaExternalLinkAlt />
+            </a>
+          )}
+        </div>
+      )}
 
       <button
         className="w-full bg-primary text-white font-bold py-3 rounded-md hover:bg-terciary transition-colors flex items-center justify-center gap-2 mt-5"

@@ -2,6 +2,7 @@ import type { Cliente } from "~/features/auth/types";
 import type { Produto } from "~/features/produto/types";
 import apiClient from "~/services/api";
 import type { Pagamento, PagamentoResponse } from "~/types/Pagamento";
+import type { TipoDeEntrega } from "~/types/TipoDeEntrega";
 
 function getProdutoGradeId(produto: Produto) {
     const item = produto as Produto & Record<string, any>;
@@ -97,6 +98,7 @@ export const carrinhoService = {
         tipo_de_envio: string,
         nome_transportadora: string,
         valor_venda: number,
+        frete_info?: TipoDeEntrega,
     ) => {
         const { data } = await apiClient.post(`/vendas/gerar`, {
             cliente,
@@ -109,7 +111,9 @@ export const carrinhoService = {
             valor_do_frete,
             tipo_de_envio,
             nome_transportadora,
-            valor_venda
+            valor_venda,
+            frete_info,
+            site_url: typeof window !== 'undefined' ? window.location.origin : undefined,
         });
         return data;
     },

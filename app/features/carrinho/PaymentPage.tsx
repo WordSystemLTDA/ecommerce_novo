@@ -10,6 +10,9 @@ const getPaymentLabel = (pagamento: Pagamento) => {
   }
 
   switch (pagamento.tipo) {
+    case 'MERCADO_PAGO':
+    case 'CHECKOUT_PRO':
+      return 'Mercado Pago';
     case 'PIX':
       return 'PIX';
     case 'CREDITO':
@@ -25,6 +28,9 @@ const getPaymentLabel = (pagamento: Pagamento) => {
 
 const getPaymentIcon = (pagamento: Pagamento) => {
   switch (pagamento.tipo) {
+    case 'MERCADO_PAGO':
+    case 'CHECKOUT_PRO':
+      return <FaCreditCard className="text-gray-500" size={20} />;
     case 'PIX':
       return <FaQrcode className="text-gray-500" size={20} />;
     case 'CREDITO':
@@ -111,10 +117,21 @@ export default function PaymentPage() {
                               {pagamento.nome_banco}
                             </p>
                           )}
+                          {(pagamento.tipo === 'MERCADO_PAGO' || pagamento.tipo === 'CHECKOUT_PRO') && (
+                            <p className="text-xs text-gray-500">
+                              {`Cartao, Pix e boleto${pagamento.max_parcelas ? ` em ate ${pagamento.max_parcelas}x` : ''}.`}
+                            </p>
+                          )}
                         </div>
                       </div>
                       {getPaymentIcon(pagamento)}
                     </div>
+
+                    {isSelected && (pagamento.tipo === 'MERCADO_PAGO' || pagamento.tipo === 'CHECKOUT_PRO') && (
+                      <p className="text-sm text-gray-600 mt-3 ml-7">
+                        Voce sera redirecionado para finalizar o pagamento no ambiente seguro do Mercado Pago.
+                      </p>
+                    )}
 
                     {isSelected && pagamento.tipo === 'PIX' && (
                       <p className="text-sm text-gray-600 mt-3 ml-7">

@@ -5,6 +5,7 @@ import {
     ChevronUp,
     Clock,
     CreditCard,
+    ExternalLink,
     Hash,
     Package,
     Truck,
@@ -67,6 +68,10 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
         }
     };
 
+    const entrega = pedido.entrega;
+    const trackingCode = entrega?.codigo_rastreio || entrega?.melhor_envio_order_id;
+    const trackingStatus = entrega?.status || "";
+
     return (
         <article className="bg-white border border-primary/10 rounded-lg overflow-hidden transition-shadow hover:shadow-md">
             <button
@@ -101,6 +106,13 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
                             value={formatMoney(pedido.valor)}
                             strong
                         />
+                        {entrega && (
+                            <OrderMeta
+                                icon={Truck}
+                                label="Entrega"
+                                value={[entrega.transportadora, trackingStatus].filter(Boolean).join(" - ") || "-"}
+                            />
+                        )}
                     </div>
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-600">
@@ -122,6 +134,43 @@ export function OrderCard({ pedido, isExpanded, onToggle }: OrderCardProps) {
                             {formatMoney(pedido.valor)}
                         </span>
                     </div>
+
+                    {entrega && (
+                        <div className="mb-5 rounded-lg border border-primary/10 bg-primary/5 p-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <h4 className="flex items-center gap-2 font-semibold text-gray-800">
+                                        <Truck size={18} className="text-primary" />
+                                        Entrega
+                                    </h4>
+                                    <p className="mt-1 text-sm text-gray-600">
+                                        {entrega.servico_nome || pedido.nome_transportadora || "Envio"} {entrega.transportadora ? `por ${entrega.transportadora}` : ""}
+                                    </p>
+                                    {trackingStatus && (
+                                        <p className="mt-2 text-sm font-semibold text-primary">
+                                            Status: {formatStatus(trackingStatus)}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="rounded-md bg-white px-3 py-2 text-sm text-gray-700 shadow-sm">
+                                    <span className="block text-xs font-bold uppercase tracking-[0.12em] text-gray-400">
+                                        Rastreio
+                                    </span>
+                                    <span className="font-semibold">{trackingCode || "Aguardando codigo"}</span>
+                                    {entrega.tracking_url && (
+                                        <a
+                                            href={entrega.tracking_url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-terciary"
+                                        >
+                                            Abrir rastreio <ExternalLink size={13} />
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="overflow-hidden rounded-lg border border-gray-100">
                         {pedido.itens?.map((item: any, index: number) => (

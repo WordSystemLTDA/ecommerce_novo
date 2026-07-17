@@ -7,6 +7,7 @@ import { produtoService } from '~/features/produto/services/produtoService';
 import type { Produto, ProdutoTamanho } from '~/features/produto/types';
 import type { Pagamento } from '~/types/Pagamento';
 import type { TipoDeEntrega } from '~/types/TipoDeEntrega';
+import { getDeliveryPrice } from '~/utils/delivery';
 import { carrinhoService } from '../services/carrinhoService';
 
 export interface CartItem extends Produto {
@@ -301,7 +302,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
 
     const handleSetTipoDeEntregaSelecionada = (tipoDeEntrega: TipoDeEntrega) => {
         setTipoDeEntregaSelecionada(tipoDeEntrega);
-        setValorFrete(parseFloat(tipoDeEntrega.price));
+        setValorFrete(getDeliveryPrice(tipoDeEntrega));
     };
 
     const handleSetEnderecoSelecionado = (endereco: Endereco) => {

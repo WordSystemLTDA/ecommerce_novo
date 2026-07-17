@@ -30,6 +30,7 @@ import { OptimizedImage } from '~/components/OptimizedImage';
 import RatingStars from '~/components/rating_stars';
 import { useCarrinho } from '~/features/carrinho/context/CarrinhoContext';
 import type { TipoDeEntrega } from '~/types/TipoDeEntrega';
+import { getDeliveryPrice, getDeliveryTime } from '~/utils/delivery';
 import { currencyFormatter, gerarSlug } from '~/utils/formatters';
 import { getProductImageFallback } from '~/utils/imagePlaceholders';
 import { produtoService } from './services/produtoService';
@@ -623,7 +624,7 @@ function FreightCalculator({ produto }: { produto: Produto }) {
             const cleanCep = cep.replace('-', '');
             // Pass array with single product as expected by backend/service often
             const options = await produtoService.calcularFrete(cleanCep, [produto]);
-            setFreteOptions(options.data.filter(option => option.price != null) || []);
+            setFreteOptions(options.data.filter(option => option.price != null || option.custom_price != null) || []);
         } catch (error) {
             console.error(error);
             setFreteOptions([]);
@@ -667,12 +668,12 @@ function FreightCalculator({ produto }: { produto: Produto }) {
                             <span className="text-primary font-medium">{option.name || option.company.name}</span>
                             <div className="flex flex-col items-end">
                                 <span className="font-medium text-primary">
-                                    {option.price === "0.00" || option.price === "0"
+                                    {getDeliveryPrice(option) === 0
                                         ? "Grátis"
-                                        : currencyFormatter.format(Number(option.price))}
+                                        : currencyFormatter.format(getDeliveryPrice(option))}
                                 </span>
                                 <span className="text-tiny text-primary/70">
-                                    até {option.delivery_time} dia{option.delivery_time > 1 ? 's' : ''} úteis
+                                    até {getDeliveryTime(option)} dia{getDeliveryTime(option) > 1 ? 's' : ''} úteis
                                 </span>
                             </div>
                         </div>

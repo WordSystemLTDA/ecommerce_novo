@@ -34,4 +34,6 @@ export default [
     ]),
 
     route("pedido/sucesso/:id", "routes/order.success.tsx"),
+    route("pedido/falha/:id", "routes/order.failure.tsx"),
+    route("pedido/pendente/:id", "routes/order.pending.tsx"),
 ] satisfies RouteConfig;

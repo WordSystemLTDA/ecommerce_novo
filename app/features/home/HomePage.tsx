@@ -197,13 +197,13 @@ export function HomePage() {
                         modules={[EffectFade, Navigation, Autoplay]}
                         spaceBetween={20}
                         slidesPerView={1}
-                        loop={true}
+                        rewind={pos0Banners.length > 1}
                         effect="fade"
                         autoplay={{ delay: 5000, disableOnInteraction: false }}
                         className="w-full overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
                       >
                         {pos0Banners.map((banner, index) => (
-                          <SwiperSlide key={index} className="h-auto!">
+                          <SwiperSlide key={banner.id} className="h-auto!">
                             <div className="relative h-40 md:h-[200px] lg:h-40 bg-primary/8 overflow-hidden">
                               <OptimizedImage
                                 src={banner.imagemUrl}
@@ -223,13 +223,13 @@ export function HomePage() {
                         modules={[EffectFade, Navigation, Autoplay]}
                         spaceBetween={20}
                         slidesPerView={1}
-                        loop={true}
+                        rewind={pos1Banners.length > 1}
                         effect="fade"
                         autoplay={{ delay: 6000, disableOnInteraction: false }}
                         className="w-full overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
                       >
                         {pos1Banners.map((banner, index) => (
-                          <SwiperSlide key={index} className="h-auto!">
+                          <SwiperSlide key={banner.id} className="h-auto!">
                             <div className="relative h-40 md:h-[200px] lg:h-40 bg-primary/8 overflow-hidden">
                               <OptimizedImage
                                 src={banner.imagemUrl}
@@ -299,13 +299,13 @@ export function HomePage() {
                     modules={[EffectFade, Navigation, Autoplay]}
                     spaceBetween={10}
                     slidesPerView={1}
-                    loop={true}
+                    rewind={pos2Banners.length > 1}
                     effect="fade"
                     autoplay={{ delay: 7000, disableOnInteraction: false }}
                     className="w-full overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)]"
                   >
                     {pos2Banners.map((banner, index) => (
-                      <SwiperSlide key={index} className="h-auto!">
+                      <SwiperSlide key={banner.id} className="h-auto!">
                         <div className="relative h-[170px] md:h-[220px] lg:h-[200px] bg-primary/8 overflow-hidden">
                           <OptimizedImage
                             src={banner.imagemUrl}
@@ -442,7 +442,7 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         effect="fade"
         slidesPerView={1}
-        loop={true}
+        rewind={bannersFiltrados.length > 1}
         autoplay={{
           delay: 10000,
           disableOnInteraction: false,
@@ -456,7 +456,7 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
         }}
       >
         {bannersFiltrados.map((image, index) => (
-          <SwiperSlide key={index} className="h-full!">
+          <SwiperSlide key={image.id} className="h-full!">
             <OptimizedImage
               src={image.imagemUrl}
               fallbackSrc={getBannerImageFallback(`Banner principal ${index + 1}`)}
@@ -777,12 +777,13 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
       {/* Desktop Swiper */}
       <div className="hidden md:block">
         <Swiper
+          key={`${id}-${bannerData.filtros}`}
           modules={[Navigation]}
           navigation={{
             prevEl: `.${prevButtonId}`,
             nextEl: `.${nextButtonId}`,
           }}
-          loop={true}
+          rewind={bannerData.produtos.length > 1}
           spaceBetween={16}
           slidesPerView={5}
           breakpoints={{
@@ -947,7 +948,7 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId, c
           prevEl: `.${prevButtonId}`,
           nextEl: `.${nextButtonId}`,
         }}
-        loop={true}
+        rewind={categorias.length > 1}
         spaceBetween={16}
         slidesPerView={"auto"}
         breakpoints={{
@@ -1017,7 +1018,7 @@ export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId, canLoadI
           prevEl: `.${prevButtonId}`,
           nextEl: `.${nextButtonId}`,
         }}
-        loop={true}
+        rewind={marcas.length > 1}
         spaceBetween={16}
         slidesPerView={"auto"}
         breakpoints={{
