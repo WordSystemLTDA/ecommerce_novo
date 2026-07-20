@@ -9,7 +9,7 @@ import CustomInput from '~/components/input'
 import InputIE from '~/components/input_ie'
 import PasswordInput from '~/components/password_input'
 import CustomSelect from '~/components/select'
-import { normalizeCnpj, normalizeCpf, normalizePhone, normalizeRg } from '~/utils/masks'
+import { normalizeCnpj, normalizeCpf, normalizePhone } from '~/utils/masks'
 import { authService } from './services/authService'
 
 export default function RegistrarPage() {
@@ -23,8 +23,6 @@ export default function RegistrarPage() {
     const [aceitaTermos, setAceitaTermos] = useState(false);
 
     const [cpf, setCpf] = useState('');
-    const [rg, setRg] = useState('');
-
     const [razaoSocial, setRazaoSocial] = useState('');
     const [cnpj, setCnpj] = useState('');
     const [ie, setIe] = useState('');
@@ -40,28 +38,33 @@ export default function RegistrarPage() {
         setIsSubmitting(true);
         const isPessoaFisica = tipoPessoa.startsWith('F');
         const isPessoaJuridica = tipoPessoa.startsWith('J');
+        const formattedDoc = isPessoaFisica
+            ? normalizeCpf(cpf)
+            : normalizeCnpj(cnpj);
+        const formattedPhone = normalizePhone(celular);
+        const trimmedNome = nome.trim();
+        const trimmedRazaoSocial = isPessoaJuridica
+            ? razaoSocial.trim()
+            : trimmedNome;
 
         try {
-            const payload = {
-                doc: isPessoaFisica ? cpf : cnpj,
-                celular,
-                email: email.trim(),
-                nome: nome.trim(),
-                senha: password,
-                tipo_pessoa: tipoPessoa
-            };
-
             const response = await authService.registrar({
-                ...payload,
-                ...(isPessoaFisica && rg.trim()
-                    ? { rg: rg.trim() }
-                    : {}),
-                ...(isPessoaJuridica
-                    ? {
-                        razao_social: razaoSocial.trim(),
-                        ...(ie.trim() ? { ie: ie.trim() } : {}),
-                    }
-                    : {}),
+                doc: formattedDoc,
+                celular: formattedPhone,
+                telefone: formattedPhone,
+                email: email.trim(),
+                nome: trimmedNome,
+                razao_social: trimmedRazaoSocial,
+                senha: password,
+                tipo_pessoa: tipoPessoa,
+                status_representante: 'Cliente',
+                tipo_de_conta: 'Conta Corrente',
+                tipo_chave_pix: 'CPF',
+                civil: 'Solteiro(a)',
+                sexo: 'Masculino',
+                tipo_de_contribuinte: 9,
+                consumidor_final: 1,
+                ...(isPessoaJuridica && ie.trim() ? { ie: ie.trim() } : {}),
             });
 
             if (!response?.sucesso) {
@@ -167,30 +170,17 @@ export default function RegistrarPage() {
                                                 required
                                             />
                                         </div>
-                                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                            <div className="flex flex-col gap-1">
-                                                <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
-                                                    <FiFileText size={12} /> CPF
-                                                </label>
-                                                <CustomInput
-                                                    type="text"
-                                                    placeholder="000.000.000-00"
-                                                    value={cpf}
-                                                    onChange={(e) => setCpf(normalizeCpf(e.target.value))}
-                                                    required
-                                                />
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
-                                                    <FiFileText size={12} /> RG <span className="normal-case tracking-normal text-primary/40">(opcional)</span>
-                                                </label>
-                                                <CustomInput
-                                                    type="text"
-                                                    placeholder="00.000.000-0"
-                                                    value={rg}
-                                                    onChange={(e) => setRg(normalizeRg(e.target.value))}
-                                                />
-                                            </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-xs uppercase tracking-wider text-primary/60 font-medium flex items-center gap-1.5">
+                                                <FiFileText size={12} /> CPF
+                                            </label>
+                                            <CustomInput
+                                                type="text"
+                                                placeholder="000.000.000-00"
+                                                value={cpf}
+                                                onChange={(e) => setCpf(normalizeCpf(e.target.value))}
+                                                required
+                                            />
                                         </div>
                                     </>
                                 )}

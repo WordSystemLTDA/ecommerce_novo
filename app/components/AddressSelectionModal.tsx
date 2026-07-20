@@ -40,6 +40,9 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
 
     if (!isOpen) return null;
 
+    const isDefaultAddress = (padrao: Endereco['padrao']) =>
+        ['sim', 's', '1', 'true'].includes(String(padrao).toLowerCase());
+
     return (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
@@ -100,7 +103,7 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h3 className={`font-bold text-sm ${selectedAddressId === endereco.id ? 'text-terciary' : 'text-gray-800'}`}>
-                                                {endereco.padrao === 'S' ? 'Padrão' : 'Endereço'}
+                                                {isDefaultAddress(endereco.padrao) ? 'Padrão' : 'Endereço'}
                                             </h3>
                                             <p className="text-sm text-gray-600 mt-1">
                                                 {endereco.endereco}, {endereco.numero}

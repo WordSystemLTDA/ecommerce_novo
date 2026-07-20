@@ -46,7 +46,7 @@ interface CarrinhoContextType {
     editarQuantidadeProduto: (produto: Produto) => Promise<void>;
     resetarCarrinho: () => Promise<void>;
     listarTipoDeEntregas: (cepDestino: string) => Promise<void>;
-    listarEnderecos: () => Promise<void>;
+    listarEnderecos: (selectedAddressId?: number) => Promise<Endereco[]>;
     listarPagamentos: () => Promise<void>;
     verificarAdicionadoCarrinho: (produto: Produto) => boolean;
 
@@ -306,7 +306,16 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     };
 
     const handleSetEnderecoSelecionado = (endereco: Endereco) => {
+        const shouldResetDelivery =
+            enderecoSelecionado?.id !== endereco.id ||
+            enderecoSelecionado?.cep !== endereco.cep;
+
         setEnderecoSelecionado(endereco);
+
+        if (shouldResetDelivery) {
+            setTipoDeEntregaSelecionada(undefined);
+            setValorFrete(0);
+        }
     };
 
     const handleSetPagamentoSelecionado = (pagamento: Pagamento) => {
@@ -360,20 +369,36 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         }
     }
 
-    const listarEnderecos = async () => {
+    const listarEnderecos = async (selectedAddressId?: number) => {
         try {
             setCarregandoEnderecos(true);
 
             var response = await minhacontaService.listarEnderecos(cliente!.id);
+            const loadedAddresses = Array.isArray(response.data) ? response.data : [];
 
-            setEnderecos(response.data);
+            setEnderecos(loadedAddresses);
 
-            setEnderecoSelecionado(undefined);
-            setValorFrete(0);
+            const addressIdToSelect = selectedAddressId ?? enderecoSelecionado?.id;
+            const selectedAddress = addressIdToSelect == null
+                ? undefined
+                : loadedAddresses.find((endereco) => endereco.id === addressIdToSelect);
+            const shouldResetDelivery =
+                selectedAddress?.id !== enderecoSelecionado?.id ||
+                selectedAddress?.cep !== enderecoSelecionado?.cep;
+
+            setEnderecoSelecionado(selectedAddress);
+
+            if (shouldResetDelivery) {
+                setTipoDeEntregaSelecionada(undefined);
+                setValorFrete(0);
+            }
+
+            return loadedAddresses;
 
         } catch (error) {
             console.error("Erro ao listar endereços:", error);
             setTipoDeEntregas([]);
+            return [];
         } finally {
             setCarregandoEnderecos(false);
         }

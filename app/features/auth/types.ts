@@ -28,11 +28,19 @@ export interface RegistrarRequest {
     senha: string,
     tipo_pessoa: string,
     nome: string,
+    razao_social: string,
     doc: string,
+    telefone: string,
     celular: string,
-    rg?: string,
-    razao_social?: string,
     ie?: string,
+    status_representante: string,
+    tipo_de_conta: string,
+    tipo_chave_pix: string,
+    civil: string,
+    sexo: string,
+    tipo_de_contribuinte: number,
+    consumidor_final: number,
+    id_tipo_de_cliente?: number,
 }
 
 export interface RegistrarResponse extends DefaultResponse {

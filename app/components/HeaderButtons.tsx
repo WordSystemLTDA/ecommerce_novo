@@ -9,11 +9,17 @@ import type { Categoria } from "~/features/categoria/types";
 
 export function ButtonEntreOuCadastrese() {
     let navigate = useNavigate();
-    let { isAuthenticated, cliente } = useAuth();
+    let { isAuthenticated } = useAuth();
 
     return (
-        <div
-            className="flex items-center gap-2 cursor-pointer text-primary hover:text-terciary transition-colors duration-500 max-lg:hidden"
+        <button
+            type="button"
+            aria-label={isAuthenticated ? "Acessar minha conta" : "Entrar ou cadastrar"}
+            title={isAuthenticated ? "Logado" : "Entrar ou cadastrar"}
+            className={`max-lg:hidden flex h-8 w-8 items-center justify-center border transition-all duration-500 ${isAuthenticated
+                ? "border-primary bg-primary text-secondary shadow-[0_4px_14px_rgba(0,0,0,0.12)] hover:bg-terciary hover:border-terciary"
+                : "border-primary/25 text-primary hover:border-terciary hover:text-terciary"
+                }`}
             onClick={() => {
                 if (isAuthenticated) {
                     navigate('/minha-conta');
@@ -22,25 +28,12 @@ export function ButtonEntreOuCadastrese() {
                 }
             }}
         >
-            <div className="p-1 border border-primary/25">
-                <MdPerson size={18} className="text-primary" />
-            </div>
-
             {isAuthenticated ? (
-                <div className="hidden 2xl:block">
-                    <span className="text-tiny uppercase font-medium tracking-[0.2em]">Olá, <span className="font-medium">{cliente?.nome}</span></span>
-                </div>
-            )
-                :
-                (
-                    <div className="hidden xl:flex flex-col leading-none">
-                        <span className="text-tiny uppercase font-medium tracking-[0.2em] text-primary/70">Olá, faça seu login</span>
-                        <span className="text-xs font-medium">ou cadastre-se</span>
-                    </div>
-                )
-
-            }
-        </div>
+                <BsPersonFillCheck size={18} />
+            ) : (
+                <MdPerson size={18} />
+            )}
+        </button>
     );
 }
 
