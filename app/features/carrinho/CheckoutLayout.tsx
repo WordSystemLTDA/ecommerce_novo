@@ -20,6 +20,15 @@ import { currencyFormatter } from '~/utils/formatters';
 import { carrinhoService } from './services/carrinhoService';
 import { useAuth } from '../auth/context/AuthContext';
 import { toast } from 'react-toastify';
+import { mercadoPagoService, mercadoPagoStatus } from
+    '~/features/mercado_pago/mercado_pago_service';
+import { MercadoPagoPaymentProvider } from
+    '~/features/mercado_pago/MercadoPagoPaymentContext';
+import type {
+    MercadoPagoCardData,
+    MercadoPagoPaymentData,
+    MercadoPagoPaymentStatus,
+} from '~/features/mercado_pago/types';
 
 const steps = [
     { name: 'Carrinho', route: '', icon: FaShoppingCart },
@@ -97,6 +106,21 @@ const getCheckoutUrlFromResponse = (response: any) => {
     }
 
     return payload.init_point || payload.checkout_url || null;
+};
+
+const getPaymentResultRoute = (
+    orderId: number,
+    status: MercadoPagoPaymentStatus,
+) => {
+    if (mercadoPagoStatus.isFailure(status)) {
+        return `/pedido/falha/${orderId}`;
+    }
+
+    if (!mercadoPagoStatus.isApproved(status)) {
+        return `/pedido/pendente/${orderId}`;
+    }
+
+    return `/pedido/sucesso/${orderId}`;
 };
 
 const CheckoutStepper = ({
@@ -194,26 +218,25 @@ const CartSummary = ({
     step,
     onContinue,
     onBack,
-    loading = false
+    loading = false,
+    requiresCardForm = false,
+    termsAccepted,
+    onTermsAcceptedChange,
 }: {
     step: number;
     onContinue: () => void;
     onBack: () => void;
     loading?: boolean;
+    requiresCardForm?: boolean;
+    termsAccepted: boolean;
+    onTermsAcceptedChange: (accepted: boolean) => void;
 }) => {
     let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, tipoDeEntregaSelecionada, pagamentoSelecionado, selectedItems, produtos } = useCarrinho();
-    const [termsAccepted, setTermsAccepted] = React.useState(false);
 
     const isConfirmationStep = step === 5;
     const selectedProducts = produtos.filter((produto) =>
         selectedItems.includes(produto.internalId)
     );
-
-    React.useEffect(() => {
-        if (!isConfirmationStep) {
-            setTermsAccepted(false);
-        }
-    }, [isConfirmationStep]);
 
     const getBlockedMessage = () => {
         if (loading) return '';
@@ -243,7 +266,7 @@ const CartSummary = ({
         }
     };
     const blockedMessage = getBlockedMessage();
-    const isDisabled = loading || blockedMessage !== '';
+    const isDisabled = loading || blockedMessage !== '' || requiresCardForm;
 
     const summaryItems = [
         {
@@ -364,6 +387,12 @@ const CartSummary = ({
                         <FaExclamationCircle /> {blockedMessage}
                     </p>
                 )}
+                {isConfirmationStep && requiresCardForm && (
+                    <p className="flex items-center gap-2 rounded-md bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700">
+                        <FaLock /> Preencha o formulario seguro do cartao para
+                        concluir o pedido.
+                    </p>
+                )}
                 <button
                     onClick={onContinue}
                     disabled={isDisabled}
@@ -393,7 +422,9 @@ const CartSummary = ({
                             type="checkbox"
                             className="w-4 h-4 accent-primary mt-0.5"
                             checked={termsAccepted}
-                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                            onChange={(event) => {
+                                onTermsAcceptedChange(event.target.checked);
+                            }}
                         />
                         <span>
                             Ao efetuar o seu pedido, você concorda com os
@@ -414,6 +445,8 @@ export default function CheckoutLayout() {
 
     const [loading, setLoading] = React.useState(false);
     const [orderCompleted, setOrderCompleted] = React.useState(false);
+    const [termsAccepted, setTermsAccepted] = React.useState(false);
+    const pendingSaleId = React.useRef<number | null>(null);
 
     const { cliente } = useAuth();
     const { produtos, selectedItems, pagamentoSelecionado, enderecoSelecionado, tipoDeEntregaSelecionada, valorFrete, retornarValorFinal, removerProdutosSelecionados } = useCarrinho();
@@ -431,6 +464,31 @@ export default function CheckoutLayout() {
     const selectedProducts = produtos.filter((produto) =>
         selectedItems.includes(produto.internalId)
     );
+    const requiresCardForm =
+        pagamentoSelecionado?.tipo === 'MERCADO_PAGO' &&
+        pagamentoSelecionado.mercado_pago_method === 'credit_card';
+    const checkoutFingerprint = JSON.stringify({
+        address: enderecoSelecionado?.id,
+        delivery: tipoDeEntregaSelecionada?.id,
+        items: selectedProducts.map((product) => [
+            product.internalId,
+            product.quantidade,
+        ]),
+        payment: [
+            pagamentoSelecionado?.id,
+            pagamentoSelecionado?.mercado_pago_method,
+        ],
+    });
+
+    React.useEffect(() => {
+        pendingSaleId.current = null;
+    }, [checkoutFingerprint]);
+
+    React.useEffect(() => {
+        if (activeStep !== 5) {
+            setTermsAccepted(false);
+        }
+    }, [activeStep]);
 
     const canVisitStep = (step: number) => {
         if (step === 1) return true;
@@ -448,6 +506,175 @@ export default function CheckoutLayout() {
         }
 
         navigate(`/carrinho/${steps[step - 1].route}`);
+    };
+
+    const finishOrder = async (cardPayment?: MercadoPagoCardData) => {
+        if (
+            !cliente ||
+            !pagamentoSelecionado ||
+            !enderecoSelecionado ||
+            !tipoDeEntregaSelecionada
+        ) {
+            throw new Error('Os dados do checkout estao incompletos.');
+        }
+
+        if (!termsAccepted) {
+            throw new Error('Aceite os termos para finalizar o pedido.');
+        }
+
+        const isTransparentMercadoPago =
+            pagamentoSelecionado.tipo === 'MERCADO_PAGO' &&
+            pagamentoSelecionado.checkout_transparente === true &&
+            pagamentoSelecionado.mercado_pago_method != null;
+
+        setLoading(true);
+        try {
+            let response: any = null;
+            let orderId = pendingSaleId.current;
+
+            if (orderId == null) {
+                response = await carrinhoService.gerarVenda(
+                    cliente,
+                    selectedProducts.map((product) => ({
+                        id: product.id,
+                        quantidade: product.quantidade,
+                        idPromocoesEcommerce:
+                            product.idPromocoesEcommerce,
+                        habilTipo: (product.tipo ?? 0).toString(),
+                        idTamanho: (
+                            product.tamanhoSelecionado?.id ?? 0
+                        ).toString(),
+                    })),
+                    pagamentoSelecionado,
+                    enderecoSelecionado.id,
+                    '',
+                    '',
+                    '',
+                    valorFrete,
+                    '',
+                    tipoDeEntregaSelecionada.name,
+                    retornarValorFinal(),
+                    tipoDeEntregaSelecionada,
+                );
+
+                if (!response.sucesso) {
+                    throw new Error(
+                        response.mensagem ||
+                        'Nao foi possivel finalizar o pedido.',
+                    );
+                }
+
+                orderId = getOrderIdFromResponse(response);
+                if (orderId == null) {
+                    throw new Error(
+                        'A API nao retornou o numero do pedido.',
+                    );
+                }
+
+                if (isTransparentMercadoPago) {
+                    pendingSaleId.current = orderId;
+                }
+            }
+
+            if (isTransparentMercadoPago) {
+                const configuredMethod =
+                    pagamentoSelecionado.mercado_pago_method;
+                if (configuredMethod === 'credit_card' && !cardPayment) {
+                    throw new Error(
+                        'Preencha o formulario do cartao para continuar.',
+                    );
+                }
+
+                const payment: MercadoPagoPaymentData = cardPayment ?? {
+                    method: 'pix',
+                };
+                const idempotencyKey =
+                    mercadoPagoService.getOrCreateIdempotencyKey(
+                        orderId,
+                        payment.method,
+                    );
+                const mercadoPagoOrder =
+                    await mercadoPagoService.createOrder({
+                        saleId: orderId,
+                        idempotencyKey,
+                        payment,
+                    });
+
+                mercadoPagoService.storeOrder(mercadoPagoOrder);
+                if (mercadoPagoStatus.isFinal(mercadoPagoOrder.status)) {
+                    mercadoPagoService.clearIdempotencyKey(
+                        orderId,
+                        mercadoPagoOrder.method,
+                    );
+                }
+                setOrderCompleted(true);
+
+                if (mercadoPagoOrder.method === 'pix') {
+                    toast.success('PIX gerado com sucesso.', {
+                        position: 'top-center',
+                    });
+                } else if (mercadoPagoStatus.isApproved(mercadoPagoOrder.status)) {
+                    toast.success('Pagamento aprovado!', {
+                        position: 'top-center',
+                    });
+                } else if (mercadoPagoStatus.isFailure(mercadoPagoOrder.status)) {
+                    toast.error('Pagamento nao aprovado.', {
+                        position: 'top-center',
+                    });
+                } else {
+                    toast.info('Pagamento em processamento.', {
+                        position: 'top-center',
+                    });
+                }
+
+                navigate(
+                    getPaymentResultRoute(
+                        orderId,
+                        mercadoPagoOrder.status,
+                    ),
+                    { replace: true },
+                );
+                window.setTimeout(() => {
+                    void removerProdutosSelecionados();
+                }, 500);
+                return;
+            }
+
+            const checkoutUrl = getCheckoutUrlFromResponse(response);
+            setOrderCompleted(true);
+
+            if (checkoutUrl) {
+                toast.success(
+                    'Pedido criado. Voce sera redirecionado para o Mercado Pago.',
+                    { position: 'top-center' },
+                );
+                window.setTimeout(() => {
+                    void removerProdutosSelecionados().finally(() => {
+                        window.location.assign(checkoutUrl);
+                    });
+                }, 400);
+                return;
+            }
+
+            toast.success('Pedido realizado com sucesso!', {
+                position: 'top-center',
+            });
+            navigate(`/pedido/sucesso/${orderId}`, { replace: true });
+            window.setTimeout(() => {
+                void removerProdutosSelecionados();
+            }, 500);
+        } catch (error) {
+            console.error('Erro ao finalizar pedido.', error);
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : 'Erro ao gerar venda. Tente novamente.',
+                { position: 'top-center' },
+            );
+            throw error;
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleContinue = async () => {
@@ -497,71 +724,15 @@ export default function CheckoutLayout() {
         }
 
         if (activeStep === 5) {
-            const produtosSelecionados = produtos.filter(p => selectedItems.includes(p.internalId));
-
-            setLoading(true);
-            try {
-                const response = await carrinhoService.gerarVenda(
-                    cliente!,
-                    produtosSelecionados.map(p => ({
-                        id: p.id,
-                        quantidade: p.quantidade,
-                        idPromocoesEcommerce: p.idPromocoesEcommerce,
-                        habilTipo: (p.tipo ?? 0).toString(),
-                        idTamanho: (p.tamanhoSelecionado?.id ?? 0).toString(),
-                    })),
-                    pagamentoSelecionado!,
-                    enderecoSelecionado!.id,
-                    '',
-                    '',
-                    '',
-                    valorFrete,
-                    '',
-                    tipoDeEntregaSelecionada!.name,
-                    retornarValorFinal(),
-                    tipoDeEntregaSelecionada,
+            if (requiresCardForm) {
+                toast.info(
+                    'Preencha o formulario seguro do cartao para continuar.',
+                    { position: 'top-center' },
                 );
-
-                if (response.sucesso) {
-                    const orderId = getOrderIdFromResponse(response);
-                    const checkoutUrl = getCheckoutUrlFromResponse(response);
-                    setOrderCompleted(true);
-
-                    if (checkoutUrl) {
-                        toast.success("Pedido criado. Voce sera redirecionado para o Mercado Pago.", { position: 'top-center' });
-
-                        window.setTimeout(() => {
-                            void removerProdutosSelecionados().finally(() => {
-                                window.location.assign(checkoutUrl);
-                            });
-                        }, 400);
-                        return;
-                    }
-
-                    toast.success("Pedido realizado com sucesso!", { position: 'top-center' });
-
-                    if (orderId != null) {
-                        navigate(`/pedido/sucesso/${orderId}`, { replace: true });
-                    } else {
-                        toast.info(
-                            "Seu pedido foi gerado, mas não recebemos o número para abrir o comprovante.",
-                            { position: 'top-center' }
-                        );
-                        navigate("/minha-conta/pedidos", { replace: true });
-                    }
-
-                    window.setTimeout(() => {
-                        void removerProdutosSelecionados();
-                    }, 500);
-                } else {
-                    toast.error(response.mensagem || "Não foi possível finalizar o pedido.", { position: 'top-center' });
-                }
-            } catch (error) {
-                console.error(error);
-                toast.error("Erro ao gerar venda. Tente novamente.", { position: 'top-center' });
-            } finally {
-                setLoading(false);
+                return;
             }
+
+            await finishOrder().catch(() => undefined);
         }
     };
 
@@ -610,7 +781,14 @@ export default function CheckoutLayout() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2">
-                            <Outlet />
+                            <MercadoPagoPaymentProvider
+                                value={{
+                                    processing: loading,
+                                    processCardPayment: finishOrder,
+                                }}
+                            >
+                                <Outlet />
+                            </MercadoPagoPaymentProvider>
                         </div>
 
                         <div className="lg:col-span-1">
@@ -619,6 +797,9 @@ export default function CheckoutLayout() {
                                 onContinue={handleContinue}
                                 onBack={handleBack}
                                 loading={loading}
+                                requiresCardForm={requiresCardForm}
+                                termsAccepted={termsAccepted}
+                                onTermsAcceptedChange={setTermsAccepted}
                             />
                         </div>
                     </div>

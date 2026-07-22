@@ -5,16 +5,31 @@ import { useAuth } from '../auth/context/AuthContext';
 import { currencyFormatter } from '~/utils/formatters';
 import { OptimizedImage } from '~/components/OptimizedImage';
 import { getProductImageFallback } from '~/utils/imagePlaceholders';
+import { useCallback, useRef } from 'react';
+import type { MercadoPagoCardData } from
+  '~/features/mercado_pago/types';
+import { MercadoPagoCardBrick } from
+  '~/features/mercado_pago/MercadoPagoCardBrick';
+import { useMercadoPagoPayment } from
+  '~/features/mercado_pago/MercadoPagoPaymentContext';
 
 
 export default function ConfirmationPage() {
   let { cliente } = useAuth();
+  const { processCardPayment } = useMercadoPagoPayment();
+  const paymentProcessor = useRef(processCardPayment);
+  paymentProcessor.current = processCardPayment;
+  const submitCardPayment = useCallback(
+    (payment: MercadoPagoCardData) => paymentProcessor.current(payment),
+    [],
+  );
   let {
     produtos,
     enderecoSelecionado,
     selectedItems,
     tipoDeEntregaSelecionada,
     pagamentoSelecionado,
+    retornarValorFinal,
   } = useCarrinho();
 
   if (cliente == undefined) {
@@ -111,6 +126,15 @@ export default function ConfirmationPage() {
           )
         })}
       </div>
+
+      {pagamentoSelecionado?.tipo === 'MERCADO_PAGO' &&
+        pagamentoSelecionado.mercado_pago_method === 'credit_card' && (
+          <MercadoPagoCardBrick
+            amount={retornarValorFinal()}
+            email={cliente.email}
+            onSubmit={submitCardPayment}
+          />
+        )}
     </div>
   );
 }

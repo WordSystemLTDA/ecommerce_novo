@@ -73,6 +73,27 @@ import { toast } from 'react-toastify';
 import Loader from '~/components/loader';
 import { useAuth } from '../auth/context/AuthContext';
 import { carrinhoService } from './services/carrinhoService';
+import { mercadoPagoService, mercadoPagoStatus } from
+  '~/features/mercado_pago/mercado_pago_service';
+import type {
+  MercadoPagoOrderResult,
+  MercadoPagoPaymentStatus,
+} from
+  '~/features/mercado_pago/types';
+
+type PagamentoVisualStatus = 'aprovado' | 'pendente' | 'recusado';
+
+const toPagamentoVisualStatus = (
+  status?: string | null,
+): PagamentoVisualStatus => {
+  if (!status) {
+    return 'pendente';
+  }
+
+  return mercadoPagoStatus.toVisualStatus(
+    status as MercadoPagoPaymentStatus,
+  );
+};
 
 const Step6_Success = () => {
   const { id } = useParams();
@@ -84,10 +105,24 @@ const Step6_Success = () => {
   const [venda, setVenda] = React.useState<any>(null);
   const [pixData, setPixData] = React.useState<any>(null);
   const [pagamentoStatus, setPagamentoStatus] = React.useState<string>('pendente');
+  const [mercadoPagoOrder, setMercadoPagoOrder] =
+    React.useState<MercadoPagoOrderResult | null>(null);
 
   React.useEffect(() => {
     if (id) {
       loadOrder(Number(id));
+      const storedOrder = mercadoPagoService.getStoredOrder(Number(id));
+      if (storedOrder) {
+        setMercadoPagoOrder(storedOrder);
+        setPagamentoStatus(toPagamentoVisualStatus(storedOrder.status));
+        if (storedOrder.method === 'pix' && storedOrder.qrCode) {
+          setPixData({
+            copia_cola: storedOrder.qrCode,
+            imagem_base64: storedOrder.qrCodeBase64,
+            txid: storedOrder.orderId,
+          });
+        }
+      }
     }
   }, [id]);
 
@@ -132,29 +167,87 @@ const Step6_Success = () => {
   }, [venda]);
 
   React.useEffect(() => {
-    const status = venda?.pagamento_ecommerce?.status || venda?.pagamento?.status;
-    if (status === 'approved') {
-      setPagamentoStatus('aprovado');
-    } else if (status === 'rejected') {
-      setPagamentoStatus('recusado');
-    } else if (status) {
-      setPagamentoStatus('pendente');
+    if (mercadoPagoOrder) {
+      return;
     }
-  }, [venda]);
+
+    const status = venda?.pagamento_ecommerce?.status || venda?.pagamento?.status;
+    if (status) {
+      setPagamentoStatus(toPagamentoVisualStatus(status));
+    }
+  }, [mercadoPagoOrder, venda]);
+
+  React.useEffect(() => {
+    const orderId = venda?.pagamento_ecommerce?.order_id;
+    if (mercadoPagoOrder || !orderId) {
+      return;
+    }
+
+    void mercadoPagoService.getOrder(orderId)
+      .then((order) => {
+        mercadoPagoService.storeOrder(order);
+        setMercadoPagoOrder(order);
+        setPagamentoStatus(toPagamentoVisualStatus(order.status));
+        if (order.method === 'pix' && order.qrCode) {
+          setPixData({
+            copia_cola: order.qrCode,
+            imagem_base64: order.qrCodeBase64,
+            txid: order.orderId,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao recuperar pagamento Mercado Pago.', error);
+      });
+  }, [mercadoPagoOrder, venda]);
 
   const [checkingPayment, setCheckingPayment] = React.useState(false);
 
   React.useEffect(() => {
     let interval: NodeJS.Timeout;
-    // Só verificar se tivermos pixData E o status não for aprovado E for pagamento PIX
-    if (pixData && pagamentoStatus !== 'aprovado' && venda?.pagamento?.tipo === 'PIX') {
+    const shouldPoll =
+      pagamentoStatus === 'pendente' &&
+      (mercadoPagoOrder != null ||
+        (pixData && venda?.pagamento?.tipo === 'PIX'));
+    if (shouldPoll) {
       interval = setInterval(() => checkPixStatus(), 5000);
     }
     return () => clearInterval(interval);
-  }, [pixData, pagamentoStatus, venda]);
+  }, [mercadoPagoOrder, pixData, pagamentoStatus, venda]);
 
 
   const checkPixStatus = async (manual = false) => {
+    if (mercadoPagoOrder) {
+      try {
+        const refreshedOrder = await mercadoPagoService.getOrder(
+          mercadoPagoOrder.orderId,
+        );
+        mercadoPagoService.storeOrder(refreshedOrder);
+        setMercadoPagoOrder(refreshedOrder);
+        setPagamentoStatus(toPagamentoVisualStatus(refreshedOrder.status));
+        if (refreshedOrder.qrCode) {
+          setPixData({
+            copia_cola: refreshedOrder.qrCode,
+            imagem_base64: refreshedOrder.qrCodeBase64,
+            txid: refreshedOrder.orderId,
+          });
+        }
+        if (manual && !mercadoPagoStatus.isApproved(refreshedOrder.status)) {
+          toast.info('Pagamento ainda nao identificado.', {
+            position: 'top-center',
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar PIX do Mercado Pago.', error);
+        if (manual) {
+          toast.error('Erro ao verificar status do pagamento.', {
+            position: 'top-center',
+          });
+        }
+      }
+      return;
+    }
+
     // Verifica se temos ID do banco para chamar a verificação
     if (!pixData || !venda.pagamento.id) return;
     try {
@@ -171,6 +264,35 @@ const Step6_Success = () => {
       }
     }
   };
+
+  React.useEffect(() => {
+    if (!mercadoPagoOrder?.challengeUrl || pagamentoStatus !== 'pendente') {
+      return;
+    }
+
+    const handleChallengeMessage = (event: MessageEvent) => {
+      const status = typeof event.data === 'object' && event.data !== null
+        ? (event.data as { status?: unknown }).status
+        : event.data;
+      const normalizedStatus = String(status ?? '').toUpperCase();
+
+      if (
+        [
+          'COMPLETE',
+          'COMPLETED',
+          'CHALLENGE_COMPLETED',
+          'SUCCESS',
+        ].includes(normalizedStatus)
+      ) {
+        void checkPixStatus(true);
+      }
+    };
+
+    window.addEventListener('message', handleChallengeMessage);
+    return () => {
+      window.removeEventListener('message', handleChallengeMessage);
+    };
+  }, [mercadoPagoOrder?.challengeUrl, pagamentoStatus]);
 
   if (loading) {
     return <div className="p-8 flex justify-center"><Loader /></div>;
@@ -198,9 +320,18 @@ const Step6_Success = () => {
     );
   }
 
-  const isPix = venda.pagamento && venda.pagamento.tipo === 'PIX';
-  const isMercadoPago = venda.pagamento?.tipo === 'MERCADO_PAGO' || venda.pagamento_ecommerce?.gateway === 'mercado_pago';
-  const showPix = isPix && venda.pagamento.pix_dinamico === 'Sim';
+  const isMercadoPagoPix = mercadoPagoOrder?.method === 'pix';
+  const isPix =
+    isMercadoPagoPix ||
+    (venda.pagamento && venda.pagamento.tipo === 'PIX');
+  const isMercadoPago =
+    mercadoPagoOrder != null ||
+    venda.pagamento?.tipo === 'MERCADO_PAGO' ||
+    venda.pagamento_ecommerce?.gateway === 'mercado_pago';
+  const showPix =
+    isMercadoPagoPix ||
+    (venda.pagamento?.tipo === 'PIX' &&
+      venda.pagamento.pix_dinamico === 'Sim');
   const routeState = location.pathname.includes('/falha')
     ? 'falha'
     : location.pathname.includes('/pendente')
@@ -239,6 +370,24 @@ const Step6_Success = () => {
           <p className="text-lg text-gray-600">AGORA É SÓ ESPERAR O PEDIDO CHEGAR</p>
         )}
       </div>
+
+      {mercadoPagoOrder?.challengeUrl && pagamentoStatus === 'pendente' && (
+        <section className="mb-8 rounded-lg border border-primary/20 bg-white p-4">
+          <h2 className="mb-2 text-lg font-bold text-gray-800">
+            Confirme a compra com seu banco
+          </h2>
+          <p className="mb-4 text-sm text-gray-600">
+            Conclua a verificacao de seguranca abaixo. Esta etapa acontece
+            dentro da loja e pode levar alguns instantes para ser confirmada.
+          </p>
+          <iframe
+            src={mercadoPagoOrder.challengeUrl}
+            title="Autenticacao de seguranca do cartao"
+            className="h-150 w-full rounded-md border border-gray-200"
+            sandbox="allow-forms allow-scripts allow-same-origin"
+          />
+        </section>
+      )}
 
       <div className="flex flex-col md:flex-row gap-8">
         {showPix && pagamentoStatus !== 'aprovado' && pixData && (
@@ -293,7 +442,11 @@ const Step6_Success = () => {
               <FaExclamationCircle className="text-2xl mt-1" />
               <div>
                 <p className="font-bold">Aproveite! Este código tem validade de {(() => {
-                  const minutes = venda.pagamento.tempo_cancel || 30;
+                  const minutes = isMercadoPagoPix
+                    ? mercadoPagoOrder?.pixExpirationMinutes ??
+                      venda.pagamento_ecommerce?.pix_expiracao_minutos ??
+                      30
+                    : venda.pagamento.tempo_cancel || 30;
                   if (minutes < 60) return `${minutes} minutos`;
                   const hours = Math.floor(minutes / 60);
                   const remainingMinutes = minutes % 60;

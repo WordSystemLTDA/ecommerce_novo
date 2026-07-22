@@ -1,5 +1,15 @@
 # Welcome to React Router!
 
+## Pagamentos com Mercado Pago
+
+O checkout transparente oferece PIX, cartão de crédito parcelado, consulta de
+status e 3DS 2.0 sem retirar o cliente da loja. Toda comunicação privada com o
+Mercado Pago e o webhook ficam na API PHP; o navegador recebe somente a Public
+Key e envia à API o token descartável criado pelo SDK oficial.
+
+Consulte [a configuração e o roteiro de testes](docs/mercado-pago.md) antes de
+habilitar o gateway.
+
 A modern, production-ready template for building full-stack React applications using React Router.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
