@@ -9,7 +9,65 @@ import type {
 
 const paymentStoragePrefix = 'mercado_pago_order_';
 const idempotencyStoragePrefix = 'mercado_pago_idempotency_';
+const securityScriptId = 'mercado-pago-security';
 let publicConfigPromise: Promise<MercadoPagoConfigResponse> | null = null;
+let deviceSessionPromise: Promise<string | null> | null = null;
+
+declare global {
+  interface Window {
+    MP_DEVICE_SESSION_ID?: string;
+  }
+}
+
+function readDeviceSessionId() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const deviceId = window.MP_DEVICE_SESSION_ID?.trim();
+  return deviceId || null;
+}
+
+async function getDeviceSessionId(): Promise<string | null> {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  const availableDeviceId = readDeviceSessionId();
+  if (availableDeviceId) {
+    return availableDeviceId;
+  }
+
+  deviceSessionPromise ??= (async () => {
+    if (!document.getElementById(securityScriptId)) {
+      const script = document.createElement('script');
+      script.id = securityScriptId;
+      script.src = 'https://www.mercadopago.com/v2/security.js';
+      script.async = true;
+      script.setAttribute('view', 'checkout');
+      script.setAttribute('output', 'MP_DEVICE_SESSION_ID');
+      document.head.appendChild(script);
+    }
+
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const deviceId = readDeviceSessionId();
+      if (deviceId) {
+        return deviceId;
+      }
+
+      await new Promise((resolve) => window.setTimeout(resolve, 100));
+    }
+
+    return null;
+  })();
+
+  const deviceId = await deviceSessionPromise;
+  if (!deviceId) {
+    deviceSessionPromise = null;
+  }
+
+  return deviceId;
+}
 
 function unwrapApiResponse<T>(payload: unknown): T {
   if (
@@ -122,6 +180,7 @@ export const mercadoPagoStatus = {
 
 export const mercadoPagoService = {
   getPublicConfig: async () => {
+    void getDeviceSessionId();
     publicConfigPromise ??= apiRequest<MercadoPagoConfigResponse>(
       apiClient.get('/pagamentos/mercadopago/config'),
     );
@@ -134,13 +193,22 @@ export const mercadoPagoService = {
     }
   },
 
-  createOrder: async (request: MercadoPagoOrderRequest) =>
-    apiRequest<MercadoPagoOrderResult>(
+  createOrder: async (request: MercadoPagoOrderRequest) => {
+    const deviceId = await getDeviceSessionId();
+    if (request.payment.method === 'pix' && !deviceId) {
+      throw new Error(
+        'Nao foi possivel validar este dispositivo para gerar o PIX. ' +
+          'Recarregue a pagina e desative bloqueadores de conteudo.',
+      );
+    }
+
+    return apiRequest<MercadoPagoOrderResult>(
       apiClient.post(
         '/pagamentos/mercadopago/orders',
         {
           saleId: request.saleId,
           payment: request.payment,
+          ...(deviceId ? { deviceId } : {}),
         },
         {
           headers: {
@@ -148,7 +216,8 @@ export const mercadoPagoService = {
           },
         },
       ),
-    ),
+    );
+  },
 
   getOrder: async (orderId: string) =>
     apiRequest<MercadoPagoOrderResult>(

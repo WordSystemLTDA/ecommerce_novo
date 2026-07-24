@@ -126,14 +126,14 @@ export function ProductCard({ produto }: ProductCardProps) {
 
     return (
         <div
-            className="flex flex-col h-full border-t border-primary/15 bg-product-bg cursor-pointer group relative shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-shadow duration-500"
+            className="group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden border-t border-primary/15 bg-product-bg shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-shadow duration-500 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
             onClick={() => {
                 navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
             }}
         >
             <div className="relative overflow-hidden">
-                <div className="flex absolute top-2 right-2 group-hover:opacity-100 opacity-0 transition-opacity duration-300 gap-2 p-1 z-10 cursor-auto">
-                    <button onClick={toggleFavorite} className="hover:scale-110 transition-transform duration-300">
+                <div className="absolute right-2 top-2 z-10 flex cursor-auto gap-1 bg-product-bg/90 p-1 opacity-100 shadow-sm transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100">
+                    <button onClick={toggleFavorite} className="flex h-8 w-8 items-center justify-center transition-transform duration-300 hover:scale-110" aria-label="Adicionar aos favoritos">
                         {isFavorite ? (
                             <MdFavorite size={20} className="text-terciary" />
                         ) : (
@@ -141,9 +141,13 @@ export function ProductCard({ produto }: ProductCardProps) {
                         )}
                     </button>
                     {estaNoCarrinho ? (
-                        <MdShoppingCartCheckout size={20} className="cursor-pointer text-primary" onClick={handleAdicionarCarrinho} />
+                        <button type="button" className="flex h-8 w-8 items-center justify-center" onClick={handleAdicionarCarrinho} aria-label="Ver no carrinho">
+                            <MdShoppingCartCheckout size={20} className="cursor-pointer text-primary" />
+                        </button>
                     ) : (
-                        <MdOutlineAddShoppingCart size={20} className="cursor-pointer text-primary" onClick={handleAdicionarCarrinho} />
+                        <button type="button" className="flex h-8 w-8 items-center justify-center" onClick={handleAdicionarCarrinho} aria-label="Adicionar ao carrinho">
+                            <MdOutlineAddShoppingCart size={20} className="cursor-pointer text-primary" />
+                        </button>
                     )}
                 </div>
 
@@ -156,7 +160,7 @@ export function ProductCard({ produto }: ProductCardProps) {
                 <OptimizedImage
                     src={produto.fotos?.m?.[0]}
                     alt={produto.nome}
-                    className={`w-full min-h-48 max-h-48 object-contain px-4 pt-4 pb-0 transition-all duration-900 ease-out group-hover:scale-[1.03] ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
+                    className={`h-40 w-full object-contain px-3 pb-0 pt-3 transition-all duration-900 ease-out group-hover:scale-[1.03] sm:h-48 sm:px-4 sm:pt-4 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
                     fallbackSrc={productImageFallback}
                     onLoad={() => setIsImageLoading(false)}
                 />
@@ -164,7 +168,7 @@ export function ProductCard({ produto }: ProductCardProps) {
 
             <div className="flex-1 p-3 lg:p-4 flex flex-col justify-between border-t border-primary/8">
                 <div className="flex-1">
-                    <h3 className="text-xs font-normal text-primary mb-2 overflow-hidden text-ellipsis leading-relaxed group-hover:text-terciary transition-colors duration-500">
+                    <h3 className="line-clamp-3 min-h-[3.75rem] overflow-hidden text-ellipsis text-xs font-normal leading-relaxed text-primary transition-colors duration-500 group-hover:text-terciary sm:line-clamp-2 sm:min-h-10">
                         {produto.nome}
                     </h3>
 
@@ -174,8 +178,8 @@ export function ProductCard({ produto }: ProductCardProps) {
                         </span>
                     )}
 
-                    <div className="flex items-baseline gap-2 mb-0">
-                        <span className="text-base font-medium text-primary">
+                    <div className="mb-0 flex flex-wrap items-baseline gap-1 sm:gap-2">
+                        <span className="text-sm font-medium text-primary sm:text-base">
                             {currencyFormatter.format(parseFloat(precoExibido))}
                         </span>
 
@@ -217,7 +221,8 @@ export function ProductCard({ produto }: ProductCardProps) {
 
                 <div className="flex gap-0.5">
                     <button
-                        className="mt-2 w-10 h-9 bg-primary text-secondary font-medium text-xs py-2 flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10"
+                        className="z-10 mt-2 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center bg-primary py-2 text-xs font-medium text-secondary transition-colors duration-500 hover:bg-terciary"
+                        aria-label="Adicionar ao carrinho"
                         onClick={handleAdicionarCarrinho}
                     >
                         <BsCartPlus size={18} aria-hidden />

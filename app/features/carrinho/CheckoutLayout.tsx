@@ -135,12 +135,9 @@ const CheckoutStepper = ({
     const progress = ((activeStep - 1) / (steps.length - 1)) * 100;
 
     return (
-        <div className="bg-white rounded-lg shadow-sm mb-6 p-4">
+        <div className="mb-5 rounded-lg bg-white p-4 shadow-sm sm:mb-6">
             <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/70">
-                        Compra segura
-                    </p>
                     <h1 className="text-xl font-bold text-gray-900">
                         Finalize seu pedido
                     </h1>
@@ -158,7 +155,7 @@ const CheckoutStepper = ({
                 />
             </div>
 
-            <div className="mt-4 flex items-start gap-3 overflow-x-auto pb-1 whitespace-nowrap">
+            <div className="mt-4 flex items-start gap-1 sm:gap-3">
                 {steps.map((step, index) => {
                     const stepNumber = index + 1;
                     const isActive = stepNumber === activeStep;
@@ -173,7 +170,7 @@ const CheckoutStepper = ({
                                 disabled={!isAvailable}
                                 onClick={() => onStepSelect(stepNumber)}
                                 className={`
-                                    min-w-24 flex flex-col items-center rounded-md p-2
+                                    min-w-0 flex flex-1 flex-col items-center rounded-md p-1 sm:min-w-24 sm:p-2
                                     transition-colors
                                     ${isAvailable ? 'cursor-pointer hover:bg-primary/5' : 'cursor-not-allowed opacity-55'}
                                 `}
@@ -181,7 +178,7 @@ const CheckoutStepper = ({
                             >
                                 <div
                                     className={`
-                                        w-10 h-10 rounded-full flex items-center justify-center border-2  
+                                        flex h-8 w-8 items-center justify-center rounded-full border-2 sm:h-10 sm:w-10
                                         ${isActive ? 'border-primary bg-primary text-white' : ''}
                                         ${isCompleted ? 'border-primary bg-white text-primary' : ''}
                                         ${!isActive && !isCompleted ? 'border-gray-300 text-gray-400' : ''}
@@ -191,20 +188,20 @@ const CheckoutStepper = ({
                                 </div>
                                 <span
                                     className={`
-                                        mt-2 text-xs font-medium 
+                                        mt-2 hidden text-xs font-medium sm:block
                                         ${(isActive || isCompleted) ? 'text-primary' : 'text-gray-400'}
                                     `}
                                 >
                                     {step.name}
                                 </span>
                                 {!isAvailable && !isActive && (
-                                    <span className="mt-1 flex items-center gap-1 text-[10px] text-gray-400">
+                                    <span className="mt-1 hidden items-center gap-1 text-[10px] text-gray-400 sm:flex">
                                         <FaLock size={9} /> Bloqueada
                                     </span>
                                 )}
                             </button>
                             {index < steps.length - 1 && (
-                                <div className={`mt-7 h-0.5 min-w-8 flex-1 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                                <div className={`mt-4 h-0.5 min-w-2 flex-1 sm:mt-7 sm:min-w-8 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
                             )}
                         </React.Fragment>
                     );
@@ -296,7 +293,7 @@ const CartSummary = ({
     ];
 
     return (
-        <aside className="bg-white rounded-lg shadow-md p-6 lg:sticky lg:top-6">
+        <aside className="rounded-lg bg-white p-4 shadow-md sm:p-6 lg:sticky lg:top-6">
             <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4 border-b pb-2">
                 <FaRegFileAlt /> RESUMO
             </h2>
@@ -609,16 +606,16 @@ export default function CheckoutLayout() {
                 }
                 setOrderCompleted(true);
 
-                if (mercadoPagoOrder.method === 'pix') {
-                    toast.success('PIX gerado com sucesso.', {
-                        position: 'top-center',
-                    });
-                } else if (mercadoPagoStatus.isApproved(mercadoPagoOrder.status)) {
+                if (mercadoPagoStatus.isApproved(mercadoPagoOrder.status)) {
                     toast.success('Pagamento aprovado!', {
                         position: 'top-center',
                     });
                 } else if (mercadoPagoStatus.isFailure(mercadoPagoOrder.status)) {
                     toast.error('Pagamento nao aprovado.', {
+                        position: 'top-center',
+                    });
+                } else if (mercadoPagoOrder.method === 'pix') {
+                    toast.success('PIX gerado com sucesso.', {
                         position: 'top-center',
                     });
                 } else {
@@ -771,15 +768,15 @@ export default function CheckoutLayout() {
         <div>
             <Header />
 
-            <div className="bg-gray-100 min-h-screen py-8">
-                <div className="max-w-387 mx-auto px-4">
+            <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
+                <div className="page-container">
                     <CheckoutStepper
                         activeStep={activeStep}
                         canVisitStep={canVisitStep}
                         onStepSelect={navigateToStep}
                     />
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
                         <div className="lg:col-span-2">
                             <MercadoPagoPaymentProvider
                                 value={{

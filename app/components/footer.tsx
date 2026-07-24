@@ -71,7 +71,7 @@ const FooterTitle = ({ title }: { title: string }) => (
 );
 
 const FooterInfoCard = ({ icon: Icon, label, value }: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string; value: React.ReactNode }) => (
-    <div className="border border-secondary/16 bg-white/10 px-4 py-4 backdrop-blur-sm min-h-[88px]">
+    <div className="min-h-[88px] min-w-0 border border-secondary/16 bg-white/10 px-4 py-4 backdrop-blur-sm">
         <div className="flex items-start gap-3">
             <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border border-secondary/16 text-terciary bg-white/10">
                 <Icon size={14} className="shrink-0" />
@@ -95,7 +95,7 @@ export function Footer() {
                 <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-secondary/15 to-transparent" />
             </div>
 
-            <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-16 pt-10 lg:pt-14 relative">
+            <div className="relative mx-auto max-w-[1600px] px-4 pt-8 sm:px-8 sm:pt-10 lg:px-16 lg:pt-14">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4">
                     <FooterInfoCard
                         icon={FaClock}
@@ -119,10 +119,10 @@ export function Footer() {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 py-14 lg:py-18">
+                <div className="grid grid-cols-1 gap-10 py-10 lg:grid-cols-12 lg:gap-12 lg:py-18">
                     <div className="lg:col-span-4 xl:col-span-3">
                         <p className="text-tiny uppercase tracking-[0.3em] text-terciary mb-4">{footerConfig.nomeExibicao}</p>
-                        <h2 className="font-serif text-3xl leading-none text-white mb-4">Informações e atendimento</h2>
+                        <h2 className="mb-4 font-serif text-2xl leading-tight text-white sm:text-3xl">Informações e atendimento</h2>
                         <p className="text-sm text-secondary/62 leading-7 max-w-md">
                             Consulte contato, endereço, links institucionais, departamentos e canais oficiais da loja em um único lugar.
                         </p>
@@ -134,7 +134,7 @@ export function Footer() {
                             </div>
                             <div className="border border-secondary/16 bg-white/10 px-4 py-4">
                                 <p className="text-tiny uppercase tracking-[0.2em] text-secondary/50 mb-1">Empresa</p>
-                                <p className="text-sm text-secondary/82 leading-relaxed">{footerConfig.nome} · CNPJ {footerConfig.cnpj}</p>
+                                <p className="overflow-wrap-anywhere text-sm leading-relaxed text-secondary/82">{footerConfig.nome} · CNPJ {footerConfig.cnpj}</p>
                             </div>
                         </div>
                     </div>
@@ -212,7 +212,7 @@ export function Footer() {
                                 <input
                                     type="email"
                                     placeholder="Seu e-mail"
-                                    className="bg-transparent border-b border-secondary/28 focus:border-terciary text-secondary/96 placeholder:text-secondary/52 text-sm px-0 py-2 flex-1 outline-none transition-colors duration-500"
+                                    className="min-w-0 flex-1 border-b border-secondary/28 bg-transparent px-0 py-2 text-sm text-secondary/96 outline-none transition-colors duration-500 placeholder:text-secondary/52 focus:border-terciary"
                                 />
                                 <button
                                     type="submit"
@@ -250,7 +250,7 @@ export function Footer() {
             </div>
 
             <div className="border-t border-secondary/8 relative">
-                <div className="max-w-[1600px] mx-auto px-5 sm:px-8 lg:px-16 py-7 lg:py-8">
+                <div className="mx-auto max-w-[1600px] px-4 py-7 sm:px-8 lg:px-16 lg:py-8">
                     <div className="flex flex-col md:flex-row justify-between gap-8 md:items-end">
                         <div className="flex-1">
                             <p className="text-tiny uppercase tracking-[0.25em] text-terciary mb-2">{footerConfig.nomeExibicao}</p>

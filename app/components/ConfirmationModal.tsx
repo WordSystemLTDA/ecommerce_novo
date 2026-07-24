@@ -24,8 +24,8 @@ export function ConfirmationModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center sm:p-4">
+            <div className="relative w-full max-w-md animate-in rounded-t-xl bg-white p-5 shadow-xl fade-in zoom-in duration-200 sm:rounded-lg sm:p-6">
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -43,7 +43,7 @@ export function ConfirmationModal({
                         {message}
                     </p>
 
-                    <div className="flex gap-3 w-full">
+                    <div className="flex w-full flex-col-reverse gap-3 sm:flex-row">
                         <button
                             onClick={onClose}
                             className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium transition-colors"

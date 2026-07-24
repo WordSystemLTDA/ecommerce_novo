@@ -74,13 +74,13 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
             <Header />
 
             <main className="bg-main-bg text-primary w-full">
-                <div className="max-w-387 mx-auto px-0 pb-12">
-                    <div className='lg:hidden flex justify-between items-center pt-5 pb-2 px-4 lg:px-0'>
+                <div className="page-container pb-12">
+                    <div className='flex items-center justify-between gap-3 pb-3 pt-4 lg:hidden'>
                         <Breadcrumb />
                         <Avalicoes produto={produto} />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-6 lg:gap-6 lg:grid-cols-12 relative lg:pt-5 px-4 lg:px-0">
+                    <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-12 lg:pt-5">
                         <div className='lg:hidden flex flex-col gap-2'>
                             <ProdutoNameInfo produto={produto} />
                         </div>
@@ -116,12 +116,12 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                         </div>
                     </div>
 
-                    <div className='flex flex-row gap-2 items-center text-terciary mt-6 lg:hidden px-4 lg:px-0'>
+                    <div className='mt-8 flex items-center gap-2 text-terciary lg:hidden'>
                         <AiFillInfoCircle />
                         <h2 className="text-sm uppercase tracking-[0.2em] font-medium">Sobre o produto</h2>
                     </div>
 
-                    <div className="flex flex-col max-w-full relative max-lg:block lg:hidden px-4 lg:px-0">
+                    <div className="relative flex max-w-full flex-col lg:hidden">
                         <div className='mt-6 border-t border-primary/10 pt-6'>
                             <div className='flex gap-2 items-center '>
                                 <MdOutlineDescription className='text-terciary' size={20} />
@@ -243,14 +243,14 @@ function ProdutoGallery({ images, produtoId, produtoNome }: ProdutoGalleryProps)
                     onSlideChange={(swiper) => {
                         setCurrentSlide(swiper.realIndex)
                     }}
-                    className="lg:max-h-130! max-lg:min-h-96! lg:w-full!"
+                    className="h-[min(calc(100vw-2rem),32.5rem)]! w-full!"
                 >
                     {images.map((img, index) => (
-                        <SwiperSlide key={index} className='lg:h-130! max-lg:min-h-96! bg-white'>
+                        <SwiperSlide key={index} className='h-full! bg-white'>
                             <OptimizedImage
                                 src={img}
                                 alt={`Imagem ${index + 1} do produto`}
-                                className="lg:h-130! max-lg:min-h-96! lg:w-full! w-full! object-contain! p-4 lg:p-6"
+                                className="h-full! w-full! object-contain! p-4 sm:p-6"
                                 priority={index === 0}
                                 fallbackSrc={productImageFallback}
                             />
@@ -325,7 +325,7 @@ function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps)
                                     onClick={() => {
                                         navigate(`/produto/${cor.id}/${gerarSlug(cor.nome)}`);
                                     }}
-                                    className="group relative w-24 min-h-24 max-h-32 cursor-pointer"
+                                    className="group relative min-h-20 max-h-32 w-20 cursor-pointer sm:min-h-24 sm:w-24"
                                 >
                                     <div className={`p-1 w-full h-full border overflow-hidden ${cor.id == produto.id ? 'border-terciary' : 'border-primary/20 group-hover:border-primary/35'}`}>
                                         <OptimizedImage
@@ -392,7 +392,7 @@ function ProdutoInfo({ produto, erroTamanho, setErroTamanho }: ProdutoInfoProps)
 
 function ProdutoNameInfo({ produto }: ProdutoProps) {
     return (
-        <div className='lg:pt-5 flex flex-col gap-2'>
+        <div className='flex min-w-0 flex-col gap-2 lg:pt-5'>
 
             <div className="flex justify-between items-center max-lg:hidden">
                 <Breadcrumb />
@@ -400,7 +400,7 @@ function ProdutoNameInfo({ produto }: ProdutoProps) {
                 <Avalicoes produto={produto} />
             </div>
 
-            <h1 className="text-base lg:text-lg font-normal leading-tight">{produto.nome}</h1>
+            <h1 className="overflow-wrap-anywhere text-base font-normal leading-snug sm:text-lg">{produto.nome}</h1>
         </div>
     );
 }
@@ -475,7 +475,7 @@ function PurchaseSidebar({ produto, setErroTamanho }: PurchaseSidebarProps) {
     };
 
     return (
-        <div className="flex flex-col gap-4 lg:sticky top-30">
+        <div className="top-30 flex min-w-0 flex-col gap-4 lg:sticky">
             <div className="flex flex-col gap-0 border border-primary/15 bg-secondary px-4 pb-4 shadow-[0_4px_20px_rgba(0,0,0,0.04)] relative overflow-hidden">
 
                 {/* Badges do ProductCard */}

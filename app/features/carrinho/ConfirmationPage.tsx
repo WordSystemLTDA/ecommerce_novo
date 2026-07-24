@@ -42,7 +42,7 @@ export default function ConfirmationPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="rounded-lg bg-white p-4 shadow-sm sm:p-6">
         <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
           <FaRegUserCircle /> DADOS PESSOAIS
         </h2>
@@ -61,7 +61,7 @@ export default function ConfirmationPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="rounded-lg bg-white p-4 shadow-sm sm:p-6">
           <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
             <FaTruck /> ENTREGA
           </h2>
@@ -80,7 +80,7 @@ export default function ConfirmationPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="rounded-lg bg-white p-4 shadow-sm sm:p-6">
           <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
             <FaCreditCard /> PAGAMENTO
           </h2>
@@ -98,7 +98,7 @@ export default function ConfirmationPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="rounded-lg bg-white p-4 shadow-sm sm:p-6">
         <h2 className="flex items-center gap-2 text-lg font-bold text-gray-800 mb-4">
           <FaBoxes /> LISTA DE PRODUTOS
         </h2>
@@ -106,18 +106,18 @@ export default function ConfirmationPage() {
 
         {produtos.filter(p => selectedItems.includes(p.internalId)).map((produto) => {
           return (
-            <div key={produto.internalId} className="flex gap-4 border-b pb-4 mb-4">
+            <div key={produto.internalId} className="mb-4 flex flex-wrap gap-4 border-b pb-4 sm:flex-nowrap">
               <OptimizedImage
                 src={produto.fotos?.m?.[0]}
                 fallbackSrc={getProductImageFallback(produto.nome)}
                 alt={produto.nome}
                 className="w-16 h-16 object-contain rounded bg-gray-50"
               />
-              <div className="grow">
+              <div className="min-w-0 grow">
                 <p className="text-sm text-gray-700">{produto.nome}</p>
                 {produto.tamanhoSelecionado != null && <p className="text-xs text-gray-500">Tamanho: {produto.tamanhoSelecionado?.tamanho}</p>}
               </div>
-              <div className="text-right">
+              <div className="w-full text-right sm:w-auto sm:shrink-0">
                 <p className="text-xs text-gray-500">Quant: {produto.quantidade}</p>
                 <p className="text-sm text-gray-500">Preço à vista no PIX:</p>
                 <p className="text-lg font-bold text-primary">{currencyFormatter.format(parseFloat(produto.preco))}</p>

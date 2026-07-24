@@ -30,6 +30,10 @@ export default [
         ]),
         route("favoritos", "routes/minhaconta.favoritos.tsx"),
         route("pedidos", "routes/minhaconta.pedidos.tsx"),
+        route(
+            "meus-pedidos/detalhes/:id",
+            "routes/minhaconta.pedido_detalhes.tsx",
+        ),
         route("dados", "routes/minhaconta.dados.tsx"),
     ]),
 

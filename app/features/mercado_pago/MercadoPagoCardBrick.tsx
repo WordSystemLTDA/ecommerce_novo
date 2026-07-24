@@ -157,7 +157,7 @@ export function MercadoPagoCardBrick({
   }, [amount, containerId, email, onSubmit]);
 
   return (
-    <section className="rounded-lg border border-primary/20 bg-white p-6 shadow-sm">
+    <section className="min-w-0 overflow-hidden rounded-lg border border-primary/20 bg-white p-4 shadow-sm sm:p-6">
       <div className="mb-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary/70">
           Checkout transparente

@@ -128,7 +128,7 @@ export default function AddressPage() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="rounded-lg bg-white p-4 shadow-sm sm:p-6">
       {carregandoEnderecos ? (
         <div className="flex items-center justify-center w-full">
           <Loader />
@@ -154,7 +154,7 @@ export default function AddressPage() {
           </div>
 
           {enderecos.length === 0 ? (
-            <div className="rounded-md border border-dashed border-gray-300 p-8 text-center">
+            <div className="rounded-md border border-dashed border-gray-300 p-6 text-center sm:p-8">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/8 text-primary">
                 <FaMapMarkerAlt />
               </div>
@@ -273,7 +273,7 @@ export default function AddressPage() {
 
       {addressModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 px-4 py-6"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-gray-900/60 sm:items-center sm:px-4 sm:py-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby="checkout-address-modal-title"
@@ -283,8 +283,8 @@ export default function AddressPage() {
             }
           }}
         >
-          <div className="flex max-h-[calc(100vh-3rem)] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4">
+          <div className="flex max-h-[92dvh] w-full max-w-3xl flex-col overflow-hidden rounded-t-xl bg-white shadow-2xl sm:max-h-[calc(100vh-3rem)] sm:rounded-lg">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-4 py-4 sm:px-5">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary/70">
                   Entrega
@@ -307,7 +307,7 @@ export default function AddressPage() {
               </button>
             </div>
 
-            <div className="overflow-y-auto p-5">
+            <div className="safe-bottom overflow-y-auto p-4 sm:p-5">
               <AddressForm
                 addressId={modalAddressId}
                 cancelLabel="Cancelar"

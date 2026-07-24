@@ -123,7 +123,7 @@ export default function PaymentPage() {
   const isLoading = carregandoPagamentos || gatewayConfig == null;
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow-sm">
+    <div className="rounded-lg bg-white p-4 shadow-sm sm:p-6">
       {isLoading ? (
         <div className="flex w-full items-center justify-center">
           <Loader />
@@ -131,15 +131,9 @@ export default function PaymentPage() {
       ) : (
         <div>
           <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary/70">
-              Pagamento
-            </p>
             <h2 className="text-lg font-bold text-gray-800">
               Escolha como pagar
             </h2>
-            <p className="mt-1 text-sm text-gray-600">
-              O pagamento e concluido nesta loja, sem redirecionamentos.
-            </p>
           </div>
 
           {gatewayConfig.sandbox && gatewayConfig.enabled && (
@@ -196,7 +190,7 @@ export default function PaymentPage() {
                   checked={isSelected}
                   description={
                     pagamento.tipo === 'PIX'
-                      ? 'Aprovacao rapida para acelerar a separacao do pedido.'
+                      ? undefined
                       : pagamento.nome_banco || undefined
                   }
                   icon={getPaymentIcon(pagamento)}
@@ -272,8 +266,8 @@ function PaymentOption({
           : 'border-gray-300 hover:border-primary/60 hover:bg-gray-50'
       }`}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center">
+      <div className="flex items-start justify-between gap-3 sm:items-center">
+        <div className="flex min-w-0 items-start sm:items-center">
           <input
             type="radio"
             name="payment"
@@ -282,8 +276,8 @@ function PaymentOption({
             onChange={onSelect}
             className="h-4 w-4 accent-primary"
           />
-          <div className="ml-3 text-sm">
-            <span className="font-bold">{label}</span>
+          <div className="ml-3 min-w-0 text-sm">
+            <span className="overflow-wrap-anywhere font-bold">{label}</span>
             {description && (
               <p className="text-xs text-gray-500">{description}</p>
             )}

@@ -19,7 +19,6 @@ export default function RegistrarPage() {
     const [celular, setCelular] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [aceitaMarketing, setAceitaMarketing] = useState(true);
     const [aceitaTermos, setAceitaTermos] = useState(false);
 
     const [cpf, setCpf] = useState('');
@@ -99,40 +98,14 @@ export default function RegistrarPage() {
         <div className="min-h-screen flex flex-col bg-main-bg">
             <Header />
 
-            <main className="flex-1 flex items-start justify-center px-4 py-12">
-                <div className="w-full max-w-5xl">
-                    <div className="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-6">
-                        <aside className="rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8 flex flex-col">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary mb-4">
-                                <FiUserPlus size={18} />
-                            </div>
-                            <p className="text-xs uppercase tracking-widest text-primary/50 font-medium">Cadastro</p>
-                            <h2 className="font-serif text-2xl font-semibold text-slate-800 mt-1">Sua conta em minutos</h2>
-                            <p className="text-sm text-slate-500 leading-relaxed mt-4">
-                                Finalize seu cadastro para acompanhar pedidos, salvar enderecos e ter uma experiencia de compra mais rapida.
-                            </p>
-
-                            <div className="mt-8 space-y-3 text-sm text-slate-600">
-                                <div className="rounded-xl border border-slate-100 bg-white/80 px-4 py-3">Checkout mais rapido</div>
-                                <div className="rounded-xl border border-slate-100 bg-white/80 px-4 py-3">Historico completo de pedidos</div>
-                                <div className="rounded-xl border border-slate-100 bg-white/80 px-4 py-3">Promocoes e ofertas exclusivas</div>
-                            </div>
-
-                            <p className="text-sm text-slate-500 mt-auto pt-6">
-                                Ja possui cadastro?{' '}
-                                <a href="/entrar" className="text-primary hover:underline underline-offset-2 transition-colors">
-                                    Entrar agora
-                                </a>
-                            </p>
-                        </aside>
-
-                        <section className="rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8">
+            <main className="flex flex-1 items-start justify-center px-4 py-8 sm:py-12">
+                <div className="w-full max-w-3xl">
+                        <section className="rounded-2xl border border-slate-100 bg-white/70 p-5 shadow-[0_4px_24px_rgba(15,23,42,0.05)] backdrop-blur-sm sm:p-8">
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
                                     <FiUserPlus size={18} />
                                 </div>
                                 <div>
-                                    <p className="text-xs uppercase tracking-widest text-primary/50 font-medium">Novo por aqui?</p>
                                     <h2 className="font-serif text-xl font-semibold text-slate-800">Criar minha conta</h2>
                                 </div>
                             </div>
@@ -287,17 +260,7 @@ export default function RegistrarPage() {
 
                                 <div className="border-t border-slate-100" />
 
-                                <div className="flex flex-col gap-3">
-                                    <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-600">
-                                        <input
-                                            type="checkbox"
-                                            checked={aceitaMarketing}
-                                            onChange={(e) => setAceitaMarketing(e.target.checked)}
-                                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-primary/30 accent-primary"
-                                        />
-                                        <span>Aceito receber comunicações e novidades por e-mail</span>
-                                    </label>
-
+                                <div>
                                     <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-600">
                                         <input
                                             type="checkbox"
@@ -318,7 +281,7 @@ export default function RegistrarPage() {
                                     {isSubmitting ? 'CRIANDO CONTA...' : 'CRIAR CONTA'}
                                 </Button>
 
-                                <p className="text-center text-sm text-slate-500 lg:hidden">
+                                <p className="text-center text-sm text-slate-500">
                                     Ja tem conta?{' '}
                                     <a href="/entrar" className="text-primary hover:underline underline-offset-2 transition-colors">
                                         Acessar agora
@@ -326,7 +289,6 @@ export default function RegistrarPage() {
                                 </p>
                             </form>
                         </section>
-                    </div>
                 </div>
             </main>
 

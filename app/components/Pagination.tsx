@@ -66,7 +66,7 @@ export function Pagination({
                 </p>
             )}
 
-            <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2">
                 <button
                     type="button"
                     onClick={() => onPageChange(currentPage - 1)}
@@ -83,7 +83,7 @@ export function Pagination({
                         return (
                             <span
                                 key={`ellipsis-${index}`}
-                                className="flex h-10 w-10 items-center justify-center text-gray-400"
+                                className="hidden h-10 w-10 items-center justify-center text-gray-400 sm:flex"
                             >
                                 <MoreHorizontal size={18} />
                             </span>
@@ -98,7 +98,7 @@ export function Pagination({
                             type="button"
                             onClick={() => onPageChange(page)}
                             aria-current={isCurrent ? "page" : undefined}
-                            className={`h-10 min-w-10 rounded-md border px-3 text-sm font-semibold transition-colors ${isCurrent
+                            className={`h-10 min-w-10 rounded-md border px-3 text-sm font-semibold transition-colors ${!isCurrent ? 'max-[399px]:hidden ' : ''}${isCurrent
                                 ? "border-primary bg-primary text-white"
                                 : "border-gray-200 bg-white text-gray-700 hover:border-primary/50 hover:bg-primary/5"
                                 }`}

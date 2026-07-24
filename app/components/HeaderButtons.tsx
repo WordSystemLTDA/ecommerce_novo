@@ -45,8 +45,10 @@ export function ButtonFavoritos() {
     const { quantidade } = useFavorito();
 
     return (
-        <div
-            className="cursor-pointer transition-colors duration-500 relative text-primary hover:text-terciary"
+        <button
+            type="button"
+            aria-label="Abrir favoritos"
+            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary lg:h-auto lg:w-auto"
             onClick={() => navigate('/minha-conta/favoritos')}
         >
             <MdOutlineFavorite size={24} />
@@ -55,7 +57,7 @@ export function ButtonFavoritos() {
                     {quantidade}
                 </span>
             )}
-        </div>
+        </button>
     );
 }
 
@@ -65,12 +67,14 @@ interface ButtonBuscarProps {
 
 export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
     return (
-        <div
-            className="cursor-pointer transition-colors duration-500 relative text-primary hover:text-terciary"
+        <button
+            type="button"
+            aria-label="Abrir busca"
+            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary"
             onClick={aoClicar}
         >
             <MdOutlineSearch size={24} />
-        </div>
+        </button>
     );
 }
 
@@ -80,8 +84,10 @@ export function ButtonConta() {
     let { isAuthenticated } = useAuth();
 
     return (
-        <div
-            className="cursor-pointer transition-colors duration-500 relative text-primary hover:text-terciary"
+        <button
+            type="button"
+            aria-label={isAuthenticated ? "Abrir minha conta" : "Entrar"}
+            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary"
             onClick={() => {
                 if (isAuthenticated) {
                     navigate('/minha-conta');
@@ -96,7 +102,7 @@ export function ButtonConta() {
                 <BsPersonFill size={24} />
             }
 
-        </div>
+        </button>
     );
 }
 
@@ -105,8 +111,10 @@ export function ButtonCarrinho() {
     let { produtos } = useCarrinho();
 
     return (
-        <div
-            className="cursor-pointer transition-colors duration-500 relative text-primary hover:text-terciary"
+        <button
+            type="button"
+            aria-label="Abrir carrinho"
+            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary lg:h-auto lg:w-auto"
             onClick={() => navigate('/carrinho')}
         >
             <FaShoppingCart size={20} className="max-lg:hidden" />
@@ -117,7 +125,7 @@ export function ButtonCarrinho() {
                     {produtos.length}
                 </span>
             )}
-        </div>
+        </button>
     );
 }
 

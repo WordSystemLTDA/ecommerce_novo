@@ -6,8 +6,8 @@ export default function Termos() {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Header />
-            <main className="flex-grow container mx-auto px-4 py-8 max-w-4xl">
-                <div className="bg-white p-8 rounded-lg shadow-sm">
+            <main className="container mx-auto max-w-4xl flex-grow px-4 py-6 sm:py-8">
+                <div className="rounded-lg bg-white p-5 shadow-sm sm:p-8">
                     <h1 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">Termos e Condições de Venda</h1>
 
                     <div className="prose prose-slate max-w-none text-gray-600 space-y-6">

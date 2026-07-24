@@ -18,7 +18,7 @@ export function SectionHeader({
     linkLabel = "Ver todos",
 }: SectionHeaderProps) {
     return (
-        <div className="flex items-end justify-between gap-4 px-4 lg:px-12 mt-2 mb-6 border-t border-primary/10 pt-8">
+        <div className="mt-2 mb-5 flex flex-col items-start justify-between gap-4 border-t border-primary/10 px-4 pt-6 sm:mb-6 sm:flex-row sm:items-end lg:px-12 lg:pt-8">
             <div className="min-w-0">
                 {eyebrow && (
                     <div className="flex items-center gap-3 mb-3">
@@ -45,7 +45,7 @@ export function SectionHeader({
                 <button
                     type="button"
                     onClick={onLinkClick}
-                    className="shrink-0 text-[10px] uppercase tracking-[0.2em] font-medium text-primary border-b border-primary pb-0.5 hover:border-terciary hover:text-terciary transition-colors duration-500 whitespace-nowrap"
+                    className="min-h-10 shrink-0 border-b border-primary pb-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-primary transition-colors duration-500 hover:border-terciary hover:text-terciary sm:min-h-0 whitespace-nowrap"
                 >
                     {linkLabel}
                 </button>

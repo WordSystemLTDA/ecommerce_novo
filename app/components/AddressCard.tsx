@@ -14,7 +14,7 @@ export function AddressCard({ endereco, onDelete }: AddressCardProps) {
 
     return (
         <div
-            className={`border rounded-lg p-5 relative transition-all hover:shadow-md ${isDefault ? "border-primary bg-primary/5" : "border-gray-200 bg-white"
+            className={`relative rounded-lg border p-4 transition-all hover:shadow-md sm:p-5 ${isDefault ? "border-primary bg-primary/5" : "border-gray-200 bg-white"
                 }`}
         >
             {isDefault && (
@@ -24,12 +24,12 @@ export function AddressCard({ endereco, onDelete }: AddressCardProps) {
                 </span>
             )}
 
-            <div className="flex items-start gap-3 pr-20">
+            <div className="flex items-start gap-3 pt-7 sm:pr-20 sm:pt-0">
                 <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/8 text-primary">
                     <MapPin size={18} />
                 </div>
                 <div className="min-w-0">
-                    <p className="font-medium text-gray-800">
+                    <p className="overflow-wrap-anywhere font-medium text-gray-800">
                         {endereco.endereco}, {endereco.numero}
                     </p>
                     <p className="text-gray-600 text-sm">

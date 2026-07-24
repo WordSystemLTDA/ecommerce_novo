@@ -11,7 +11,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -42,12 +41,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col bg-main-bg">
       <Header />
 
-      <main className="flex-1 flex items-center justify-center px-4 py-16">
+      <main className="flex flex-1 items-center justify-center px-4 py-8 sm:py-12 lg:py-16">
         <div className="w-full max-w-4xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Login */}
-            <div className="rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8 flex flex-col">
+            <div className="flex flex-col rounded-2xl border border-slate-100 bg-white/70 p-5 shadow-[0_4px_24px_rgba(15,23,42,0.05)] backdrop-blur-sm sm:p-8">
               <div className="flex items-center gap-3 mb-8">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
                   <FiLock size={18} />
@@ -92,21 +91,6 @@ export default function LoginPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="h-4 w-4 rounded border-primary/30 accent-primary"
-                    />
-                    Lembrar meus dados
-                  </label>
-                  <a href="#" className="text-xs text-primary/60 hover:text-primary transition-colors">
-                    Esqueci minha senha
-                  </a>
-                </div>
-
                 <div className="mt-auto pt-2">
                   <Button variant="primary" type="submit" disabled={isSubmitting}>
                     {isSubmitting ? 'ACESSANDO...' : 'ACESSAR CONTA'}
@@ -116,7 +100,7 @@ export default function LoginPage() {
             </div>
 
             {/* Cadastro */}
-            <div className="rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8 flex flex-col">
+            <div className="flex flex-col rounded-2xl border border-slate-100 bg-white/70 p-5 shadow-[0_4px_24px_rgba(15,23,42,0.05)] backdrop-blur-sm sm:p-8">
               <div className="flex items-center gap-3 mb-8">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-(--dynamic-success) bg-(--dynamic-success-bg) text-(--dynamic-success)">
                   <FiUserPlus size={18} />
@@ -126,10 +110,6 @@ export default function LoginPage() {
                   <h2 className="font-serif text-xl font-semibold text-slate-800">Criar conta</h2>
                 </div>
               </div>
-
-              <p className="text-sm text-slate-500 leading-relaxed mb-8">
-                Crie sua conta e aproveite todos os benefícios: histórico de pedidos, endereços salvos, lista de favoritos e muito mais.
-              </p>
 
               <div className="mt-auto">
                 <Button variant="secondary" type="button" onClick={() => navigate("/registrar/")}>

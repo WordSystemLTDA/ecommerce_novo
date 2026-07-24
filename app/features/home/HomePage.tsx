@@ -134,7 +134,7 @@ export function HomePage() {
           <SkeletonMainBanner />
         )}
 
-        <div className="max-w-387 mx-auto px-0 mb-8 lg:mt-4 lg:mb-12">
+        <div className="page-container mb-8 pt-4 lg:mb-12">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             <div className="lg:col-span-1">
               <FilterSidebar

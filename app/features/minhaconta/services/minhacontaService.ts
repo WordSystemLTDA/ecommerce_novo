@@ -36,4 +36,10 @@ export const minhacontaService = {
         });
         return response.data;
     },
+
+    pegarPedido: async (id_venda: number) => {
+        const response = await apiClient.get<any>(`/vendas/${id_venda}`);
+
+        return response.data?.data ?? response.data;
+    },
 };

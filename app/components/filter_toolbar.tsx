@@ -17,15 +17,15 @@ export default function FilterToolbar({ onOpenMobileFilter, enableSortPerPage = 
     };
 
     return (
-        <div className="bg-white/95 backdrop-blur p-4 rounded-2xl border border-slate-100 shadow-sm mb-4 flex flex-row justify-between items-center mx-4 lg:mx-4">
-            <div className="flex items-center gap-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white/95 p-3 shadow-sm backdrop-blur sm:p-4">
+            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-2">
                     <label htmlFor="ordenar" className="text-sm font-medium text-slate-700 hidden md:block">Ordenar:</label>
                     <select
                         id="ordenar"
                         value={activeFilters.ordenacao}
                         onChange={handleSortChange}
-                        className="lg:appearance-none border border-slate-200 rounded-lg px-3 py-2 text-sm max-lg:text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 bg-slate-50"
+                        className="max-w-40 appearance-none rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 sm:max-w-none sm:text-sm"
                     >
                         <option value="mais_procurados">Mais procurados</option>
                         <option value="mais_recentes">Mais recentes</option>

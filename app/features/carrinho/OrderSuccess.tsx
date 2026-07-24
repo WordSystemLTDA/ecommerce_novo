@@ -28,8 +28,8 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm mb-6">
-      <div className="flex justify-between items-center py-4 px-2 overflow-x-auto whitespace-nowrap">
+    <div className="mb-5 rounded-lg bg-white shadow-sm sm:mb-6">
+      <div className="flex items-center justify-between gap-1 px-3 py-4 sm:gap-2 sm:px-4">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
           const isActive = stepNumber === activeStep;
@@ -37,10 +37,10 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
 
           return (
             <React.Fragment key={step.name}>
-              <div className="flex flex-col items-center">
+              <div className="flex min-w-0 flex-1 flex-col items-center">
                 <div
                   className={`
-                    w-10 h-10 rounded-full flex items-center justify-center border-2 
+                    flex h-8 w-8 items-center justify-center rounded-full border-2 sm:h-10 sm:w-10
                     ${isActive ? 'border-primary bg-primary text-white' : ''}
                     ${isCompleted ? 'border-primary bg-white text-primary' : ''}
                     ${!isActive && !isCompleted ? 'border-gray-300 text-gray-400' : ''}
@@ -50,7 +50,7 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                 </div>
                 <span
                   className={`
-                    mt-2 text-xs font-medium 
+                    mt-2 hidden text-xs font-medium sm:block
                     ${(isActive || isCompleted) ? 'text-primary' : 'text-gray-400'}
                   `}
                 >
@@ -58,7 +58,7 @@ const CheckoutStepper = ({ activeStep }: { activeStep: number }) => {
                 </span>
               </div>
               {index < steps.length - 1 && (
-                <div className={`flex-auto h-0.5 mx-2 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
+                <div className={`mx-1 h-0.5 min-w-2 flex-auto sm:mx-2 ${(isCompleted || isActive) ? 'bg-primary' : 'bg-gray-300'}`}></div>
               )}
             </React.Fragment>
           );
@@ -232,7 +232,15 @@ const Step6_Success = () => {
             txid: refreshedOrder.orderId,
           });
         }
-        if (manual && !mercadoPagoStatus.isApproved(refreshedOrder.status)) {
+        if (manual && mercadoPagoStatus.isFailure(refreshedOrder.status)) {
+          toast.error(
+            'Este PIX foi recusado. Nao tente pagar novamente este codigo.',
+            { position: 'top-center' },
+          );
+        } else if (
+          manual &&
+          !mercadoPagoStatus.isApproved(refreshedOrder.status)
+        ) {
           toast.info('Pagamento ainda nao identificado.', {
             position: 'top-center',
           });
@@ -295,12 +303,12 @@ const Step6_Success = () => {
   }, [mercadoPagoOrder?.challengeUrl, pagamentoStatus]);
 
   if (loading) {
-    return <div className="p-8 flex justify-center"><Loader /></div>;
+    return <div className="flex justify-center p-6 sm:p-8"><Loader /></div>;
   }
 
   if (!venda) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+      <div className="rounded-lg bg-white p-5 text-center shadow-sm sm:p-8">
         <FaExclamationCircle className="mx-auto mb-4 text-4xl text-amber-500" />
         <h1 className="text-xl font-bold text-gray-800">
           Não conseguimos abrir o comprovante do pedido.
@@ -332,6 +340,7 @@ const Step6_Success = () => {
     isMercadoPagoPix ||
     (venda.pagamento?.tipo === 'PIX' &&
       venda.pagamento.pix_dinamico === 'Sim');
+  const canPayPix = showPix && pagamentoStatus === 'pendente';
   const routeState = location.pathname.includes('/falha')
     ? 'falha'
     : location.pathname.includes('/pendente')
@@ -341,14 +350,18 @@ const Step6_Success = () => {
   const trackingCode = entrega?.codigo_rastreio || entrega?.melhor_envio_order_id;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-8 max-w-4xl mx-auto">
+    <div className="mx-auto max-w-4xl rounded-lg bg-white p-4 shadow-sm sm:p-8">
       <div className="text-center mb-8">
         <FaCheckCircle className="text-(--dynamic-success) text-5xl mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-(--dynamic-success-strong)">PEDIDO REALIZADO COM SUCESSO!</h1>
+        <h1 className="text-xl font-bold text-(--dynamic-success-strong) sm:text-2xl">PEDIDO REALIZADO COM SUCESSO!</h1>
         {isPix ? (
           pagamentoStatus === 'aprovado' ? (
             <div className="mt-4 bg-(--dynamic-success-bg) text-(--dynamic-success-strong) p-4 rounded text-lg font-bold">
               PAGAMENTO CONFIRMADO!
+            </div>
+          ) : pagamentoStatus === 'recusado' ? (
+            <div className="mt-4 rounded bg-red-50 p-4 text-lg font-bold text-red-700">
+              PIX RECUSADO PELO MERCADO PAGO
             </div>
           ) : (
             <p className="text-lg text-gray-600">AGORA É SÓ REALIZAR O PAGAMENTO</p>
@@ -383,16 +396,16 @@ const Step6_Success = () => {
           <iframe
             src={mercadoPagoOrder.challengeUrl}
             title="Autenticacao de seguranca do cartao"
-            className="h-150 w-full rounded-md border border-gray-200"
+            className="h-[70dvh] min-h-96 w-full rounded-md border border-gray-200 sm:max-h-150"
             sandbox="allow-forms allow-scripts allow-same-origin"
           />
         </section>
       )}
 
       <div className="flex flex-col md:flex-row gap-8">
-        {showPix && pagamentoStatus !== 'aprovado' && pixData && (
+        {canPayPix && pixData && (
           <div className="flex-1 flex flex-col items-center">
-            <div className="w-64 h-64 border-4 border-gray-300 rounded-lg mx-auto flex items-center justify-center bg-white overflow-hidden">
+            <div className="mx-auto flex aspect-square w-full max-w-64 items-center justify-center overflow-hidden rounded-lg border-4 border-gray-300 bg-white">
               {/* Se tiver imagem base64 usa, senão gera qrcode do copia e cola */}
               {pixData.imagem_base64 ? (
                 <img src={`data:image/png;base64,${pixData.imagem_base64}`} alt="QR Code Pix" className="w-full h-full object-contain" />
@@ -405,7 +418,7 @@ const Step6_Success = () => {
             </div>
 
             <button
-              className="mt-4 w-64 bg-primary text-white font-bold py-3 rounded-md hover:bg-terciary transition-colors flex items-center justify-center gap-2"
+              className="mt-4 flex w-full max-w-64 items-center justify-center gap-2 rounded-md bg-primary py-3 font-bold text-white transition-colors hover:bg-terciary"
               onClick={() => {
                 if (pixData.copia_cola) {
                   navigator.clipboard.writeText(pixData.copia_cola);
@@ -417,7 +430,7 @@ const Step6_Success = () => {
             </button>
 
             <button
-              className="mt-4 w-64 bg-(--dynamic-success) text-white font-bold py-3 rounded-md hover:bg-(--dynamic-success-strong) transition-colors flex items-center justify-center gap-2"
+              className="mt-4 flex w-full max-w-64 items-center justify-center gap-2 rounded-md bg-(--dynamic-success) py-3 font-bold text-white transition-colors hover:bg-(--dynamic-success-strong)"
               onClick={async () => {
                 setCheckingPayment(true);
                 await checkPixStatus(true);
@@ -436,7 +449,7 @@ const Step6_Success = () => {
           </div>
         )}
 
-        {showPix && (
+        {canPayPix && (
           <div className="flex-1">
             <div className="bg-orange-50 border border-orange-200 text-orange-700 p-4 rounded-md flex items-start gap-3 mb-6">
               <FaExclamationCircle className="text-2xl mt-1" />
@@ -459,7 +472,7 @@ const Step6_Success = () => {
 
             <div className="text-center mb-8">
               <p className="text-sm text-gray-600">O número do seu pedido é:</p>
-              <p className="text-5xl font-bold text-gray-800 tracking-wider">{venda.id}</p>
+              <p className="overflow-wrap-anywhere text-3xl font-bold tracking-wider text-gray-800 sm:text-5xl">{venda.id}</p>
             </div>
 
             <p className="text-sm text-gray-600 mb-4">Escaneie o <span className="font-bold">QR Code</span> ou copie o <span className="font-bold">código PIX</span>. Abra o app da instituição que você possui o PIX cadastrado e realize o pagamento.</p>
@@ -473,12 +486,25 @@ const Step6_Success = () => {
           </div>
         )}
 
+        {showPix && pagamentoStatus === 'recusado' && (
+          <div className="flex-1 rounded-lg border border-red-200 bg-red-50 p-5 text-red-800">
+            <p className="font-bold">
+              Este código PIX não pode mais ser pago.
+            </p>
+            <p className="mt-2 text-sm">
+              O Mercado Pago recusou a transação durante a análise de
+              segurança. Não tente novamente com este QR Code. Volte aos seus
+              pedidos e escolha uma nova forma de pagamento.
+            </p>
+          </div>
+        )}
+
         {!isPix && (
           <div className="flex-1 text-center">
             <p className="text-lg mb-4">Seu pedido foi recebido e está sendo processado.</p>
             <div className="text-center mb-8">
               <p className="text-sm text-gray-600">O número do seu pedido é:</p>
-              <p className="text-5xl font-bold text-gray-800 tracking-wider">{venda.id}</p>
+              <p className="overflow-wrap-anywhere text-3xl font-bold tracking-wider text-gray-800 sm:text-5xl">{venda.id}</p>
             </div>
           </div>
         )}
@@ -533,8 +559,8 @@ export default function OrderSuccessPage() {
     <div>
       <Header />
 
-      <div className="bg-gray-100 min-h-screen py-8">
-        <div className="max-w-387 mx-auto px-4">
+      <div className="min-h-screen bg-gray-100 py-4 sm:py-8">
+        <div className="page-container">
 
           <div className="bg-white rounded-lg shadow-sm mb-6">
             <CheckoutStepper activeStep={6} />

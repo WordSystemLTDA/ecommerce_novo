@@ -27,8 +27,8 @@ const CartItem = ({ produto }: { produto: CartItemType }) => {
   }
 
   return (
-    <div className="bg-white p-4 border-b border-gray-200">
-      <div className="flex gap-3">
+    <div className="border-b border-gray-200 bg-white p-3 sm:p-4">
+      <div className="flex min-w-0 gap-2 sm:gap-3">
 
         {/* Checkbox */}
         <div className="shrink-0 flex items-start pt-1">
@@ -46,12 +46,12 @@ const CartItem = ({ produto }: { produto: CartItemType }) => {
             src={produto.fotos?.m?.[0]}
             fallbackSrc={getProductImageFallback(produto.nome)}
             alt={produto.nome}
-            className="w-20 h-20 object-contain rounded bg-gray-50 mix-blend-multiply"
+            className="h-16 w-16 rounded bg-gray-50 object-contain mix-blend-multiply sm:h-20 sm:w-20"
           />
         </div>
 
         {/* Informações */}
-        <div className="grow flex flex-col justify-between min-h-20">
+        <div className="flex min-h-20 min-w-0 grow flex-col justify-between">
 
           {/* Topo: Título e Lixeira */}
           <div className="flex justify-between items-start gap-2">
@@ -75,7 +75,7 @@ const CartItem = ({ produto }: { produto: CartItemType }) => {
           </div>
 
           {/* Rodapé: Seletor Novo e Preço */}
-          <div className="flex justify-between items-end mt-3">
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-2">
 
             {/* Novo Seletor de Quantidade estilo Print */}
             <div>
@@ -203,7 +203,7 @@ export default function CartPage() {
         </div>
 
         {produtos.length === 0 ? (
-          <div className="p-8 text-center">
+          <div className="p-6 text-center sm:p-8">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/8 text-primary">
               <FaShoppingBag />
             </div>

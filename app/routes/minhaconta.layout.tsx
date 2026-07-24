@@ -1,5 +1,5 @@
-import { Heart, LayoutDashboard, LogOut, MapPin, Menu, ShoppingBag, User } from "lucide-react";
-import { NavLink, Outlet } from "react-router";
+import { Heart, LayoutDashboard, LogOut, MapPin, ShoppingBag, User } from "lucide-react";
+import { Link, Outlet, useLocation } from "react-router";
 import Footer from "~/components/footer";
 import Header from "~/components/header";
 import { useAuth } from "~/features/auth/context/AuthContext";
@@ -14,6 +14,13 @@ export function meta({ }: Route.MetaArgs) {
 
 export default function MinhaContaLayout() {
   const { logout, cliente } = useAuth();
+  const location = useLocation();
+  const isAccountHome = location.pathname.replace(/\/$/, "") === "/minha-conta";
+  const currentPath = location.pathname.replace(/\/$/, "");
+  const isOrdersPage =
+    currentPath === "/minha-conta/pedidos" ||
+    currentPath.startsWith("/minha-conta/meus-pedidos/detalhes");
+  const showAccountShell = !isAccountHome && !isOrdersPage;
 
   const handleLogout = async () => {
     await logout();
@@ -28,78 +35,89 @@ export default function MinhaContaLayout() {
     { name: "Meus Dados", path: "/minha-conta/dados", icon: User, end: false },
   ];
 
+  const isCurrentItem = (item: typeof navItems[number]) => {
+    if (item.end) {
+      return currentPath === item.path;
+    }
+
+    return currentPath === item.path || currentPath.startsWith(`${item.path}/`);
+  };
+  const visibleNavItems = navItems.filter((item) => !isCurrentItem(item));
+
   return (
     <div className="min-h-screen bg-main-bg">
       <Header />
 
-      <div className="max-w-387 mx-auto px-4 py-6 lg:py-8 pb-16">
-        <div className="mb-6 rounded-lg border border-primary/10 bg-product-bg p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="overline-label">Minha conta</p>
-              <h1 className="mt-1 text-2xl font-bold text-primary">
-                Olá{cliente?.nome ? `, ${cliente.nome.split(" ")[0]}` : ""}.
-              </h1>
-              <p className="mt-1 text-sm text-primary/60">
-                Acompanhe pedidos, favoritos, dados e endereços em um só lugar.
-              </p>
-            </div>
-
-            {cliente && (
-              <div className="flex items-center gap-3 rounded-md bg-main-bg px-4 py-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-secondary font-semibold text-sm">
-                  {cliente.nome?.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-primary truncate">{cliente.nome}</p>
-                  <p className="text-xs text-primary/50 truncate">{cliente.email}</p>
-                </div>
+      <div className="page-container pb-12 pt-4 sm:pt-6 lg:pb-16 lg:pt-8">
+        {showAccountShell && (
+          <div className="mb-5 rounded-lg border border-primary/10 bg-product-bg p-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] sm:mb-6 sm:p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="overline-label">Minha conta</p>
+                <h1 className="mt-1 text-2xl font-bold text-primary">
+                  Olá{cliente?.nome ? `, ${cliente.nome.split(" ")[0]}` : ""}.
+                </h1>
               </div>
-            )}
-          </div>
-        </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-
-          <aside className="w-full lg:w-64 shrink-0">
-            <div className="rounded-lg border border-primary/10 bg-sidebar-bg backdrop-blur-sm shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-3 lg:sticky lg:top-24">
               {cliente && (
-                <div className="flex items-center gap-2 px-2 py-2 mb-2 border-b border-primary/10 text-xs font-bold uppercase tracking-[0.16em] text-primary/60">
-                  <Menu size={15} />
-                  Menu da conta
+                <div className="flex items-center gap-3 rounded-md bg-main-bg px-4 py-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-secondary font-semibold text-sm">
+                    {cliente.nome?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-primary truncate">{cliente.nome}</p>
+                    <p className="text-xs text-primary/50 truncate">{cliente.email}</p>
+                  </div>
                 </div>
               )}
-              <nav className="flex gap-2 overflow-x-auto pb-1 lg:block lg:space-y-1 lg:overflow-visible lg:pb-0">
-                {navItems.map((item) => (
-                  <NavLink
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-6 lg:flex-row">
+          {showAccountShell && (
+          <aside className="w-full shrink-0 lg:w-72">
+            <div className="lg:sticky lg:top-24">
+              <div className="mb-3 flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-primary">
+                <ShortcutDots />
+                Atalhos
+              </div>
+              <nav
+                aria-label="Atalhos da conta"
+                className="grid grid-cols-2 gap-3 lg:grid-cols-1"
+              >
+                {visibleNavItems.map((item) => (
+                  <Link
                     key={item.path}
                     to={item.path}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      `flex shrink-0 items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-sm ${isActive
-                        ? "bg-primary text-secondary font-medium"
-                        : "text-primary/70 hover:bg-primary/8"
-                      }`
-                    }
+                    className="group flex min-h-20 items-center gap-3 rounded-lg border border-primary/10 bg-product-bg p-3 shadow-[0_4px_18px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-terciary/40 hover:shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-4 lg:min-h-16"
                   >
-                    <item.icon size={18} />
-                    {item.name}
-                  </NavLink>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-terciary/10 text-terciary transition-colors group-hover:bg-terciary group-hover:text-white">
+                      <item.icon size={19} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 text-xs font-bold uppercase leading-snug tracking-wide text-primary sm:text-sm">
+                      {item.name}
+                    </span>
+                  </Link>
                 ))}
 
                 <button
+                  type="button"
                   onClick={handleLogout}
-                  className="flex shrink-0 items-center gap-3 px-3 py-2.5 rounded-md text-red-500 hover:bg-red-50 transition-colors lg:mt-2 lg:w-full lg:border-t lg:border-primary/10 lg:pt-3 text-sm"
+                  className="group col-span-2 flex min-h-16 w-full items-center gap-3 rounded-lg border border-red-100 bg-red-50/80 p-3 text-left text-xs font-bold uppercase tracking-wide text-red-600 transition-all hover:border-red-200 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 sm:p-4 sm:text-sm lg:col-span-1"
                 >
-                  <LogOut size={18} />
-                  Sair da conta
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-red-100 text-red-500 transition-colors group-hover:bg-red-500 group-hover:text-white">
+                    <LogOut size={19} aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 leading-snug">Sair da conta</span>
                 </button>
               </nav>
             </div>
           </aside>
+          )}
 
           <main className="flex-1 min-w-0">
-            <div className="rounded-lg border border-primary/10 bg-product-bg backdrop-blur-sm shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-4 sm:p-6 min-h-[500px]">
+            <div className={showAccountShell ? "min-h-0 rounded-lg border border-primary/10 bg-product-bg p-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-sm sm:p-6 lg:min-h-[500px]" : ""}>
               <Outlet />
             </div>
           </main>
@@ -109,5 +127,18 @@ export default function MinhaContaLayout() {
 
       <Footer />
     </div>
+  );
+}
+
+function ShortcutDots() {
+  return (
+    <span
+      className="grid h-5 w-5 shrink-0 grid-cols-2 gap-1"
+      aria-hidden="true"
+    >
+      {Array.from({ length: 4 }).map((_, index) => (
+        <span key={index} className="rounded-full bg-terciary" />
+      ))}
+    </span>
   );
 }

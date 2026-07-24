@@ -28,7 +28,7 @@ export function MobileFilterDrawer({ isOpen, onClose, activeFilters, filterOptio
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center lg:hidden">
+        <div className="fixed inset-0 z-50 flex h-dvh items-center justify-center lg:hidden">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
@@ -36,7 +36,7 @@ export function MobileFilterDrawer({ isOpen, onClose, activeFilters, filterOptio
             ></div>
 
             {/* Drawer Content */}
-            <div className="relative w-full h-full md:w-[80%] md:h-[90%] md:rounded-lg bg-white shadow-xl flex flex-col overflow-hidden animate-slide-up md:animate-fade-in">
+            <div className="relative flex h-full w-full flex-col overflow-hidden bg-white shadow-xl animate-slide-up md:h-[90%] md:w-[80%] md:rounded-lg md:animate-fade-in">
                 <div className="flex items-center justify-between p-4 border-b border-gray-200">
                     <h2 className="text-lg font-bold text-gray-900">Filtros</h2>
                     <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-700">
@@ -52,7 +52,7 @@ export function MobileFilterDrawer({ isOpen, onClose, activeFilters, filterOptio
                     />
                 </div>
 
-                <div className="p-4 border-t border-gray-200 bg-white">
+                <div className="safe-bottom border-t border-gray-200 bg-white p-4">
                     <button
                         onClick={handleApply}
                         className="w-full py-3 bg-terciary text-white font-bold rounded-lg hover:bg-opacity-90 transition-colors"

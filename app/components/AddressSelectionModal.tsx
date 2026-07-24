@@ -44,8 +44,8 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
         ['sim', 's', '1', 'true'].includes(String(padrao).toLowerCase());
 
     return (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/50 sm:items-center sm:p-4">
+            <div className="max-h-[90dvh] w-full max-w-md animate-in overflow-hidden rounded-t-xl bg-white shadow-xl fade-in zoom-in duration-200 sm:rounded-lg">
                 <div className="flex items-center justify-between p-4 border-b">
                     <div className="flex items-center gap-2 text-primary">
                         <MapPin size={20} />
@@ -59,7 +59,7 @@ export function AddressSelectionModal({ isOpen, onClose, onSelectAddress, select
                     </button>
                 </div>
 
-                <div className="p-4 max-h-[60vh] overflow-y-auto">
+                <div className="max-h-[65dvh] overflow-y-auto p-4">
                     <p className="text-sm text-gray-600 mb-4">Escolha um endereço cadastrado.</p>
 
                     {loading ? (

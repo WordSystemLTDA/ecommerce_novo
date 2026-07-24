@@ -58,7 +58,7 @@ export default function DeliveryPage() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="rounded-lg bg-white p-4 shadow-sm sm:p-6">
 
       {carregandoTipoDeEntregas ? (
         <div className="flex items-center justify-center w-full">
@@ -133,7 +133,7 @@ export default function DeliveryPage() {
                       setTipoDeEntregaSelecionada(tipoDeEntrega);
                     }}
                   >
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
                       <div className="flex min-w-0 items-center">
                         <input
                           type="radio"
@@ -143,7 +143,7 @@ export default function DeliveryPage() {
                           className="w-4 h-4 accent-primary"
                         />
                         <div className="ml-3 min-w-0 text-sm">
-                          <div className='flex flex-row items-center gap-2'>
+                          <div className='flex flex-wrap items-center gap-2'>
 
                             {tipoDeEntrega.company.picture ? (
                               <img src={tipoDeEntrega.company.picture} alt={tipoDeEntrega.company.name} className='max-h-3' />
@@ -164,7 +164,7 @@ export default function DeliveryPage() {
                         </div>
                       </div>
 
-                      <span className="shrink-0 text-sm font-bold">{currencyFormatter.format(getDeliveryPrice(tipoDeEntrega))}</span>
+                      <span className="shrink-0 self-end text-sm font-bold sm:self-auto">{currencyFormatter.format(getDeliveryPrice(tipoDeEntrega))}</span>
                     </div>
                   </label>
                 )
@@ -181,7 +181,7 @@ export default function DeliveryPage() {
                   setTipoDeEntregaSelecionada(pickupDelivery);
                 }}
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
                   <div className="flex items-center">
                     <input
                       type="radio"
@@ -193,7 +193,7 @@ export default function DeliveryPage() {
                       className="w-4 h-4 accent-primary"
                     />
                     <div className="ml-3 text-sm">
-                      <div className='flex flex-row items-center gap-2'>
+                      <div className='flex flex-wrap items-center gap-2'>
                         <FaStore className="text-primary" />
                         <span className="font-bold">Retirar na loja</span>
                         {tipoDeEntregaSelecionada?.id == 0 && (
@@ -206,7 +206,7 @@ export default function DeliveryPage() {
                     </div>
                   </div>
 
-                  <span className="shrink-0 text-sm font-bold">
+                  <span className="shrink-0 self-end text-sm font-bold sm:self-auto">
                     {currencyFormatter.format(0)}
                   </span>
                 </div>

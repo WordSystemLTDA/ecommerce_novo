@@ -34,18 +34,18 @@ const FavoriteItem = ({ produto, onRemove }: { produto: Produto, onRemove: (id: 
     };
 
     return (
-        <div className="bg-white p-4 transition-colors hover:bg-gray-50 border-b border-gray-200 last:border-0">
-            <div className="flex gap-3">
+        <div className="border-b border-gray-200 bg-white p-3 transition-colors last:border-0 hover:bg-gray-50 sm:p-4">
+            <div className="flex min-w-0 gap-2 sm:gap-3">
                 <div className="shrink-0 cursor-pointer" onClick={() => navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`)}>
                     <OptimizedImage
                         src={produto.fotos?.m?.[0]}
                         fallbackSrc={getProductImageFallback(produto.nome)}
                         alt={produto.nome}
-                        className="w-20 h-20 object-contain rounded bg-gray-50 mix-blend-multiply"
+                        className="h-16 w-16 rounded bg-gray-50 object-contain mix-blend-multiply sm:h-20 sm:w-20"
                     />
                 </div>
 
-                <div className="grow flex flex-col justify-between min-h-20">
+                <div className="flex min-h-20 min-w-0 grow flex-col justify-between">
                     <div className="flex justify-between items-start gap-2">
                         <Link to={`/produto/${produto.id}/${gerarSlug(produto.nome)}`}>
                             <h3 className="text-sm text-gray-900 font-medium leading-tight line-clamp-2 hover:text-primary transition-colors">
@@ -163,17 +163,13 @@ export default function MinhaContaFavoritosPage() {
         <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3 border-b border-primary/10 pb-5 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <p className="overline-label flex items-center gap-2">
-                        <Heart size={15} />
-                        Favoritos
-                    </p>
-                    <h1 className="mt-1 text-xl font-semibold text-primary md:text-2xl">
+                    <h1 className="text-xl font-semibold text-primary md:text-2xl">
                         Meus favoritos
                     </h1>
                     <p className="mt-1 text-sm text-primary/55">
                         {total > 0
-                            ? `${total} produto${total === 1 ? "" : "s"} salvo${total === 1 ? "" : "s"} para comprar depois.`
-                            : "Produtos salvos aparecem aqui para você encontrar rápido."}
+                            ? `${total} produto${total === 1 ? "" : "s"} salvo${total === 1 ? "" : "s"}.`
+                            : "Nenhum produto salvo."}
                     </p>
                 </div>
             </div>
@@ -182,15 +178,12 @@ export default function MinhaContaFavoritosPage() {
                 <div className="flex flex-col items-center justify-center p-10 text-center bg-main-bg rounded-lg border border-dashed border-primary/20">
                     <Heart size={48} className="text-primary/30 mb-4" />
                     <h3 className="text-lg font-semibold text-primary">
-                        Você ainda não tem produtos favoritos
+                        Nenhum favorito ainda
                     </h3>
-                    <p className="mt-2 text-sm text-primary/55 mb-5">
-                        Salve produtos para montar sua lista de compra com calma.
-                    </p>
-                    <Link to="/">
+                    <Link to="/" className="mt-5">
                         <Button variant="primary">
                             <ShoppingBag size={16} />
-                            Explorar Produtos
+                            Ver produtos
                         </Button>
                     </Link>
                 </div>
