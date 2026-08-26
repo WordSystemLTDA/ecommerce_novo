@@ -128,15 +128,15 @@ const EMPRESAS_FOOTER_CONFIG: Record<string, FooterCompanyConfig> = {
     '135': URBAN_BOY_FOOTER_CONFIG,
 };
 
+const EMPRESAS: string[] = String(import.meta.env.VITE_EMPRESAS ?? '135')
+    .split(',')
+    .map((empresaId: string) => empresaId.trim())
+    .filter(Boolean);
+
 const config = {
     // API: 'http://127.0.0.1/sistema/apis_restaurantes/api_e_commerce/api1',
     API: 'https://eadsagestart.com.br/sistema/apis_restaurantes/api_e_commerce/api1',
-    EMPRESAS: [
-        '2', // TESTE
-        // '166', // TESTE
-        // '135', // URBAN BOY
-        // '3', // PRIETO KOUROS
-    ],
+    EMPRESAS,
     get IDENTIDADE_VISUAL() {
         return this.getIdentidadeVisualAtiva();
     },
@@ -159,7 +159,7 @@ const config = {
         return this.getFooterConfigAtivo();
     },
     getIdentidadeVisualAtiva() {
-        const empresaAtiva = this.EMPRESAS.find((empresaId) => EMPRESAS_IDENTIDADE[empresaId as keyof typeof EMPRESAS_IDENTIDADE]);
+        const empresaAtiva = this.EMPRESAS.find((empresaId: string) => EMPRESAS_IDENTIDADE[empresaId as keyof typeof EMPRESAS_IDENTIDADE]);
         if (!empresaAtiva) {
             return DEFAULT_IDENTIDADE;
         }
@@ -167,7 +167,7 @@ const config = {
         return EMPRESAS_IDENTIDADE[empresaAtiva as keyof typeof EMPRESAS_IDENTIDADE];
     },
     getFooterConfigAtivo() {
-        const empresaAtiva = this.EMPRESAS.find((empresaId) => EMPRESAS_FOOTER_CONFIG[empresaId as keyof typeof EMPRESAS_FOOTER_CONFIG]);
+        const empresaAtiva = this.EMPRESAS.find((empresaId: string) => EMPRESAS_FOOTER_CONFIG[empresaId as keyof typeof EMPRESAS_FOOTER_CONFIG]);
         if (!empresaAtiva) {
             return DEFAULT_FOOTER_CONFIG;
         }
