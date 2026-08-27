@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import {
     AlertCircle,
     CheckCircle2,
-    ChevronDown,
+    ChevronRight,
     CircleX,
     Copy,
     CreditCard,
@@ -11,9 +11,12 @@ import {
     PackageCheck,
     RefreshCw,
     ShoppingCart,
+    Store,
     Truck,
+    Wallet,
 } from "lucide-react";
 import { Link, useParams } from "react-router";
+import { toast } from "react-toastify";
 import { OptimizedImage } from "~/components/OptimizedImage";
 import config from "~/config/config";
 import { useAuth } from "~/features/auth/context/AuthContext";
@@ -21,7 +24,6 @@ import { minhacontaService } from "~/features/minhaconta/services/minhacontaServ
 import {
     extractOrder,
     formatOrderDate,
-    formatOrderDateTime,
     formatOrderMoney,
     getOrderAddressLines,
     getOrderDateValue,
@@ -34,17 +36,15 @@ import {
     getOrderItems,
     getOrderPaymentLabel,
     getOrderStatusDateValue,
-    getOrderStatusInfo,
     getOrderTrackingCode,
+    normalizeText,
     type OrderItem,
     type OrderRecord,
 } from "~/features/minhaconta/utils/orderHelpers";
 import { getProductImageFallback } from "~/utils/imagePlaceholders";
 
 export function meta() {
-    return [
-        { title: "Detalhes do Pedido - Word System" },
-    ];
+    return [{ title: "Detalhes do Pedido - Word System" }];
 }
 
 export default function PedidoDetalhesPage() {
@@ -115,42 +115,41 @@ export default function PedidoDetalhesPage() {
     }
 
     const orderId = getOrderId(pedido) || id || "";
-    const status = getOrderStatusInfo(pedido.status || pedido.situacao);
 
     return (
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto w-full max-w-3xl">
             <PedidoBreadcrumb orderId={orderId} />
-
-            <p className={`mb-4 text-sm font-extrabold ${status.className}`}>
-                {status.label}
-            </p>
-
-            <OrderInfoCard pedido={pedido} orderId={orderId} />
+            <PedidoHeader pedido={pedido} orderId={orderId} />
+            <OrderStatusTimeline pedido={pedido} />
             <OrderProductsCard pedido={pedido} />
+            <OrderDetailsGrid pedido={pedido} />
         </div>
     );
 }
 
 function PedidoBreadcrumb({ orderId }: { orderId: string }) {
     return (
-        <nav className="mb-5 text-sm text-primary/65" aria-label="Breadcrumb">
+        <nav
+            className="flex flex-wrap items-center gap-1.5 text-xs text-primary/60 sm:text-sm"
+            aria-label="Breadcrumb"
+        >
             <Link to="/minha-conta" className="underline-offset-2 hover:underline">
-                Central Minha Conta
+                Minha Conta
             </Link>
-            <span className="mx-1 text-primary/40">/</span>
+            <ChevronRight size={14} className="text-primary/35" aria-hidden="true" />
             <Link
                 to="/minha-conta/pedidos"
                 className="underline-offset-2 hover:underline"
             >
                 Meus Pedidos
             </Link>
-            <span className="mx-1 text-primary/40">/</span>
+            <ChevronRight size={14} className="text-primary/35" aria-hidden="true" />
             <span className="font-bold text-primary">Pedido {orderId}</span>
         </nav>
     );
 }
 
-function OrderInfoCard({
+function PedidoHeader({
     pedido,
     orderId,
 }: {
@@ -159,12 +158,7 @@ function OrderInfoCard({
 }) {
     const [copied, setCopied] = useState(false);
     const date = formatOrderDate(getOrderDateValue(pedido));
-    const addressLines = getOrderAddressLines(pedido);
-    const payment = getOrderPaymentLabel(pedido);
-
-    const total = pedido.valor ?? pedido.total ?? pedido.valor_total;
-    const subtotal = pedido.subtotal ?? pedido.valor_produtos ?? total;
-    const shipping = pedido.valor_do_frete ?? pedido.frete ?? 0;
+    const visualStatus = getOrderVisualStatus(pedido);
 
     async function copyOrderId() {
         if (!orderId || typeof navigator === "undefined") return;
@@ -172,97 +166,98 @@ function OrderInfoCard({
         try {
             await navigator.clipboard.writeText(orderId);
             setCopied(true);
+            toast.success("Número do pedido copiado.");
             window.setTimeout(() => setCopied(false), 1400);
         } catch {
-            setCopied(false);
+            toast.error("Não foi possível copiar o número do pedido.");
         }
     }
 
     return (
-        <section className="overflow-hidden rounded-md border border-primary/10 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.04)]">
-            <div className="flex items-center justify-between gap-3 border-b border-primary/10 p-3">
-                <p className="min-w-0 text-sm font-extrabold text-primary">
-                    {date} - Pedido {orderId}
-                </p>
+        <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p className="text-sm text-primary/60">{date}</p>
+                <h1 className="mt-0.5 text-3xl font-semibold tracking-tight text-primary sm:text-4xl">
+                    Pedido #{orderId}
+                </h1>
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+                <span
+                    className={`inline-flex min-h-7 items-center rounded-full px-3 text-xs font-bold ${visualStatus.badgeClassName}`}
+                >
+                    {visualStatus.headerLabel}
+                </span>
                 <button
                     type="button"
                     onClick={copyOrderId}
-                    className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-md px-2 text-primary transition-colors hover:bg-main-bg"
-                    aria-label="Copiar número do pedido"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary/10 bg-product-bg text-primary/65 shadow-sm transition-colors hover:bg-main-bg hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terciary/30"
+                    aria-label={copied ? "Número copiado" : "Copiar número do pedido"}
                 >
-                    <Copy size={18} aria-hidden="true" />
-                    <span className="sr-only">{copied ? "Copiado" : "Copiar"}</span>
+                    <Copy size={17} aria-hidden="true" />
                 </button>
             </div>
-
-            <DetailAccordion icon={<MapPin size={17} />} title="Endereço">
-                <div className="space-y-1 text-sm text-primary/70">
-                    {addressLines.map((line) => (
-                        <p key={line}>{line}</p>
-                    ))}
-                </div>
-            </DetailAccordion>
-
-            <DetailAccordion
-                icon={<CreditCard size={17} />}
-                title="Forma de pagamento"
-            >
-                <p className="text-sm text-primary/70">{payment}</p>
-            </DetailAccordion>
-
-            <DetailAccordion icon={<ShoppingCart size={17} />} title="Valor">
-                <div className="space-y-2 text-sm">
-                    <SummaryLine label="Subtotal" value={formatOrderMoney(subtotal)} />
-                    <SummaryLine label="Frete" value={formatOrderMoney(shipping)} />
-                    <SummaryLine
-                        label="Total"
-                        value={formatOrderMoney(total)}
-                        strong
-                    />
-                </div>
-            </DetailAccordion>
-        </section>
+        </div>
     );
 }
 
-function DetailAccordion({
-    children,
-    icon,
-    title,
-}: {
-    children: ReactNode;
-    icon: ReactNode;
-    title: string;
-}) {
-    const [isOpen, setIsOpen] = useState(false);
+function OrderStatusTimeline({ pedido }: { pedido: OrderRecord }) {
+    const visualStatus = getOrderVisualStatus(pedido);
+    const statusDate = formatOrderDate(getOrderStatusDateValue(pedido));
+    const steps = getTimelineSteps(pedido);
 
     return (
-        <div className="border-b border-primary/10 last:border-0">
-            <button
-                type="button"
-                onClick={() => setIsOpen((current) => !current)}
-                className="flex min-h-10 w-full items-center justify-between gap-3 px-3 text-left text-sm font-extrabold uppercase tracking-wide text-primary transition-colors hover:bg-main-bg"
-                aria-expanded={isOpen}
-            >
-                <span className="flex min-w-0 items-center gap-2">
-                    <span className="text-primary/55">{icon}</span>
-                    {title}
-                </span>
-                <ChevronDown
-                    size={18}
-                    className={`shrink-0 text-primary/60 transition-transform ${
-                        isOpen ? "rotate-180" : ""
-                    }`}
-                    aria-hidden="true"
-                />
-            </button>
+        <section
+            aria-label="Status do pedido"
+            className="mt-8 rounded-2xl border border-primary/10 bg-product-bg px-4 py-6 shadow-[0_4px_14px_rgba(15,23,42,0.08)] sm:px-6"
+        >
+            <ol className="flex items-start">
+                {steps.map((step, index) => {
+                    const Icon = step.icon;
+                    const isLast = index === steps.length - 1;
 
-            {isOpen && (
-                <div className="border-t border-primary/10 bg-main-bg/40 px-3 py-3">
-                    {children}
-                </div>
-            )}
-        </div>
+                    return (
+                        <li
+                            key={step.label}
+                            className="flex min-w-0 flex-1 items-start last:flex-none"
+                        >
+                            <div className="flex w-12 shrink-0 flex-col items-center gap-2 sm:w-20">
+                                <span
+                                    className={`flex h-9 w-9 items-center justify-center rounded-full shadow-sm sm:h-11 sm:w-11 ${getTimelineStepClass(step.state)}`}
+                                >
+                                    <Icon size={18} aria-hidden="true" />
+                                </span>
+                                <span
+                                    className={`max-w-20 text-center text-[10px] leading-tight sm:text-xs ${step.state === "inactive" ? "text-primary/55" : "font-semibold text-primary"}`}
+                                >
+                                    {step.label}
+                                </span>
+                            </div>
+
+                            {!isLast && (
+                                <span
+                                    className={`mx-1 mt-[1.1rem] h-0.5 min-w-2 flex-1 rounded-full sm:mx-2 sm:mt-[1.3rem] ${step.connectorActive ? "bg-primary" : "bg-primary/15"}`}
+                                    aria-hidden="true"
+                                />
+                            )}
+                        </li>
+                    );
+                })}
+            </ol>
+
+            <p className="mt-6 text-center text-sm text-primary/65">
+                Status:{" "}
+                <strong className={visualStatus.statusClassName}>
+                    {visualStatus.timelineLabel}
+                </strong>
+                {statusDate !== "-" && (
+                    <>
+                        <span className="mx-1 text-primary/35">—</span>
+                        {statusDate}
+                    </>
+                )}
+            </p>
+        </section>
     );
 }
 
@@ -270,162 +265,230 @@ function OrderProductsCard({ pedido }: { pedido: OrderRecord }) {
     const items = getOrderItems(pedido);
     const sellerName = config.FOOTER_CONFIG.nomeExibicao || "Word System";
     const deliveryEstimate = getOrderDeliveryEstimate(pedido);
+    const trackingCode = getOrderTrackingCode(pedido) || "Não informado";
+    const total = pedido.valor ?? pedido.total ?? pedido.valor_total ?? 0;
 
     return (
-        <section className="mt-4 overflow-hidden rounded-md border border-primary/10 bg-white shadow-[0_4px_18px_rgba(15,23,42,0.04)]">
+        <section
+            aria-label="Produtos do pedido"
+            className="mt-6 overflow-hidden rounded-2xl border border-primary/10 bg-product-bg shadow-[0_4px_14px_rgba(15,23,42,0.08)]"
+        >
+            <div className="flex flex-col gap-2 border-b border-primary/10 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/60">
+                    Produtos
+                </h2>
+                <span className="flex flex-wrap items-center gap-1.5 text-sm text-primary/60">
+                    <Store size={16} aria-hidden="true" />
+                    Vendido e entregue por
+                    <strong className="font-semibold text-primary">{sellerName}</strong>
+                </span>
+            </div>
+
             {items.length > 0 ? (
-                items.map((item, index) => (
-                    <OrderProductDetail
-                        key={`${getOrderItemName(item)}-${index}`}
-                        item={item}
-                        sellerName={sellerName}
-                        deliveryEstimate={deliveryEstimate}
-                        fallbackTotal={pedido.valor ?? pedido.total}
-                    />
-                ))
+                <ul className="divide-y divide-primary/10">
+                    {items.map((item, index) => (
+                        <OrderProductDetail
+                            key={`${getOrderItemName(item)}-${index}`}
+                            item={item}
+                            deliveryEstimate={deliveryEstimate}
+                        />
+                    ))}
+                </ul>
             ) : (
-                <div className="flex items-center gap-3 p-4 text-sm text-primary/60">
+                <div className="flex items-center gap-3 px-5 py-8 text-sm text-primary/60 sm:px-6">
                     <Package size={24} className="text-primary/35" />
                     Itens do pedido indisponíveis.
                 </div>
             )}
 
-            <TrackingPanel pedido={pedido} />
+            <div className="flex flex-col gap-2 bg-main-bg/80 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <span className="text-sm font-medium text-primary/65">
+                    Rastreio: {trackingCode}
+                </span>
+                <span className="text-lg font-bold text-primary">
+                    Total: {formatOrderMoney(total)}
+                </span>
+            </div>
         </section>
     );
 }
 
 function OrderProductDetail({
     deliveryEstimate,
-    fallbackTotal,
     item,
-    sellerName,
 }: {
     deliveryEstimate: string;
-    fallbackTotal: unknown;
     item: OrderItem;
-    sellerName: string;
 }) {
     const productName = getOrderItemName(item);
     const productImage = getOrderItemImage(item);
-    const itemTotal = getOrderItemTotal(item);
 
     return (
-        <div className="border-b border-primary/10 p-3">
-            <div className="mb-4 flex items-center justify-between gap-3 text-[11px] text-primary">
-                <span className="min-w-0 truncate">
-                    Vendido e entregue por:{" "}
-                    <strong className="font-extrabold">{sellerName}</strong>
-                </span>
-                <span className="shrink-0 font-bold">
-                    Entrega até: {deliveryEstimate}
-                </span>
+        <li className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-main-bg/50 sm:px-6">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-main-bg">
+                {productImage ? (
+                    <OptimizedImage
+                        src={productImage}
+                        fallbackSrc={getProductImageFallback(productName)}
+                        alt={productName}
+                        className="h-16 w-16 object-contain mix-blend-multiply"
+                    />
+                ) : (
+                    <Package size={28} className="text-primary/35" />
+                )}
             </div>
 
-            <div className="flex gap-3">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-sm border border-primary/10 bg-main-bg">
-                    {productImage ? (
-                        <OptimizedImage
-                            src={productImage}
-                            fallbackSrc={getProductImageFallback(productName)}
-                            alt={productName}
-                            className="h-full w-full object-contain p-1 mix-blend-multiply"
-                        />
-                    ) : (
-                        <Package size={26} className="text-primary/35" />
-                    )}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                    <h2 className="line-clamp-3 text-sm font-extrabold leading-snug text-primary">
-                        {productName}
-                    </h2>
-                    <div className="mt-2 flex items-end justify-between gap-3">
-                        <p className="text-xs text-primary/60">
-                            Quantidade: {getOrderItemQuantity(item)}
-                        </p>
-                        <p className="shrink-0 text-sm font-medium text-primary/75">
-                            {formatOrderMoney(itemTotal || fallbackTotal)}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function TrackingPanel({ pedido }: { pedido: OrderRecord }) {
-    const trackingCode = getOrderTrackingCode(pedido) || "Não informado";
-    const status = getOrderStatusInfo(pedido.status || pedido.situacao);
-    const statusDate = formatOrderDateTime(getOrderStatusDateValue(pedido));
-
-    return (
-        <div className="p-4 sm:p-5">
-            <div>
-                <p className="text-sm font-extrabold uppercase text-primary">
-                    Rastreio:
+            <div className="min-w-0 flex-1">
+                <h3 className="line-clamp-2 text-sm font-bold leading-snug text-primary sm:text-base">
+                    {productName}
+                </h3>
+                <p className="mt-1 text-xs text-primary/60 sm:text-sm">
+                    Quantidade: {getOrderItemQuantity(item)}
                 </p>
-                <p className="mt-1 text-sm text-primary/70">{trackingCode}</p>
             </div>
 
-            <TrackingSteps tone={status.tone} />
-
-            <p className="mt-5 text-center text-sm text-primary/75">
-                <strong>Status:</strong> {status.timelineLabel}
-                {statusDate !== "-" ? ` - ${statusDate}` : ""}
-            </p>
-        </div>
+            <div className="shrink-0 text-right">
+                <p className="text-sm font-bold text-primary sm:text-base">
+                    {formatOrderMoney(getOrderItemTotal(item))}
+                </p>
+                <p className="mt-1 hidden text-xs text-primary/55 sm:block">
+                    Entrega até: {deliveryEstimate}
+                </p>
+            </div>
+        </li>
     );
 }
 
-function TrackingSteps({
-    tone,
-}: {
-    tone: ReturnType<typeof getOrderStatusInfo>["tone"];
-}) {
-    const isCancelled = tone === "cancelled";
-    const activeCount = tone === "delivered" ? 4 : tone === "approved" ? 2 : 1;
-    const steps = [
-        ShoppingCart,
-        CreditCard,
-        PackageCheck,
-        Truck,
-        isCancelled ? CircleX : CheckCircle2,
+type DetailSection = "address" | "payment" | "value";
+
+function OrderDetailsGrid({ pedido }: { pedido: OrderRecord }) {
+    const [activeSection, setActiveSection] = useState<DetailSection | null>(null);
+    const details: Array<{
+        id: DetailSection;
+        icon: typeof MapPin;
+        title: string;
+        description: string;
+    }> = [
+        {
+            id: "address",
+            icon: MapPin,
+            title: "Endereço",
+            description: "Endereço de entrega do pedido",
+        },
+        {
+            id: "payment",
+            icon: CreditCard,
+            title: "Forma de pagamento",
+            description: "Como o pedido foi pago",
+        },
+        {
+            id: "value",
+            icon: Wallet,
+            title: "Valor",
+            description: "Resumo de valores e frete",
+        },
     ];
 
     return (
-        <div className="mt-10 flex items-center">
-            {steps.map((Icon, index) => {
-                const isLast = index === steps.length - 1;
-                const isActive = index < activeCount;
-                const isDanger = isCancelled && isLast;
+        <div className="mt-6">
+            <div className="grid gap-4 sm:grid-cols-3">
+                {details.map((detail) => {
+                    const Icon = detail.icon;
+                    const isActive = activeSection === detail.id;
 
-                return (
-                    <div key={index} className="flex flex-1 items-center last:flex-none">
-                        <span
-                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                                isDanger
-                                    ? "bg-red-600 text-white"
-                                    : isActive
-                                      ? "bg-terciary text-white"
-                                      : "bg-primary/10 text-primary/25"
-                            }`}
+                    return (
+                        <button
+                            key={detail.id}
+                            type="button"
+                            onClick={() =>
+                                setActiveSection((current) =>
+                                    current === detail.id ? null : detail.id,
+                                )
+                            }
+                            className={`group flex min-h-36 flex-col gap-3 rounded-2xl border bg-product-bg p-5 text-left shadow-[0_3px_10px_rgba(15,23,42,0.08)] transition-all hover:-translate-y-0.5 hover:border-orange-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 ${isActive ? "border-orange-400" : "border-primary/10"}`}
+                            aria-expanded={isActive}
+                            aria-controls={`order-detail-${detail.id}`}
                         >
-                            <Icon size={16} aria-hidden="true" />
-                        </span>
-                        {!isLast && (
                             <span
-                                className={`mx-2 h-0.5 flex-1 ${
-                                    isActive && !isCancelled
-                                        ? "bg-terciary"
-                                        : "bg-primary/15"
-                                }`}
-                                aria-hidden="true"
-                            />
-                        )}
-                    </div>
-                );
-            })}
+                                className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${isActive ? "bg-orange-500 text-white" : "bg-main-bg text-primary group-hover:bg-orange-500 group-hover:text-white"}`}
+                            >
+                                <Icon size={20} aria-hidden="true" />
+                            </span>
+                            <span>
+                                <span className="block font-bold text-primary">
+                                    {detail.title}
+                                </span>
+                                <span className="mt-1 block text-xs text-primary/55">
+                                    {detail.description}
+                                </span>
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+
+            {activeSection && (
+                <section
+                    id={`order-detail-${activeSection}`}
+                    className="mt-4 rounded-2xl border border-primary/10 bg-product-bg p-5 shadow-sm sm:p-6"
+                >
+                    <OrderDetailContent pedido={pedido} section={activeSection} />
+                </section>
+            )}
+        </div>
+    );
+}
+
+function OrderDetailContent({
+    pedido,
+    section,
+}: {
+    pedido: OrderRecord;
+    section: DetailSection;
+}) {
+    if (section === "address") {
+        const addressLines = getOrderAddressLines(pedido);
+
+        return (
+            <div>
+                <h2 className="font-bold text-primary">Endereço de entrega</h2>
+                <div className="mt-3 space-y-1 text-sm text-primary/65">
+                    {addressLines.map((line) => (
+                        <p key={line}>{line}</p>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (section === "payment") {
+        return (
+            <div>
+                <h2 className="font-bold text-primary">Forma de pagamento</h2>
+                <p className="mt-3 text-sm text-primary/65">
+                    {getOrderPaymentLabel(pedido)}
+                </p>
+            </div>
+        );
+    }
+
+    const total = pedido.valor ?? pedido.total ?? pedido.valor_total ?? 0;
+    const subtotal = pedido.subtotal ?? pedido.valor_produtos ?? total;
+    const shipping =
+        pedido.valor_do_frete ??
+        pedido.valor_frete ??
+        pedido.frete?.valor ??
+        pedido.entrega?.valor ??
+        0;
+
+    return (
+        <div>
+            <h2 className="font-bold text-primary">Resumo de valores</h2>
+            <div className="mt-3 space-y-2 text-sm">
+                <SummaryLine label="Subtotal" value={formatOrderMoney(subtotal)} />
+                <SummaryLine label="Frete" value={formatOrderMoney(shipping)} />
+                <SummaryLine label="Total" value={formatOrderMoney(total)} strong />
+            </div>
         </div>
     );
 }
@@ -441,11 +504,7 @@ function SummaryLine({
 }) {
     return (
         <div
-            className={`flex justify-between gap-4 ${
-                strong
-                    ? "border-t border-primary/10 pt-2 font-extrabold text-primary"
-                    : "text-primary/70"
-            }`}
+            className={`flex justify-between gap-4 ${strong ? "border-t border-primary/10 pt-2 font-bold text-primary" : "text-primary/65"}`}
         >
             <span>{label}</span>
             <span>{value}</span>
@@ -453,13 +512,147 @@ function SummaryLine({
     );
 }
 
+type TimelineState = "active" | "inactive" | "danger" | "success";
+
+function getTimelineSteps(pedido: OrderRecord) {
+    const status = normalizeText(pedido.status || pedido.situacao || "pendente");
+    const isCancelled = status.includes("cancel") || status.includes("recus");
+    const isDelivered = status.includes("entreg");
+    const isSent = status.includes("envi") || status.includes("transporte");
+    const isPreparing = status.includes("separ") || status.includes("prepar");
+    const isApproved =
+        status.includes("aprov") ||
+        status.includes("pago") ||
+        status.includes("concl");
+    const activeThrough = isDelivered
+        ? 4
+        : isSent
+          ? 3
+          : isPreparing
+            ? 2
+            : isApproved
+              ? 1
+              : 0;
+    const baseSteps = [
+        { icon: ShoppingCart, label: "Pedido feito" },
+        { icon: PackageCheck, label: "Aprovado" },
+        { icon: Package, label: "Em separação" },
+        { icon: Truck, label: "Enviado" },
+        {
+            icon: isCancelled ? CircleX : CheckCircle2,
+            label: isCancelled ? "Cancelado" : "Concluído",
+        },
+    ];
+
+    return baseSteps.map((step, index) => {
+        let state: TimelineState = "inactive";
+
+        if (isCancelled && index === 4) {
+            state = "danger";
+        } else if (index <= activeThrough) {
+            state = isDelivered && index === 4 ? "success" : "active";
+        }
+
+        return {
+            ...step,
+            state,
+            connectorActive: !isCancelled && index < activeThrough,
+        };
+    });
+}
+
+function getTimelineStepClass(state: TimelineState) {
+    if (state === "danger") return "bg-red-600 text-white";
+    if (state === "success") return "bg-emerald-600 text-white";
+    if (state === "active") return "bg-primary text-secondary";
+    return "bg-main-bg text-primary/45";
+}
+
+function getOrderVisualStatus(pedido: OrderRecord) {
+    const rawStatus = String(pedido.status || pedido.situacao || "Pendente");
+    const status = normalizeText(rawStatus);
+
+    if (status.includes("cancel") || status.includes("recus")) {
+        return {
+            headerLabel: "Compra cancelada",
+            timelineLabel: "Pedido cancelado",
+            badgeClassName: "bg-red-600 text-white",
+            statusClassName: "text-red-600",
+        };
+    }
+
+    if (status.includes("pend") || status.includes("aguard")) {
+        return {
+            headerLabel: "Aguardando pagamento",
+            timelineLabel: "Aguardando pagamento",
+            badgeClassName: "bg-amber-100 text-amber-700",
+            statusClassName: "text-amber-600",
+        };
+    }
+
+    if (status.includes("entreg")) {
+        return {
+            headerLabel: "Pedido entregue",
+            timelineLabel: "Pedido entregue",
+            badgeClassName: "bg-emerald-100 text-emerald-700",
+            statusClassName: "text-emerald-600",
+        };
+    }
+
+    if (status.includes("envi") || status.includes("transporte")) {
+        return {
+            headerLabel: "Pedido enviado",
+            timelineLabel: "Pedido enviado",
+            badgeClassName: "bg-orange-100 text-orange-700",
+            statusClassName: "text-orange-600",
+        };
+    }
+
+    if (status.includes("separ") || status.includes("prepar")) {
+        return {
+            headerLabel: "Em separação",
+            timelineLabel: "Pedido em separação",
+            badgeClassName: "bg-sky-100 text-sky-700",
+            statusClassName: "text-sky-600",
+        };
+    }
+
+    if (
+        status.includes("aprov") ||
+        status.includes("pago") ||
+        status.includes("concl")
+    ) {
+        return {
+            headerLabel: "Concluído",
+            timelineLabel: "Pagamento aprovado",
+            badgeClassName: "bg-emerald-100 text-emerald-700",
+            statusClassName: "text-emerald-600",
+        };
+    }
+
+    return {
+        headerLabel: rawStatus,
+        timelineLabel: rawStatus,
+        badgeClassName: "bg-main-bg text-primary/70",
+        statusClassName: "text-primary",
+    };
+}
+
 function PedidoLoading() {
     return (
-        <div className="mx-auto max-w-3xl">
-            <div className="mb-5 h-5 w-64 animate-pulse rounded bg-primary/10" />
-            <div className="mb-4 h-5 w-36 animate-pulse rounded bg-red-100" />
-            <div className="h-36 animate-pulse rounded-md border border-primary/10 bg-white" />
-            <div className="mt-4 h-72 animate-pulse rounded-md border border-primary/10 bg-white" />
+        <div className="mx-auto w-full max-w-3xl animate-pulse">
+            <div className="h-5 w-72 rounded bg-primary/10" />
+            <div className="mt-8 h-20 rounded-xl bg-primary/10" />
+            <div className="mt-8 h-40 rounded-2xl border border-primary/10 bg-product-bg" />
+            <div className="mt-6 h-72 rounded-2xl border border-primary/10 bg-product-bg" />
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, index) => (
+                    <div
+                        key={index}
+                        className="h-36 rounded-2xl border border-primary/10 bg-product-bg"
+                    />
+                ))}
+            </div>
         </div>
     );
 }
@@ -472,9 +665,9 @@ function PedidoError({
     onRetry: () => void;
 }) {
     return (
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto w-full max-w-3xl">
             <PedidoBreadcrumb orderId="-" />
-            <div className="rounded-lg border border-red-200 bg-red-50 p-5 text-red-700">
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700 shadow-sm">
                 <div className="flex items-start gap-3">
                     <AlertCircle className="mt-0.5 shrink-0" size={22} />
                     <div>
@@ -483,7 +676,7 @@ function PedidoError({
                         <button
                             type="button"
                             onClick={onRetry}
-                            className="mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-red-300 px-4 text-xs font-bold transition-colors hover:bg-red-100"
+                            className="mt-4 inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-red-300 px-4 text-xs font-bold transition-colors hover:bg-red-100"
                         >
                             <RefreshCw size={15} />
                             Atualizar

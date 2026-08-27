@@ -269,7 +269,7 @@ function PedidosHeader({
                     <ArrowLeft size={20} aria-hidden="true" />
                 </Link>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+                    <h1 className="text-3xl font-semibold tracking-tight text-primary sm:text-4xl">
                         Meus pedidos
                     </h1>
                     {!loading && (

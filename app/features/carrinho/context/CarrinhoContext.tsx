@@ -478,7 +478,10 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
     const adicionarNovoProduto = async (produto: Produto) => {
         try {
             const existingItem = produtos.find((value) => isSameCartItem(value, produto));
-            const quantityToAdd = 1;
+            const requestedQuantity = Math.floor(Number(produto.quantidade));
+            const quantityToAdd = Number.isFinite(requestedQuantity) && requestedQuantity > 0
+                ? requestedQuantity
+                : 1;
 
             if (existingItem) {
                 const quantidade = Number(existingItem.quantidade || 1) + quantityToAdd;

@@ -208,7 +208,8 @@ export function getOrderAddressLines(order: OrderRecord | null | undefined) {
         order?.cliente?.endereco ||
         null;
 
-    if (!address) return ["Endereço não informado."];
+    if (!address) return getOrderFlatAddressLines(order);
+
     if (typeof address === "string") return [address];
 
     const street = joinParts([
@@ -225,6 +226,51 @@ export function getOrderAddressLines(order: OrderRecord | null | undefined) {
     const lines = [street, district, city, zipCode].filter(Boolean);
 
     return lines.length > 0 ? lines : ["Endereço não informado."];
+}
+
+function getOrderFlatAddressLines(order: OrderRecord | null | undefined) {
+    const street = joinParts([
+        order?.endereco_entrega_logradouro ||
+            order?.endereco_destino ||
+            order?.logradouro,
+        order?.endereco_entrega_numero ||
+            order?.numero_destino ||
+            order?.numero,
+        order?.endereco_entrega_complemento ||
+            order?.complemento_destino ||
+            order?.complemento,
+    ]);
+    const district =
+        order?.endereco_entrega_bairro ||
+        order?.bairro_destino ||
+        order?.bairro;
+    const city = joinParts(
+        [
+            order?.endereco_entrega_cidade ||
+                order?.cidade_destino ||
+                order?.cidade,
+            order?.endereco_entrega_uf ||
+                order?.endereco_entrega_estado ||
+                order?.estado_destino ||
+                order?.estado ||
+                order?.uf,
+        ],
+        " - ",
+    );
+    const zipCode =
+        order?.endereco_entrega_cep ||
+        order?.cep_destino ||
+        order?.cep;
+    const lines = [
+        street,
+        district,
+        city,
+        zipCode ? `CEP ${zipCode}` : "",
+    ].filter(Boolean);
+
+    if (lines.length > 0) return lines;
+
+    return ["Endereco nao informado."];
 }
 
 export function getOrderStatusInfo(status: unknown) {

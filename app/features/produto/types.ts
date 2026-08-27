@@ -5,6 +5,7 @@ import type { Marca } from "../marca/types";
 
 export interface Produto extends DefaultResponse {
     id: number,
+    codigo?: string,
     links: Links,
     menu: string,
     categoriaId: number,
@@ -35,6 +36,7 @@ export interface Produto extends DefaultResponse {
     quantidadeAvaliacoes: number,
     ehMarketplace: boolean,
     marca?: Marca,
+    nomeMarca?: string,
     fotos: Fotos,
     imagens?: string[],
     tagDescricao: string,
@@ -59,6 +61,9 @@ export interface Produto extends DefaultResponse {
     percentualPix: string,
     valorDescontoPix: string,
     habilitarAviso: string,
+    habil_tipo?: string,
+    numeroParcelas?: number,
+    placeholderParcelas?: string,
     nomeCategoria: string,
     nomeSubCategoria: string,
     ehFavorito: "Sim" | "Nao",
