@@ -114,6 +114,17 @@ const getMercadoPagoOrderFromSaleResponse = (response: any) => {
     return payload?.mercado_pago as MercadoPagoOrderResult | undefined;
 };
 
+const firstCheckoutErrorString = (...candidates: unknown[]) =>
+    candidates.find(
+        (candidate): candidate is string =>
+            typeof candidate === 'string' && candidate.trim() !== '',
+    );
+
+const asCheckoutErrorObject = (value: unknown): Record<string, unknown> | null =>
+    typeof value === 'object' && value !== null
+        ? value as Record<string, unknown>
+        : null;
+
 const getCheckoutErrorMessage = (error: unknown) => {
     if (error instanceof Error && error.message) {
         return error.message;
@@ -126,22 +137,34 @@ const getCheckoutErrorMessage = (error: unknown) => {
     const payload = error as {
         originalError?: unknown;
         mensagem?: unknown;
+        message?: unknown;
+        data?: unknown;
+        detalhes?: unknown;
         error?: unknown;
     };
-    const nestedError = typeof payload.error === 'object' && payload.error !== null
-        ? payload.error as { error?: unknown; mensagem?: unknown; message?: unknown }
-        : null;
-    const candidates = [
+
+    const data = asCheckoutErrorObject(payload.data);
+    const contexto = asCheckoutErrorObject(data?.contexto);
+    const venda = asCheckoutErrorObject(contexto?.venda);
+    const nestedError = asCheckoutErrorObject(payload.error);
+    const nestedErrorData = asCheckoutErrorObject(nestedError?.data);
+    const nestedErrorContexto = asCheckoutErrorObject(nestedErrorData?.contexto);
+    const nestedErrorVenda = asCheckoutErrorObject(nestedErrorContexto?.venda);
+
+    const message = firstCheckoutErrorString(
+        data?.detalhes,
+        venda?.mensagem,
+        nestedErrorData?.detalhes,
+        nestedErrorVenda?.mensagem,
+        payload.detalhes,
         payload.originalError,
         payload.mensagem,
-        typeof payload.error === 'string' ? payload.error : null,
+        payload.message,
+        typeof payload.error === 'string' ? payload.error : undefined,
+        nestedError?.detalhes,
         nestedError?.error,
         nestedError?.mensagem,
         nestedError?.message,
-    ];
-    const message = candidates.find(
-        (candidate): candidate is string =>
-            typeof candidate === 'string' && candidate.trim() !== '',
     );
 
     return message ?? 'Erro ao gerar venda. Tente novamente.';
@@ -258,6 +281,7 @@ const CartSummary = ({
     requiresCardForm = false,
     termsAccepted,
     onTermsAcceptedChange,
+    checkoutError,
 }: {
     step: number;
     onContinue: () => void;
@@ -266,6 +290,7 @@ const CartSummary = ({
     requiresCardForm?: boolean;
     termsAccepted: boolean;
     onTermsAcceptedChange: (accepted: boolean) => void;
+    checkoutError?: string | null;
 }) => {
     let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, tipoDeEntregaSelecionada, pagamentoSelecionado, selectedItems, produtos } = useCarrinho();
 
@@ -418,6 +443,12 @@ const CartSummary = ({
             )}
 
             <div className="mt-6 space-y-3">
+                {isConfirmationStep && checkoutError && (
+                    <p className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                        <FaExclamationCircle className="mt-0.5 shrink-0" />
+                        <span>{checkoutError}</span>
+                    </p>
+                )}
                 {blockedMessage && (
                     <p className="flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
                         <FaExclamationCircle /> {blockedMessage}
@@ -482,6 +513,7 @@ export default function CheckoutLayout() {
     const [loading, setLoading] = React.useState(false);
     const [orderCompleted, setOrderCompleted] = React.useState(false);
     const [termsAccepted, setTermsAccepted] = React.useState(false);
+    const [checkoutError, setCheckoutError] = React.useState<string | null>(null);
     const pendingSaleId = React.useRef<number | null>(null);
     const pendingPixIdempotencyKey = React.useRef<string | null>(null);
 
@@ -520,6 +552,7 @@ export default function CheckoutLayout() {
     React.useEffect(() => {
         pendingSaleId.current = null;
         pendingPixIdempotencyKey.current = null;
+        setCheckoutError(null);
     }, [checkoutFingerprint]);
 
     React.useEffect(() => {
@@ -568,6 +601,7 @@ export default function CheckoutLayout() {
             isTransparentMercadoPago &&
             pagamentoSelecionado.mercado_pago_method === 'pix';
 
+        setCheckoutError(null);
         setLoading(true);
         try {
             let response: any = null;
@@ -748,10 +782,9 @@ export default function CheckoutLayout() {
             ) {
                 pendingPixIdempotencyKey.current = null;
             }
-            toast.error(
-                getCheckoutErrorMessage(error),
-                { position: 'top-center' },
-            );
+            const checkoutErrorMessage = getCheckoutErrorMessage(error);
+            setCheckoutError(checkoutErrorMessage);
+            toast.error(checkoutErrorMessage, { position: 'top-center' });
             throw error;
         } finally {
             setLoading(false);
@@ -881,6 +914,7 @@ export default function CheckoutLayout() {
                                 requiresCardForm={requiresCardForm}
                                 termsAccepted={termsAccepted}
                                 onTermsAcceptedChange={setTermsAccepted}
+                                checkoutError={checkoutError}
                             />
                         </div>
                     </div>
