@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
     AlertCircle,
+    ArrowLeft,
     CalendarDays,
     ChevronDown,
-    ChevronLeft,
     Filter,
     PackageSearch,
     RefreshCw,
@@ -23,6 +23,7 @@ import {
     getOrderItemName,
     getOrderItems,
     getOrderLookupId,
+    isPendingMercadoPagoPixOrder,
     normalizeText,
 } from "~/features/minhaconta/utils/orderHelpers";
 
@@ -33,18 +34,18 @@ export function meta({ }: Route.MetaArgs) {
 }
 
 const periodOptions = [
-    { value: "all", label: "Todos" },
-    { value: "30", label: "30 dias" },
-    { value: "90", label: "90 dias" },
-    { value: "365", label: "12 meses" },
+    { value: "all", label: "Todo o período" },
+    { value: "30", label: "Últimos 30 dias" },
+    { value: "90", label: "Últimos 90 dias" },
+    { value: "365", label: "Últimos 12 meses" },
 ];
 
 const statusOptions = [
-    { value: "all", label: "Todos" },
-    { value: "pend", label: "Pendente" },
-    { value: "aprov", label: "Aprovado" },
+    { value: "all", label: "Todos os status" },
+    { value: "pending", label: "Aguardando pagamento" },
+    { value: "completed", label: "Concluído" },
+    { value: "sent", label: "Enviado" },
     { value: "cancel", label: "Cancelado" },
-    { value: "entreg", label: "Entregue" },
 ];
 
 export default function PedidosPage() {
@@ -126,10 +127,9 @@ export default function PedidosPage() {
                 getOrderLookupId(pedido),
                 getOrderItems(pedido).map(getOrderItemName).join(" "),
             ].join(" "));
-            const status = normalizeText(pedido.status || pedido.situacao || "pendente");
             const matchesSearch = search === "" || orderText.includes(search);
             const matchesStatus =
-                statusFilter === "all" || status.includes(statusFilter);
+                statusFilter === "all" || matchesStatusFilter(pedido, statusFilter);
             const matchesPeriod = isInsidePeriod(
                 getOrderDateValue(pedido),
                 periodFilter,
@@ -141,6 +141,15 @@ export default function PedidosPage() {
 
     const hasActiveFilters =
         periodFilter !== "all" || statusFilter !== "all" || searchTerm.trim() !== "";
+    const pendingItems = useMemo(
+        () =>
+            pedidos.filter(
+                (pedido) =>
+                    isPendingMercadoPagoPixOrder(pedido) ||
+                    normalizeText(pedido.status || pedido.situacao).includes("pend"),
+            ).length,
+        [pedidos],
+    );
 
     const handlePageChange = (page: number) => {
         if (page >= 1 && page <= totalPages) {
@@ -150,8 +159,12 @@ export default function PedidosPage() {
     };
 
     return (
-        <div>
-            <PedidosHeader />
+        <div className="mx-auto w-full max-w-5xl">
+            <PedidosHeader
+                totalItems={totalItems}
+                pendingItems={pendingItems}
+                loading={loading}
+            />
 
             <FiltersBar
                 periodFilter={periodFilter}
@@ -163,12 +176,12 @@ export default function PedidosPage() {
             />
 
             {loading ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border border-primary/10 bg-main-bg py-16">
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-primary/10 bg-product-bg py-16 shadow-sm">
                     <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-primary" />
                     <p className="mt-4 text-sm text-primary/55">Carregando pedidos...</p>
                 </div>
             ) : errorMessage ? (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-5 text-red-700">
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700 shadow-sm">
                     <div className="flex items-start gap-3">
                         <AlertCircle className="mt-0.5 shrink-0" size={22} />
                         <div>
@@ -196,7 +209,7 @@ export default function PedidosPage() {
                 />
             ) : (
                 <>
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                         {filteredPedidos.map((pedido, index) => {
                             const orderLookupId =
                                 getOrderLookupId(pedido) ||
@@ -228,10 +241,18 @@ export default function PedidosPage() {
     );
 }
 
-function PedidosHeader() {
+function PedidosHeader({
+    totalItems,
+    pendingItems,
+    loading,
+}: {
+    totalItems: number;
+    pendingItems: number;
+    loading: boolean;
+}) {
     return (
-        <div className="mb-5">
-            <div className="mb-5 text-sm text-primary/65">
+        <div className="mb-7">
+            <div className="mb-4 text-xs text-primary/60 sm:text-sm">
                 <Link to="/minha-conta" className="underline-offset-2 hover:underline">
                     Central Minha Conta
                 </Link>
@@ -239,13 +260,33 @@ function PedidosHeader() {
                 <span className="font-bold text-primary">Meus Pedidos</span>
             </div>
 
-            <Link
-                to="/minha-conta"
-                className="inline-flex items-center gap-2 text-sm font-extrabold uppercase tracking-wide text-primary"
-            >
-                <ChevronLeft size={20} className="text-terciary" />
-                Meus pedidos
-            </Link>
+            <div className="flex items-center gap-3">
+                <Link
+                    to="/minha-conta"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/15 bg-product-bg text-primary shadow-sm transition-colors hover:bg-main-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terciary/30"
+                    aria-label="Voltar para a Central Minha Conta"
+                >
+                    <ArrowLeft size={20} aria-hidden="true" />
+                </Link>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
+                        Meus pedidos
+                    </h1>
+                    {!loading && (
+                        <p className="mt-1 text-sm text-primary/65">
+                            {totalItems} {totalItems === 1 ? "pedido" : "pedidos"} no total
+                            {pendingItems > 0 && (
+                                <>
+                                    <span className="mx-1 text-primary/35">·</span>
+                                    <span className="font-medium text-amber-600">
+                                        {pendingItems} aguardando pagamento
+                                    </span>
+                                </>
+                            )}
+                        </p>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
@@ -266,23 +307,21 @@ function FiltersBar({
     onStatusChange: (value: string) => void;
 }) {
     return (
-        <div className="mb-7 space-y-4">
-            <div className="grid grid-cols-1 gap-2 min-[430px]:grid-cols-2">
-                <SelectField
-                    icon={<CalendarDays size={17} />}
-                    label="Período"
-                    value={periodFilter}
-                    onChange={onPeriodChange}
-                    options={periodOptions}
-                />
-                <SelectField
-                    icon={<Filter size={17} />}
-                    label="Status"
-                    value={statusFilter}
-                    onChange={onStatusChange}
-                    options={statusOptions}
-                />
-            </div>
+        <div className="mb-7 grid gap-3 rounded-2xl border border-primary/10 bg-product-bg p-4 shadow-[0_4px_14px_rgba(15,23,42,0.08)] sm:grid-cols-[1fr_1fr_1.4fr] sm:p-5">
+            <SelectField
+                icon={<CalendarDays size={17} />}
+                label="Período"
+                value={periodFilter}
+                onChange={onPeriodChange}
+                options={periodOptions}
+            />
+            <SelectField
+                icon={<Filter size={17} />}
+                label="Status"
+                value={statusFilter}
+                onChange={onStatusChange}
+                options={statusOptions}
+            />
 
             <label className="relative block">
                 <Search
@@ -293,7 +332,7 @@ function FiltersBar({
                     value={searchTerm}
                     onChange={(event) => onSearchChange(event.target.value)}
                     placeholder="Digite o nome ou o código do produto"
-                    className="min-h-12 w-full rounded-md border border-primary/10 bg-white px-11 text-sm text-primary outline-none transition-colors placeholder:text-primary/45 focus:border-terciary focus:ring-2 focus:ring-terciary/15"
+                    className="min-h-11 w-full rounded-xl border border-primary/10 bg-product-bg px-11 text-sm text-primary shadow-sm outline-none transition-colors placeholder:text-primary/45 focus:border-terciary focus:ring-2 focus:ring-terciary/15 sm:min-h-12"
                     type="search"
                 />
             </label>
@@ -323,7 +362,7 @@ function SelectField({
             <select
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
-                className="min-h-12 w-full appearance-none rounded-md border border-primary/10 bg-white px-11 text-sm font-medium text-primary outline-none transition-colors focus:border-terciary focus:ring-2 focus:ring-terciary/15"
+                className="min-h-11 w-full appearance-none rounded-xl border border-primary/10 bg-product-bg px-11 text-sm font-medium text-primary shadow-sm outline-none transition-colors focus:border-terciary focus:ring-2 focus:ring-terciary/15 sm:min-h-12"
             >
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -348,7 +387,7 @@ function EmptyOrders({
 }) {
     if (hasActiveFilters) {
         return (
-            <div className="rounded-lg border border-dashed border-primary/20 bg-main-bg p-8 text-center">
+            <div className="rounded-2xl border border-dashed border-primary/20 bg-product-bg p-8 text-center shadow-sm">
                 <PackageSearch className="mx-auto text-primary/35" size={42} />
                 <h3 className="mt-4 text-lg font-semibold text-primary">
                     Nenhum pedido encontrado
@@ -365,7 +404,7 @@ function EmptyOrders({
     }
 
     return (
-        <div className="rounded-lg border border-dashed border-primary/20 bg-main-bg p-8 text-center">
+        <div className="rounded-2xl border border-dashed border-primary/20 bg-product-bg p-8 text-center shadow-sm">
             <ShoppingBag className="mx-auto text-primary/35" size={44} />
             <h3 className="mt-4 text-lg font-semibold text-primary">
                 Nenhum pedido ainda
@@ -395,4 +434,28 @@ function isInsidePeriod(value: unknown, period: string) {
     start.setDate(start.getDate() - days);
 
     return date >= start;
+}
+
+function matchesStatusFilter(pedido: any, filter: string) {
+    const status = normalizeText(pedido.status || pedido.situacao || "pendente");
+
+    if (filter === "pending") {
+        return isPendingMercadoPagoPixOrder(pedido) || status.includes("pend");
+    }
+
+    if (filter === "completed") {
+        return ["concl", "aprov", "pago", "entreg"].some((value) =>
+            status.includes(value),
+        );
+    }
+
+    if (filter === "sent") {
+        return status.includes("envi") || status.includes("transporte");
+    }
+
+    if (filter === "cancel") {
+        return status.includes("cancel") || status.includes("recus");
+    }
+
+    return true;
 }

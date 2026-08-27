@@ -95,6 +95,36 @@ const toPagamentoVisualStatus = (
   );
 };
 
+const getPixValidityLabel = (
+  order: MercadoPagoOrderResult | null,
+  venda: any,
+) => {
+  if (order?.expiresAt) {
+    const expirationDate = new Date(order.expiresAt);
+    if (!Number.isNaN(expirationDate.getTime())) {
+      return `até ${new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }).format(expirationDate)}`;
+    }
+  }
+
+  const minutes = order?.pixExpirationMinutes ??
+    venda?.pagamento_ecommerce?.pix_expiracao_minutos ??
+    venda?.pagamento?.tempo_cancel ??
+    30;
+  if (minutes < 60) return `por ${minutes} minutos`;
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  const hourLabel = `${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+  if (remainingMinutes === 0) return `por ${hourLabel}`;
+
+  return `por ${hourLabel} e ${remainingMinutes} ${
+    remainingMinutes === 1 ? 'minuto' : 'minutos'
+  }`;
+};
+
 const Step6_Success = () => {
   const { id } = useParams();
   const { cliente } = useAuth();
@@ -357,7 +387,14 @@ const Step6_Success = () => {
     isMercadoPagoPix ||
     (venda.pagamento?.tipo === 'PIX' &&
       venda.pagamento.pix_dinamico === 'Sim');
-  const canPayPix = showPix && pagamentoStatus === 'pendente';
+  const pixExpirationTimestamp = mercadoPagoOrder?.expiresAt
+    ? new Date(mercadoPagoOrder.expiresAt).getTime()
+    : Number.NaN;
+  const isPixExpired = Number.isFinite(pixExpirationTimestamp)
+    && pixExpirationTimestamp <= Date.now();
+  const canPayPix = showPix
+    && pagamentoStatus === 'pendente'
+    && !isPixExpired;
   const routeState = location.pathname.includes('/falha')
     ? 'falha'
     : location.pathname.includes('/pendente')
@@ -365,6 +402,7 @@ const Step6_Success = () => {
       : 'sucesso';
   const entrega = venda.entrega;
   const trackingCode = entrega?.codigo_rastreio || entrega?.melhor_envio_order_id;
+  const pixValidityLabel = getPixValidityLabel(mercadoPagoOrder, venda);
 
   return (
     <div className="mx-auto max-w-4xl rounded-lg bg-white p-4 shadow-sm sm:p-8">
@@ -471,25 +509,16 @@ const Step6_Success = () => {
             <div className="bg-orange-50 border border-orange-200 text-orange-700 p-4 rounded-md flex items-start gap-3 mb-6">
               <FaExclamationCircle className="text-2xl mt-1" />
               <div>
-                <p className="font-bold">Aproveite! Este código tem validade de {(() => {
-                  const minutes = isMercadoPagoPix
-                    ? mercadoPagoOrder?.pixExpirationMinutes ??
-                      venda.pagamento_ecommerce?.pix_expiracao_minutos ??
-                      30
-                    : venda.pagamento.tempo_cancel || 30;
-                  if (minutes < 60) return `${minutes} minutos`;
-                  const hours = Math.floor(minutes / 60);
-                  const remainingMinutes = minutes % 60;
-                  if (remainingMinutes === 0) return `${hours} ${hours === 1 ? 'hora' : 'horas'}`;
-                  return `${hours} ${hours === 1 ? 'hora' : 'horas'} e ${remainingMinutes} ${remainingMinutes === 1 ? 'minuto' : 'minutos'}`;
-                })()}.</p>
+                <p className="font-bold">
+                  Aproveite! Este código é válido {pixValidityLabel}.
+                </p>
                 <p className="text-sm">Ao realizar o pagamento você será informado por e-mail.</p>
               </div>
             </div>
 
             <div className="text-center mb-8">
               <p className="text-sm text-gray-600">O número do seu pedido é:</p>
-              <p className="overflow-wrap-anywhere text-3xl font-bold tracking-wider text-gray-800 sm:text-5xl">{venda.id}</p>
+              <p className="overflow-wrap-anywhere text-3xl font-bold tracking-wider text-gray-800 sm:text-5xl">{venda.numero_pedido ?? venda.id}</p>
             </div>
 
             <p className="text-sm text-gray-600 mb-4">Escaneie o <span className="font-bold">QR Code</span> ou copie o <span className="font-bold">código PIX</span>. Abra o app da instituição que você possui o PIX cadastrado e realize o pagamento.</p>
@@ -503,15 +532,15 @@ const Step6_Success = () => {
           </div>
         )}
 
-        {showPix && pagamentoStatus === 'recusado' && (
+        {showPix && (pagamentoStatus === 'recusado' || isPixExpired) && (
           <div className="flex-1 rounded-lg border border-red-200 bg-red-50 p-5 text-red-800">
             <p className="font-bold">
               Este código PIX não pode mais ser pago.
             </p>
             <p className="mt-2 text-sm">
-              O Mercado Pago recusou a transação durante a análise de
-              segurança. Não tente novamente com este QR Code. Volte aos seus
-              pedidos e escolha uma nova forma de pagamento.
+              {isPixExpired
+                ? 'A validade deste QR Code terminou. Volte aos seus pedidos e clique em Pagar com PIX para gerar um novo código.'
+                : 'O Mercado Pago recusou a transação durante a análise de segurança. Não tente novamente com este QR Code.'}
             </p>
           </div>
         )}
@@ -521,7 +550,7 @@ const Step6_Success = () => {
             <p className="text-lg mb-4">Seu pedido foi recebido e está sendo processado.</p>
             <div className="text-center mb-8">
               <p className="text-sm text-gray-600">O número do seu pedido é:</p>
-              <p className="overflow-wrap-anywhere text-3xl font-bold tracking-wider text-gray-800 sm:text-5xl">{venda.id}</p>
+              <p className="overflow-wrap-anywhere text-3xl font-bold tracking-wider text-gray-800 sm:text-5xl">{venda.numero_pedido ?? venda.id}</p>
             </div>
           </div>
         )}

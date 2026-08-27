@@ -141,6 +141,44 @@ export function getOrderPaymentLabel(order: OrderRecord | null | undefined) {
     );
 }
 
+export function isPendingMercadoPagoPixOrder(
+    order: OrderRecord | null | undefined,
+) {
+    const status = normalizeText(order?.status || order?.situacao || "");
+    const paid = normalizeText(order?.pago || "");
+    const gateway = normalizeText(order?.pagamento_ecommerce?.gateway || "");
+    const method = normalizeText(order?.pagamento_ecommerce?.metodo || "");
+    const paymentStatus = normalizeText(
+        order?.pagamento_ecommerce?.status || "",
+    );
+    const cancellationReason = normalizeText(order?.motivo_cancelamento || "");
+    const paymentLabel = normalizeText(getOrderPaymentLabel(order));
+
+    const isPending = status.includes("pend");
+    const hasRetryablePixStatus = ["expired", "canceled", "rejected"].includes(
+        paymentStatus,
+    );
+    const wasManuallyCanceled =
+        status.includes("cancel") &&
+        cancellationReason !== "" &&
+        !cancellationReason.includes("expir") &&
+        !cancellationReason.includes("pix");
+    const isPaid = ["sim", "s", "1", "true"].includes(paid);
+    const isMercadoPago =
+        gateway.includes("mercado_pago") ||
+        gateway.includes("mercado pago") ||
+        paymentLabel.includes("mercado pago");
+    const isPix = method === "pix" || paymentLabel.includes("pix");
+
+    return (
+        (isPending || hasRetryablePixStatus) &&
+        !isPaid &&
+        !wasManuallyCanceled &&
+        isMercadoPago &&
+        isPix
+    );
+}
+
 export function getOrderDeliveryEstimate(order: OrderRecord | null | undefined) {
     return (
         order?.prazo_de_entrega ||

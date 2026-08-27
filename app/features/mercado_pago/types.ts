@@ -65,8 +65,11 @@ export interface MercadoPagoOrderResult {
   amount: number;
   installments: number | null;
   pixExpirationMinutes?: number | null;
+  expiresAt?: string | null;
   integrationFlow?: 'payments_pix_v1' | 'orders_card_v1';
   deviceSessionSent?: boolean;
+  reused?: boolean;
+  renewed?: boolean;
   qrCode: string | null;
   qrCodeBase64: string | null;
   ticketUrl: string | null;

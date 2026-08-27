@@ -9,6 +9,8 @@ import type {
 
 const paymentStoragePrefix = 'mercado_pago_order_';
 const idempotencyStoragePrefix = 'mercado_pago_idempotency_';
+const pixRenewalIdempotencyStoragePrefix =
+  'mercado_pago_pix_renewal_idempotency_';
 const securityScriptId = 'mercado-pago-security';
 let publicConfigPromise: Promise<MercadoPagoConfigResponse> | null = null;
 let deviceSessionPromise: Promise<string | null> | null = null;
@@ -163,6 +165,26 @@ function getIdempotencyStorageKey(
   return `${idempotencyStoragePrefix}${saleId}_${method}`;
 }
 
+function getPixRenewalIdempotencyStorageKey(saleId: number) {
+  return `${pixRenewalIdempotencyStoragePrefix}${saleId}`;
+}
+
+function getOrCreatePixRenewalIdempotencyKey(saleId: number) {
+  if (!canUseSessionStorage()) {
+    return createUuid();
+  }
+
+  const storageKey = getPixRenewalIdempotencyStorageKey(saleId);
+  const storedKey = sessionStorage.getItem(storageKey);
+  if (storedKey) {
+    return storedKey;
+  }
+
+  const newKey = createUuid();
+  sessionStorage.setItem(storageKey, newKey);
+  return newKey;
+}
+
 const failureStatuses: MercadoPagoPaymentStatus[] = [
   'rejected',
   'canceled',
@@ -249,6 +271,31 @@ export const mercadoPagoService = {
         },
       ),
     );
+  },
+
+  getOrRenewPix: async (saleId: number) => {
+    const deviceId = await getDeviceSessionIdWithTimeout();
+    const idempotencyKey = getOrCreatePixRenewalIdempotencyKey(saleId);
+
+    const order = await apiRequest<MercadoPagoOrderResult>(
+      apiClient.post(
+        `/pagamentos/mercadopago/vendas/${encodeURIComponent(saleId)}/pix`,
+        deviceId ? { deviceId } : {},
+        {
+          headers: {
+            'X-Idempotency-Key': idempotencyKey,
+          },
+        },
+      ),
+    );
+
+    if (canUseSessionStorage()) {
+      sessionStorage.removeItem(
+        getPixRenewalIdempotencyStorageKey(saleId),
+      );
+    }
+
+    return order;
   },
 
   getOrder: async (orderId: string) =>
