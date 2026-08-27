@@ -114,8 +114,8 @@ const URBAN_BOY_FOOTER_CONFIG: FooterCompanyConfig = {
     telefone: '(44) 99110-8466',
     atendimento: 'Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
     lojaFisica: 'Bela Vista do Paraíso - PR · Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
-    enderecoResumo: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86690-000',
-    enderecoCompleto: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86690-000'
+    enderecoResumo: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86130-000',
+    enderecoCompleto: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86130-000'
 };
 
 const EMPRESAS_IDENTIDADE = {
