@@ -26,6 +26,7 @@ import { MercadoPagoPaymentProvider } from
     '~/features/mercado_pago/MercadoPagoPaymentContext';
 import type {
     MercadoPagoCardData,
+    MercadoPagoOrderResult,
     MercadoPagoPaymentData,
     MercadoPagoPaymentStatus,
 } from '~/features/mercado_pago/types';
@@ -106,6 +107,44 @@ const getCheckoutUrlFromResponse = (response: any) => {
     }
 
     return payload.init_point || payload.checkout_url || null;
+};
+
+const getMercadoPagoOrderFromSaleResponse = (response: any) => {
+    const payload = response?.data ?? response;
+    return payload?.mercado_pago as MercadoPagoOrderResult | undefined;
+};
+
+const getCheckoutErrorMessage = (error: unknown) => {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    if (typeof error !== 'object' || error === null) {
+        return 'Erro ao gerar venda. Tente novamente.';
+    }
+
+    const payload = error as {
+        originalError?: unknown;
+        mensagem?: unknown;
+        error?: unknown;
+    };
+    const nestedError = typeof payload.error === 'object' && payload.error !== null
+        ? payload.error as { error?: unknown; mensagem?: unknown; message?: unknown }
+        : null;
+    const candidates = [
+        payload.originalError,
+        payload.mensagem,
+        typeof payload.error === 'string' ? payload.error : null,
+        nestedError?.error,
+        nestedError?.mensagem,
+        nestedError?.message,
+    ];
+    const message = candidates.find(
+        (candidate): candidate is string =>
+            typeof candidate === 'string' && candidate.trim() !== '',
+    );
+
+    return message ?? 'Erro ao gerar venda. Tente novamente.';
 };
 
 const getPaymentResultRoute = (
@@ -444,6 +483,7 @@ export default function CheckoutLayout() {
     const [orderCompleted, setOrderCompleted] = React.useState(false);
     const [termsAccepted, setTermsAccepted] = React.useState(false);
     const pendingSaleId = React.useRef<number | null>(null);
+    const pendingPixIdempotencyKey = React.useRef<string | null>(null);
 
     const { cliente } = useAuth();
     const { produtos, selectedItems, pagamentoSelecionado, enderecoSelecionado, tipoDeEntregaSelecionada, valorFrete, retornarValorFinal, removerProdutosSelecionados } = useCarrinho();
@@ -479,6 +519,7 @@ export default function CheckoutLayout() {
 
     React.useEffect(() => {
         pendingSaleId.current = null;
+        pendingPixIdempotencyKey.current = null;
     }, [checkoutFingerprint]);
 
     React.useEffect(() => {
@@ -523,11 +564,31 @@ export default function CheckoutLayout() {
             pagamentoSelecionado.tipo === 'MERCADO_PAGO' &&
             pagamentoSelecionado.checkout_transparente === true &&
             pagamentoSelecionado.mercado_pago_method != null;
+        const isAtomicMercadoPagoPix =
+            isTransparentMercadoPago &&
+            pagamentoSelecionado.mercado_pago_method === 'pix';
 
         setLoading(true);
         try {
             let response: any = null;
             let orderId = pendingSaleId.current;
+            let atomicPixRequest:
+                | {
+                    payment: MercadoPagoPaymentData;
+                    idempotencyKey: string;
+                    deviceId: string;
+                }
+                | undefined;
+
+            if (isAtomicMercadoPagoPix) {
+                pendingPixIdempotencyKey.current ??=
+                    mercadoPagoService.createIdempotencyKey();
+                atomicPixRequest = {
+                    payment: { method: 'pix' },
+                    idempotencyKey: pendingPixIdempotencyKey.current,
+                    deviceId: await mercadoPagoService.requireDeviceSessionId(),
+                };
+            }
 
             if (orderId == null) {
                 response = await carrinhoService.gerarVenda(
@@ -552,6 +613,7 @@ export default function CheckoutLayout() {
                     tipoDeEntregaSelecionada.name,
                     retornarValorFinal(),
                     tipoDeEntregaSelecionada,
+                    atomicPixRequest,
                 );
 
                 if (!response.sucesso) {
@@ -568,7 +630,7 @@ export default function CheckoutLayout() {
                     );
                 }
 
-                if (isTransparentMercadoPago) {
+                if (isTransparentMercadoPago && !isAtomicMercadoPagoPix) {
                     pendingSaleId.current = orderId;
                 }
             }
@@ -585,19 +647,35 @@ export default function CheckoutLayout() {
                 const payment: MercadoPagoPaymentData = cardPayment ?? {
                     method: 'pix',
                 };
-                const idempotencyKey =
-                    mercadoPagoService.getOrCreateIdempotencyKey(
-                        orderId,
-                        payment.method,
-                    );
-                const mercadoPagoOrder =
-                    await mercadoPagoService.createOrder({
+                const mercadoPagoOrder = isAtomicMercadoPagoPix
+                    ? getMercadoPagoOrderFromSaleResponse(response)
+                    : await mercadoPagoService.createOrder({
                         saleId: orderId,
-                        idempotencyKey,
+                        idempotencyKey:
+                            mercadoPagoService.getOrCreateIdempotencyKey(
+                                orderId,
+                                payment.method,
+                            ),
                         payment,
                     });
+                if (!mercadoPagoOrder) {
+                    throw new Error(
+                        'A API nao retornou os dados do pagamento PIX.',
+                    );
+                }
+                if (
+                    mercadoPagoOrder.method === 'pix' &&
+                    !mercadoPagoOrder.qrCode
+                ) {
+                    throw new Error(
+                        'O Mercado Pago nao retornou o QR Code PIX. Nenhuma venda foi concluida.',
+                    );
+                }
 
                 mercadoPagoService.storeOrder(mercadoPagoOrder);
+                if (isAtomicMercadoPagoPix) {
+                    pendingPixIdempotencyKey.current = null;
+                }
                 if (mercadoPagoStatus.isFinal(mercadoPagoOrder.status)) {
                     mercadoPagoService.clearIdempotencyKey(
                         orderId,
@@ -662,10 +740,16 @@ export default function CheckoutLayout() {
             }, 500);
         } catch (error) {
             console.error('Erro ao finalizar pedido.', error);
+            if (
+                isAtomicMercadoPagoPix &&
+                typeof error === 'object' &&
+                error !== null &&
+                typeof (error as { error?: unknown }).error === 'object'
+            ) {
+                pendingPixIdempotencyKey.current = null;
+            }
             toast.error(
-                error instanceof Error
-                    ? error.message
-                    : 'Erro ao gerar venda. Tente novamente.',
+                getCheckoutErrorMessage(error),
                 { position: 'top-center' },
             );
             throw error;

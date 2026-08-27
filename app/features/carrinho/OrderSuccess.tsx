@@ -115,6 +115,23 @@ const Step6_Success = () => {
       if (storedOrder) {
         setMercadoPagoOrder(storedOrder);
         setPagamentoStatus(toPagamentoVisualStatus(storedOrder.status));
+        setVenda((currentVenda: any) => currentVenda ?? {
+          id: storedOrder.saleId,
+          status: storedOrder.status,
+          pagamento: {
+            tipo: 'MERCADO_PAGO',
+            nome: storedOrder.method === 'pix'
+              ? 'PIX via Mercado Pago'
+              : 'Mercado Pago',
+          },
+          pagamento_ecommerce: {
+            gateway: 'mercado_pago',
+            order_id: storedOrder.orderId,
+            payment_id: storedOrder.paymentId,
+            status: storedOrder.status,
+            pix_expiracao_minutos: storedOrder.pixExpirationMinutes,
+          },
+        });
         if (storedOrder.method === 'pix' && storedOrder.qrCode) {
           setPixData({
             copia_cola: storedOrder.qrCode,

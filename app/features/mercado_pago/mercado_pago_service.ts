@@ -179,6 +179,20 @@ export const mercadoPagoStatus = {
 };
 
 export const mercadoPagoService = {
+  requireDeviceSessionId: async () => {
+    const deviceId = await getDeviceSessionId();
+    if (!deviceId) {
+      throw new Error(
+        'Nao foi possivel validar este dispositivo para gerar o PIX. ' +
+          'Recarregue a pagina e desative bloqueadores de conteudo.',
+      );
+    }
+
+    return deviceId;
+  },
+
+  createIdempotencyKey: () => createUuid(),
+
   getPublicConfig: async () => {
     void getDeviceSessionId();
     publicConfigPromise ??= apiRequest<MercadoPagoConfigResponse>(

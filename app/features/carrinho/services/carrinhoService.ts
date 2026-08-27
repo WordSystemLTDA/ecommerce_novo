@@ -3,6 +3,14 @@ import type { Produto } from "~/features/produto/types";
 import apiClient from "~/services/api";
 import type { Pagamento, PagamentoResponse } from "~/types/Pagamento";
 import type { TipoDeEntrega } from "~/types/TipoDeEntrega";
+import type { MercadoPagoPaymentData } from
+    "~/features/mercado_pago/types";
+
+interface MercadoPagoAtomicCheckoutRequest {
+    payment: MercadoPagoPaymentData;
+    idempotencyKey: string;
+    deviceId: string;
+}
 
 function getProdutoGradeId(produto: Produto) {
     const item = produto as Produto & Record<string, any>;
@@ -99,6 +107,7 @@ export const carrinhoService = {
         nome_transportadora: string,
         valor_venda: number,
         frete_info?: TipoDeEntrega,
+        mercado_pago?: MercadoPagoAtomicCheckoutRequest,
     ) => {
         const { data } = await apiClient.post(`/vendas/gerar`, {
             cliente,
@@ -113,6 +122,7 @@ export const carrinhoService = {
             nome_transportadora,
             valor_venda,
             frete_info,
+            mercado_pago,
             site_url: typeof window !== 'undefined' ? window.location.origin : undefined,
         });
         return data;
