@@ -14,6 +14,10 @@ export interface CartItem extends Produto {
     internalId: string;
 }
 
+interface ListarTipoDeEntregasOptions {
+    atualizarCarrinho?: boolean;
+}
+
 interface CarrinhoContextType {
     produtos: CartItem[];
     tipoDeEntregas: TipoDeEntrega[];
@@ -45,7 +49,7 @@ interface CarrinhoContextType {
     removerProdutosSelecionados: () => Promise<void>;
     editarQuantidadeProduto: (produto: Produto) => Promise<void>;
     resetarCarrinho: () => Promise<void>;
-    listarTipoDeEntregas: (cepDestino: string) => Promise<void>;
+    listarTipoDeEntregas: (cepDestino: string, options?: ListarTipoDeEntregasOptions) => Promise<void>;
     listarEnderecos: (selectedAddressId?: number) => Promise<Endereco[]>;
     listarPagamentos: () => Promise<void>;
     verificarAdicionadoCarrinho: (produto: Produto) => boolean;
@@ -280,6 +284,49 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const recarregarCarrinhoBackend = async () => {
+        if (!cliente?.id) return null;
+
+        try {
+            const items = await carrinhoService.listar(cliente.id);
+
+            if (!Array.isArray(items) || (items.length === 0 && produtos.length > 0)) {
+                return null;
+            }
+
+            const claimedIndices = new Set<number>();
+            const mappedItems: CartItem[] = items.map(p => {
+                const matchIndex = produtos.findIndex((cp, idx) =>
+                    isSameCartItem(cp, p) && !claimedIndices.has(idx)
+                );
+
+                if (matchIndex !== -1) {
+                    claimedIndices.add(matchIndex);
+                    return createCartItem(p, produtos[matchIndex].internalId);
+                }
+
+                return createCartItem(p);
+            });
+
+            setProdutos(mappedItems);
+            setSelectedItems((previousSelectedItems) => {
+                const validIds = mappedItems.map((produto) => produto.internalId);
+                const selectedStillInCart = previousSelectedItems.filter((id) =>
+                    validIds.includes(id)
+                );
+
+                return selectedStillInCart.length > 0
+                    ? selectedStillInCart
+                    : validIds;
+            });
+
+            return mappedItems;
+        } catch (error) {
+            console.error("Error loading cart from DB", error);
+            return null;
+        }
+    };
+
     const toggleProdutoSelecao = (id: string) => {
         if (selectedItems.includes(id)) {
             setSelectedItems(selectedItems.filter(itemId => itemId !== id));
@@ -340,25 +387,32 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         return parseFloat((valorProdutos - valorDesconto + valorFrete).toFixed(2));
     }
 
-    const listarTipoDeEntregas = async (cepDestino: string) => {
+    const listarTipoDeEntregas = async (cepDestino: string, options: ListarTipoDeEntregasOptions = {}) => {
         try {
             setCarregandoTipoDeEntregas(true);
             setErroTipoDeEntregas(null);
+            setTipoDeEntregaSelecionada(undefined);
+            setValorFrete(0);
 
-            var produtosParaCalculo = produtos.filter(p => selectedItems.includes(p.internalId));
+            const carrinhoAtualizado = options.atualizarCarrinho
+                ? await recarregarCarrinhoBackend()
+                : null;
+            const produtosBase = carrinhoAtualizado ?? produtos;
+            let produtosParaCalculo = produtosBase.filter(p => selectedItems.includes(p.internalId));
+
+            if (produtosParaCalculo.length === 0 && produtosBase.length > 0) {
+                produtosParaCalculo = produtosBase;
+            }
+
             if (produtosParaCalculo.length === 0) {
                 setTipoDeEntregas([]);
                 setErroTipoDeEntregas('Selecione ao menos um produto no carrinho para calcular o frete.');
-                setValorFrete(0);
                 return;
             }
-            var response = await produtoService.calcularFrete(cepDestino, produtosParaCalculo);
+            const response = await produtoService.calcularFrete(cepDestino, produtosParaCalculo);
 
             const data = response.data;
             setTipoDeEntregas(Array.isArray(data) ? data : []);
-
-            setTipoDeEntregaSelecionada(undefined);
-            setValorFrete(0);
 
         } catch (error) {
             console.error("Erro ao listar tipoDeEntregas:", error);

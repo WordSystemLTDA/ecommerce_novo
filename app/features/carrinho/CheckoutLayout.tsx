@@ -64,7 +64,7 @@ const getActionLabel = (step: number) => {
         case 4:
             return 'Revisar pedido';
         case 5:
-            return 'Finalizar pedido';
+            return 'Finalizar Pedido';
         default:
             return 'Continuar';
     }
@@ -429,6 +429,26 @@ const CartSummary = ({
                         concluir o pedido.
                     </p>
                 )}
+                {isConfirmationStep && (
+                    <div className="text-xs text-gray-500">
+                        <label className="flex items-start gap-2">
+                            <input
+                                type="checkbox"
+                                className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                                checked={termsAccepted}
+                                onChange={(event) => {
+                                    onTermsAcceptedChange(event.target.checked);
+                                }}
+                            />
+                            <span>
+                                Ao efetuar o seu pedido, você concorda com os
+                                <a href="/termos" target="_blank" className="font-bold text-primary"> Termos e condições de Venda do Word System! </a>
+                                e com nossa
+                                <a href="/privacidade" target="_blank" className="font-bold text-primary"> Política de Privacidade</a>.
+                            </span>
+                        </label>
+                    </div>
+                )}
                 <button
                     onClick={onContinue}
                     disabled={isDisabled}
@@ -451,26 +471,6 @@ const CartSummary = ({
                 )}
             </div>
 
-            {isConfirmationStep && (
-                <div className="mt-4 text-xs text-gray-500">
-                    <label className="flex items-start gap-2">
-                        <input
-                            type="checkbox"
-                            className="w-4 h-4 accent-primary mt-0.5"
-                            checked={termsAccepted}
-                            onChange={(event) => {
-                                onTermsAcceptedChange(event.target.checked);
-                            }}
-                        />
-                        <span>
-                            Ao efetuar o seu pedido, você concorda com os
-                            <a href="/termos" target="_blank" className="font-bold text-primary"> Termos e condições de Venda do Word System! </a>
-                            e com nossa
-                            <a href="/privacidade" target="_blank" className="font-bold text-primary"> Política de Privacidade</a>.
-                        </span>
-                    </label>
-                </div>
-            )}
         </aside>
     );
 };
@@ -576,7 +576,7 @@ export default function CheckoutLayout() {
                 | {
                     payment: MercadoPagoPaymentData;
                     idempotencyKey: string;
-                    deviceId: string;
+                    deviceId?: string | null;
                 }
                 | undefined;
 
@@ -586,7 +586,7 @@ export default function CheckoutLayout() {
                 atomicPixRequest = {
                     payment: { method: 'pix' },
                     idempotencyKey: pendingPixIdempotencyKey.current,
-                    deviceId: await mercadoPagoService.requireDeviceSessionId(),
+                    deviceId: await mercadoPagoService.getDeviceSessionId(),
                 };
             }
 

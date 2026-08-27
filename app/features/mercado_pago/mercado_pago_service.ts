@@ -69,6 +69,27 @@ async function getDeviceSessionId(): Promise<string | null> {
   return deviceId;
 }
 
+async function getDeviceSessionIdWithTimeout(timeoutMs = 3000) {
+  if (typeof window === 'undefined') {
+    return getDeviceSessionId();
+  }
+
+  let timeoutId: number | undefined;
+
+  try {
+    return await Promise.race([
+      getDeviceSessionId(),
+      new Promise<null>((resolve) => {
+        timeoutId = window.setTimeout(() => resolve(null), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== undefined) {
+      window.clearTimeout(timeoutId);
+    }
+  }
+}
+
 function unwrapApiResponse<T>(payload: unknown): T {
   if (
     typeof payload === 'object' &&
@@ -179,8 +200,11 @@ export const mercadoPagoStatus = {
 };
 
 export const mercadoPagoService = {
+  getDeviceSessionId: (timeoutMs = 3000) =>
+    getDeviceSessionIdWithTimeout(timeoutMs),
+
   requireDeviceSessionId: async () => {
-    const deviceId = await getDeviceSessionId();
+    const deviceId = await getDeviceSessionIdWithTimeout(5000);
     if (!deviceId) {
       throw new Error(
         'Nao foi possivel validar este dispositivo para gerar o PIX. ' +
@@ -208,13 +232,7 @@ export const mercadoPagoService = {
   },
 
   createOrder: async (request: MercadoPagoOrderRequest) => {
-    const deviceId = await getDeviceSessionId();
-    if (request.payment.method === 'pix' && !deviceId) {
-      throw new Error(
-        'Nao foi possivel validar este dispositivo para gerar o PIX. ' +
-          'Recarregue a pagina e desative bloqueadores de conteudo.',
-      );
-    }
+    const deviceId = await getDeviceSessionIdWithTimeout();
 
     return apiRequest<MercadoPagoOrderResult>(
       apiClient.post(

@@ -5,6 +5,8 @@ import config from '~/config/config';
 const apiClient = axios.create({
     baseURL: config.API,
     withCredentials: true,
+    timeout: 45000,
+    timeoutErrorMessage: 'A API demorou para responder. Tente novamente.',
     headers: {
         'Content-Type': 'application/json',
         'X-Empresas-IDs': config.EMPRESAS.join(','),
@@ -25,14 +27,16 @@ apiClient.interceptors.response.use(
         return response;
     },
     (error) => {
-        const payload = error.response?.data || error.message;
-        var error = payload['error'];
+        const payload = error.response?.data || error.message || 'A API demorou para responder. Tente novamente.';
+        const originalError = typeof payload === 'string'
+            ? payload
+            : payload?.error || payload?.message || payload?.mensagem;
         // toast.error(error, { position: 'top-center' });
 
         return Promise.reject({
             sucesso: false,
             error: payload,
-            originalError: error,
+            originalError,
         });
     }
 );

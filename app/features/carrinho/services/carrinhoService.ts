@@ -9,7 +9,7 @@ import type { MercadoPagoPaymentData } from
 interface MercadoPagoAtomicCheckoutRequest {
     payment: MercadoPagoPaymentData;
     idempotencyKey: string;
-    deviceId: string;
+    deviceId?: string | null;
 }
 
 function getProdutoGradeId(produto: Produto) {

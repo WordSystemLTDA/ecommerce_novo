@@ -107,7 +107,7 @@ export default function DeliveryPage() {
                 <DeliveryErrorMessage
                   message={erroTipoDeEntregas}
                   details={errosDeEntrega}
-                  onRetry={() => listarTipoDeEntregas(enderecoSelecionado.cep)}
+                  onRetry={() => listarTipoDeEntregas(enderecoSelecionado.cep, { atualizarCarrinho: true })}
                 />
               )}
 
@@ -115,7 +115,7 @@ export default function DeliveryPage() {
                 <DeliveryErrorMessage
                   message="Não conseguimos encontrar uma opção de frete para este endereço."
                   details={errosDeEntrega}
-                  onRetry={() => listarTipoDeEntregas(enderecoSelecionado.cep)}
+                  onRetry={() => listarTipoDeEntregas(enderecoSelecionado.cep, { atualizarCarrinho: true })}
                 />
               )}
 
