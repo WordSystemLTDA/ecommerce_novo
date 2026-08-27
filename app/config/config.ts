@@ -90,8 +90,8 @@ const DEFAULT_FOOTER_CONFIG: FooterCompanyConfig = {
     telefone: '(44) 9118-8369',
     atendimento: 'Seg-Sex 8h-12h / 14h-18h',
     lojaFisica: 'Santa Fé - PR · Seg-Sex 9h-19h / Sáb 9h-13h',
-    enderecoResumo: 'Rua Luiz Roncalha, 169 · Jardim Itália · Santa Fé - PR',
-    enderecoCompleto: 'Rua Luiz Roncalha, 169 · Jardim Italia · Santa Fé - PR · 86770-000'
+    enderecoResumo: 'bruno 1 Rua Luiz Roncalha, 169 · Jardim Itália · Santa Fé - PR',
+    enderecoCompleto: 'bruno 2 Rua Luiz Roncalha, 169 · Jardim Italia · Santa Fé - PR · 86770-000'
 };
 
 const PRIETO_KOUROS_FOOTER_CONFIG: FooterCompanyConfig = {
@@ -109,13 +109,13 @@ const PRIETO_KOUROS_FOOTER_CONFIG: FooterCompanyConfig = {
 const URBAN_BOY_FOOTER_CONFIG: FooterCompanyConfig = {
     nome: 'URBAN BOY',
     nomeExibicao: 'Urban Boy',
-    cnpj: DEFAULT_FOOTER_CONFIG.cnpj,
-    email: DEFAULT_FOOTER_CONFIG.email,
-    telefone: DEFAULT_FOOTER_CONFIG.telefone,
-    atendimento: DEFAULT_FOOTER_CONFIG.atendimento,
-    lojaFisica: DEFAULT_FOOTER_CONFIG.lojaFisica,
-    enderecoResumo: DEFAULT_FOOTER_CONFIG.enderecoResumo,
-    enderecoCompleto: DEFAULT_FOOTER_CONFIG.enderecoCompleto
+    cnpj: '57.332.623/0001-89',
+    email: 'urbanbelavista@hotmail.com',
+    telefone: '(44) 99110-8466',
+    atendimento: 'Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
+    lojaFisica: 'Bela Vista do Paraíso - PR · Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
+    enderecoResumo: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86690-000',
+    enderecoCompleto: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86690-000'
 };
 
 const EMPRESAS_IDENTIDADE = {

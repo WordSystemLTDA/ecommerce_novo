@@ -30,6 +30,7 @@ import type { Marca } from "../marca/types";
 import type { Banner } from "../produto/types";
 import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 import { useHome } from "./context/HomeContext";
+import { NormalizedProductImage } from "~/components/NormalizedProductImage";
 
 interface TrustBadgeProps {
   icon: React.ReactNode;
@@ -619,6 +620,8 @@ export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardP
 
 export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoadImages = true }: CategoriaCardProps) {
   let navigate = useNavigate();
+  const categoryImageFallback = getCategoryImageFallback(categoria.nome);
+  const shouldNormalizeImage = !!categoria.imagem && !/sem[-_]?foto/i.test(categoria.imagem);
 
   return (
     <div
@@ -627,12 +630,13 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoad
         navigate('/categoria/' + categoria.id);
       }}
     >
-      <div className="flex h-32 w-full items-center justify-center overflow-hidden rounded-xl bg-slate-50 p-3">
-        <OptimizedImage
+      <div className="relative h-32 w-full overflow-hidden rounded-xl bg-slate-50">
+        <NormalizedProductImage
           src={categoria.imagem}
-          fallbackSrc={getCategoryImageFallback(categoria.nome)}
+          fallbackSrc={categoryImageFallback}
           allowNetworkLoad={canLoadImages}
-          className="h-full w-full object-contain transition-transform duration-300 hover:scale-105"
+          normalizeContent={shouldNormalizeImage}
+          contentInset={12}
           alt={categoria.nome}
         />
       </div>
@@ -651,6 +655,7 @@ interface MarcaCardProps {
 export function MarcaCardComImagem({ marca, onClick, isSelected, canLoadImages = true }: MarcaCardProps) {
   let navigate = useNavigate();
   const fallbackMarcaImage = getBrandImageFallback(marca.nome);
+  const shouldNormalizeImage = !!marca.imagem && !/sem[-_]?foto/i.test(marca.imagem);
 
   return (
     <div
@@ -659,12 +664,13 @@ export function MarcaCardComImagem({ marca, onClick, isSelected, canLoadImages =
         navigate(`/marca/${marca.id}/${gerarSlug(marca.nome)}`);
       }}
     >
-      <div className="flex h-40 w-full items-center justify-center overflow-hidden bg-slate-50 p-4">
-        <OptimizedImage
+      <div className="relative h-40 w-full overflow-hidden bg-slate-50">
+        <NormalizedProductImage
           src={marca.imagem}
           fallbackSrc={fallbackMarcaImage}
           allowNetworkLoad={canLoadImages}
-          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+          normalizeContent={shouldNormalizeImage}
+          contentInset={16}
           alt={marca.nome}
         />
       </div>
@@ -744,10 +750,10 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
               1280: { slidesPerView: 4, spaceBetween: 10 },
               1536: { slidesPerView: 5, spaceBetween: 8 }
             }}
-            className="select-none"
+            className="product-card-carousel select-none"
           >
             {Array.from({ length: 5 }).map((_, index) => (
-              <SwiperSlide key={index} style={{ height: 'auto' }}>
+              <SwiperSlide key={index}>
                 <SkeletonProductCard />
               </SwiperSlide>
             ))}
@@ -793,10 +799,10 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
             1280: { slidesPerView: 4, spaceBetween: 10 },
             1536: { slidesPerView: 5, spaceBetween: 8 }
           }}
-          className="select-none"
+          className="product-card-carousel select-none"
         >
           {bannerData.produtos.map((produto) => (
-            <SwiperSlide key={produto.id} style={{ height: 'auto' }}>
+            <SwiperSlide key={produto.id}>
               <ProductCard produto={produto} />
             </SwiperSlide>
           ))}
@@ -844,7 +850,7 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
 
   if (isLoading) {
     return (
-      <div className="relative w-full">
+      <div className="relative w-full px-4">
         <Swiper
           modules={[Navigation]}
           loop={false}
@@ -876,7 +882,7 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full px-4">
       <Swiper
         modules={[Navigation]}
         navigation={{

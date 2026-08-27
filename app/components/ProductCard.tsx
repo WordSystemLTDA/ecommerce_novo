@@ -11,7 +11,7 @@ import type { Produto } from "~/features/produto/types";
 import { useSecondTicker } from "~/hooks/useSecondTicker";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
 import { getProductImageFallback } from "~/utils/imagePlaceholders";
-import { OptimizedImage } from "./OptimizedImage";
+import { NormalizedProductImage } from "./NormalizedProductImage";
 
 interface ProductCardProps {
     produto: Produto;
@@ -23,6 +23,8 @@ export function ProductCard({ produto }: ProductCardProps) {
     const estaNoCarrinho = verificarAdicionadoCarrinho(produto);
     const now = useSecondTicker();
     const productImageFallback = getProductImageFallback(produto.nome);
+    const productImage = produto.fotos?.m?.[0];
+    const shouldNormalizeImage = !!productImage && !/sem[-_]?foto/i.test(productImage);
 
     const { cliente } = useAuth();
     const [isFavorite, setIsFavorite] = useState(false);
@@ -41,7 +43,7 @@ export function ProductCard({ produto }: ProductCardProps) {
 
     useEffect(() => {
         setIsImageLoading(true);
-    }, [produto.id, produto.fotos?.m?.[0]]);
+    }, [produto.id, productImage]);
 
     const toggleFavorite = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -126,12 +128,12 @@ export function ProductCard({ produto }: ProductCardProps) {
 
     return (
         <div
-            className="group relative flex h-full min-w-0 cursor-pointer flex-col overflow-hidden border-t border-primary/15 bg-product-bg shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-shadow duration-500 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
+            className="group relative flex h-full w-full min-w-0 cursor-pointer flex-col overflow-hidden border-t border-primary/15 bg-product-bg shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-shadow duration-500 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
             onClick={() => {
                 navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
             }}
         >
-            <div className="relative overflow-hidden">
+            <div className="relative h-40 shrink-0 overflow-hidden sm:h-48">
                 <div className="absolute right-2 top-2 z-10 flex cursor-auto gap-1 bg-product-bg/90 p-1 opacity-100 shadow-sm transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100">
                     <button onClick={toggleFavorite} className="flex h-8 w-8 items-center justify-center transition-transform duration-300 hover:scale-110" aria-label="Adicionar aos favoritos">
                         {isFavorite ? (
@@ -157,28 +159,30 @@ export function ProductCard({ produto }: ProductCardProps) {
                     </div>
                 )}
 
-                <OptimizedImage
-                    src={produto.fotos?.m?.[0]}
+                <NormalizedProductImage
+                    src={productImage}
                     alt={produto.nome}
-                    className={`h-40 w-full object-contain px-3 pb-0 pt-3 transition-all duration-900 ease-out group-hover:scale-[1.03] sm:h-48 sm:px-4 sm:pt-4 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
                     fallbackSrc={productImageFallback}
+                    normalizeContent={shouldNormalizeImage}
+                    isLoading={isImageLoading}
                     onLoad={() => setIsImageLoading(false)}
                 />
             </div>
 
-            <div className="flex-1 p-3 lg:p-4 flex flex-col justify-between border-t border-primary/8">
-                <div className="flex-1">
-                    <h3 className="line-clamp-3 min-h-[3.75rem] overflow-hidden text-ellipsis text-xs font-normal leading-relaxed text-primary transition-colors duration-500 group-hover:text-terciary sm:line-clamp-2 sm:min-h-10">
+            <div className="flex min-h-[12.75rem] flex-1 flex-col border-t border-primary/8 p-3 lg:p-4">
+                <div className="flex flex-1 flex-col">
+                    <h3 className="line-clamp-2 h-10 shrink-0 overflow-hidden text-ellipsis text-xs font-normal leading-relaxed text-primary transition-colors duration-500 group-hover:text-terciary">
                         {produto.nome}
                     </h3>
 
-                    {precoAntigo && (
-                        <span className="text-xs text-primary/70 line-through block mb-0.5">
-                            {currencyFormatter.format(produto.precoAntigo)}
-                        </span>
-                    )}
+                    <span
+                        className={`mb-0.5 block h-4 shrink-0 text-xs text-primary/70 line-through ${precoAntigo ? '' : 'invisible'}`}
+                        aria-hidden={!precoAntigo}
+                    >
+                        {precoAntigo ? currencyFormatter.format(produto.precoAntigo) : '\u00A0'}
+                    </span>
 
-                    <div className="mb-0 flex flex-wrap items-baseline gap-1 sm:gap-2">
+                    <div className="mb-0 flex min-h-7 flex-wrap items-center gap-1 sm:gap-2">
                         <span className="text-sm font-medium text-primary sm:text-base">
                             {currencyFormatter.format(parseFloat(precoExibido))}
                         </span>
@@ -206,20 +210,24 @@ export function ProductCard({ produto }: ProductCardProps) {
                         }
                     </div>
 
-                    <span className="text-medium-tiny text-pix block">
+                    <span className="block min-h-3 text-medium-tiny text-pix">
                         {percentualPix > 0
                             ? <>À vista no PIX com <span className='font-semibold'>{percentualPix}% de desconto</span></>
                             : 'À vista no PIX'
                         }
                     </span>
-                    {produto.parcelaMaxima && (
-                        <span className="text-xs text-primary/70 mt-1 block">
-                            ou até <span className="font-medium text-primary">{produto.parcelaMaxima}</span>
-                        </span>
-                    )}
+                    <span
+                        className={`mt-1 block min-h-4 text-xs text-primary/70 ${produto.parcelaMaxima ? '' : 'invisible'}`}
+                        aria-hidden={!produto.parcelaMaxima}
+                    >
+                        {produto.parcelaMaxima
+                            ? <>ou até <span className="font-medium text-primary">{produto.parcelaMaxima}</span></>
+                            : '\u00A0'
+                        }
+                    </span>
                 </div>
 
-                <div className="flex gap-0.5">
+                <div className="mt-auto flex shrink-0 gap-0.5">
                     <button
                         className="z-10 mt-2 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center bg-primary py-2 text-xs font-medium text-secondary transition-colors duration-500 hover:bg-terciary"
                         aria-label="Adicionar ao carrinho"
@@ -232,12 +240,12 @@ export function ProductCard({ produto }: ProductCardProps) {
                         (timeLeft) ?
                             (
                                 <>
-                                    <p className="mt-2 w-full h-9 bg-product-bg border border-primary/20 text-primary font-medium text-xs py-2 flex flex-col leading-none items-center justify-center cursor-default z-10 lg:group-hover:hidden">
+                                    <p className="mt-2 w-full h-10 bg-product-bg border border-primary/20 text-primary font-medium text-xs py-2 flex flex-col leading-none items-center justify-center cursor-default z-10 lg:group-hover:hidden">
                                         <span className="text-[8px] lg:text-tiny font-normal mb-0.5 tracking-wider uppercase">Termina em</span>
                                         <span>{timeLeft}</span>
                                     </p>
 
-                                    <button className="mt-2 w-full h-9 bg-primary text-secondary font-medium text-xs py-2 hidden lg:group-hover:flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase" onClick={handleComprar}>
+                                    <button className="mt-2 w-full h-10 bg-primary text-secondary font-medium text-xs py-2 hidden lg:group-hover:flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase" onClick={handleComprar}>
                                         Comprar
                                     </button>
                                 </>
@@ -245,19 +253,19 @@ export function ProductCard({ produto }: ProductCardProps) {
                             : produto.tipoDaPromocao === 4 && produto.promocaoAtiva === 'Sim' ?
                                 (
                                     <>
-                                        <p className="mt-2 w-full h-9 bg-product-bg border border-primary/20 text-primary font-medium text-xs py-2 flex flex-col leading-none items-center justify-center cursor-default z-10 lg:group-hover:hidden">
+                                        <p className="mt-2 w-full h-10 bg-product-bg border border-primary/20 text-primary font-medium text-xs py-2 flex flex-col leading-none items-center justify-center cursor-default z-10 lg:group-hover:hidden">
                                             <span className="text-[8px] lg:text-tiny font-normal mb-0.5 tracking-wider uppercase">Restam</span>
                                             <span>{(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} Unidades</span>
                                         </p>
 
-                                        <button className="mt-2 w-full h-9 bg-primary text-secondary font-medium text-xs py-2 hidden lg:group-hover:flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase" onClick={handleComprar}>
+                                        <button className="mt-2 w-full h-10 bg-primary text-secondary font-medium text-xs py-2 hidden lg:group-hover:flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase" onClick={handleComprar}>
                                             Comprar
                                         </button>
                                     </>
                                 )
                                 : (
                                     <button
-                                        className="mt-2 w-full h-9 bg-primary text-secondary font-medium text-xs py-2 flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase"
+                                        className="mt-2 w-full h-10 bg-primary text-secondary font-medium text-xs py-2 flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase"
                                         onClick={handleComprar}
                                     >
                                         Comprar

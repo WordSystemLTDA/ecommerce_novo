@@ -66,6 +66,16 @@
   }
 }
 
+/* Product slides share one height so every card footer stays aligned. */
+.product-card-carousel .swiper-wrapper {
+  align-items: stretch;
+}
+
+.product-card-carousel .swiper-slide {
+  display: flex;
+  height: auto;
+}
+
 html,
 body {
   background-color: var(--dynamic-secondary);
