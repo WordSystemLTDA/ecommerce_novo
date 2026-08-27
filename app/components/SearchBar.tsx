@@ -62,7 +62,7 @@ export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | nul
     };
 
     return (
-        <div className="flex h-10 relative w-full group" ref={wrapperRef}>
+        <div className="group relative flex h-11 w-full" ref={wrapperRef}>
             <input
                 type="search"
                 name="busca"
@@ -74,28 +74,28 @@ export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | nul
                 onFocus={() => {
                     if (searchResults.length > 0) setShowResults(true);
                 }}
-                className="bg-secondary/90/40 w-full text-sm px-4 py-2 border border-primary/10 outline-none text-primary placeholder:text-primary/70/70 focus:border-terciary transition-colors duration-500"
-                placeholder="Busque na Loja!"
+                className="w-full rounded-full border border-primary/12 bg-main-bg px-5 py-2 pr-12 text-sm text-primary outline-none transition-all duration-300 placeholder:text-primary/45 focus:border-terciary focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--dynamic-terciary)_12%,transparent)]"
+                placeholder="Busque por produto, marca ou categoria"
             />
-            <button className="absolute right-0 top-0 h-full px-4 bg-transparent text-primary hover:text-secondary transition-colors">
+            <button type="button" aria-label="Buscar" className="absolute right-0 top-0 h-full bg-transparent px-4 text-primary transition-colors hover:text-terciary">
                 <MdOutlineSearch size={24} className="max-lg:hidden" />
                 <IoMdClose size={24} className="hidden max-lg:block" />
             </button>
 
 
             {showResults && (
-                <div className="absolute top-full left-0 w-full bg-white rounded-b-md shadow-xl border-t border-gray-100 z-50 max-h-96 overflow-y-auto mt-1">
+                <div className="absolute left-0 top-full z-50 mt-2 max-h-96 w-full overflow-y-auto border border-primary/10 bg-product-bg text-primary shadow-xl">
                     {isSearching ? (
-                        <div className="p-4 text-center text-gray-500 text-sm">Buscando...</div>
+                        <div className="p-4 text-center text-sm text-primary/55">Buscando...</div>
                     ) : searchResults.length > 0 ? (
                         <ul>
                             {searchResults.map((produto) => (
                                 <li
                                     key={produto.id}
                                     onClick={() => handleProductClick(produto)}
-                                    className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
+                                    className="flex cursor-pointer items-center gap-3 border-b border-primary/8 p-3 transition-colors last:border-0 hover:bg-primary/5"
                                 >
-                                    <div className="w-12 h-12 shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden bg-main-bg">
                                         <OptimizedImage
                                             src={produto.imagens?.[0] ?? produto.fotos?.m?.[0]}
                                             fallbackSrc={getProductImageFallback(produto.nome)}
@@ -104,7 +104,7 @@ export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | nul
                                         />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-gray-800 line-clamp-1">{produto.nome}</span>
+                                        <span className="line-clamp-1 text-sm font-medium text-primary">{produto.nome}</span>
                                         <span className="text-xs font-bold text-primary">
                                             {currencyFormatter.format(parseFloat(produto.preco))}
                                         </span>
@@ -113,7 +113,7 @@ export function SearchBar({ ref }: { ref: React.RefObject<HTMLInputElement | nul
                             ))}
                         </ul>
                     ) : (
-                        <div className="p-4 text-center text-gray-500 text-sm">Nenhum produto encontrado.</div>
+                        <div className="p-4 text-center text-sm text-primary/55">Nenhum produto encontrado.</div>
                     )}
                 </div>
             )}

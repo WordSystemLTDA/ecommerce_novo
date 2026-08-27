@@ -7,9 +7,9 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { useEffect, useMemo, useState } from 'react';
 
 import sign from 'jwt-encode';
-import { BsLightningChargeFill } from "react-icons/bs";
+import { BsArrowRepeat, BsLightningChargeFill, BsShieldCheck, BsTruck } from "react-icons/bs";
 import { HiOutlineSparkles } from "react-icons/hi2";
-import { MdLocalFireDepartment, MdNewReleases, MdTrendingUp, MdWorkspacePremium } from "react-icons/md";
+import { MdClose, MdLocalFireDepartment, MdNewReleases, MdOutlineInventory2, MdTrendingUp, MdWorkspacePremium } from "react-icons/md";
 import { useNavigate } from "react-router";
 import FilterToolbar from "~/components/filter_toolbar";
 import FilterSidebar from "~/components/FilterSidebar";
@@ -29,7 +29,7 @@ import type { Categoria } from "../categoria/types";
 import type { Marca } from "../marca/types";
 import type { Banner } from "../produto/types";
 import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
-import { useHome } from "./context/HomeContext";
+import { defaultFilters, useHome, type ActiveFilters, type FilterOptions } from "./context/HomeContext";
 import { NormalizedProductImage } from "~/components/NormalizedProductImage";
 
 interface TrustBadgeProps {
@@ -41,14 +41,14 @@ interface TrustBadgeProps {
 
 function TrustBadge({ icon, title, description, accent }: TrustBadgeProps) {
   return (
-    <div className="group relative rounded-2xl border border-slate-200 bg-white/80 backdrop-blur-sm p-3 lg:p-4 shadow-[0_4px_20px_rgba(15,23,42,0.04)] lift-hover">
+    <div className="group relative border border-primary/10 bg-product-bg p-3 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-0.5 lg:p-4">
       <div className="flex items-center gap-3">
         <div className={`flex h-10 w-10 lg:h-11 lg:w-11 shrink-0 items-center justify-center rounded-xl border ${accent}`}>
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-800 truncate">{title}</p>
-          <p className="text-xs text-slate-500 truncate hidden sm:block">{description}</p>
+          <p className="line-clamp-2 text-xs font-semibold leading-snug text-primary sm:text-sm">{title}</p>
+          <p className="hidden truncate text-xs text-primary/60 sm:block">{description}</p>
         </div>
       </div>
     </div>
@@ -56,6 +56,378 @@ function TrustBadge({ icon, title, description, accent }: TrustBadgeProps) {
 }
 
 export function HomePage() {
+  return <ModernHomePage />;
+}
+
+function ModernHomePage() {
+  const {
+    activeFilters,
+    applyFilters,
+    banners,
+    filteredProducts,
+    filteredTotal,
+    filterOptions,
+    isFiltering,
+    isInitialDataLoaded,
+    isLoadingFilters,
+    isLoadingMore,
+    isLoadingSidebarFilters,
+    loadMoreProducts,
+    secondaryBanners,
+    sectionCategories,
+    sectionMarcas,
+    setSectionCategories,
+    setSectionMarcas,
+  } = useHome();
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
+
+  const pos0Banners = useMemo(() => secondaryBanners.filter((banner) => banner.tipo_de_banner === 2), [secondaryBanners]);
+  const pos1Banners = useMemo(() => secondaryBanners.filter((banner) => banner.tipo_de_banner === 3), [secondaryBanners]);
+  const pos2Banners = useMemo(() => secondaryBanners.filter((banner) => banner.tipo_de_banner === 4), [secondaryBanners]);
+  const activeFilterCount = getActiveFilterCount(activeFilters);
+
+  const scrollToCatalog = () => {
+    document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleQuickCategory = (categoryId: number) => {
+    const isSelected = activeFilters.categorias.includes(categoryId);
+    applyFilters({
+      ...activeFilters,
+      categorias: isSelected ? [] : [categoryId],
+    });
+    window.setTimeout(scrollToCatalog, 50);
+  };
+
+  const handleSectionCategoryClick = (sectionId: string, category: Categoria) => {
+    const categoryId = Number(category.id);
+    setSectionCategories((current) => ({
+      ...current,
+      [sectionId]: current[sectionId] === categoryId ? null : categoryId,
+    }));
+  };
+
+  const handleSectionBrandClick = (sectionId: string, brand: Marca) => {
+    const brandId = Number(brand.id);
+    setSectionMarcas((current) => ({
+      ...current,
+      [sectionId]: current[sectionId] === brandId ? null : brandId,
+    }));
+  };
+
+  return (
+    <div className="relative min-h-screen bg-main-bg text-primary">
+      <Header />
+
+      <main className="w-full">
+        {banners.length > 0 ? (
+          <CarouselBannersPrincipais images={banners} canLoadImages={isInitialDataLoaded} />
+        ) : isInitialDataLoaded ? (
+          <FallbackBannerCard title="Ofertas em destaque" className="h-[220px] md:h-[340px] lg:h-[430px]" />
+        ) : (
+          <SkeletonMainBanner />
+        )}
+
+        {filterOptions.categorias.length > 0 && (
+          <nav aria-label="Categorias em destaque" className="border-b border-primary/10 bg-header-bg">
+            <div className="page-container flex gap-2 overflow-x-auto py-3 no-scrollbar">
+              {filterOptions.categorias.slice(0, 12).map((category) => {
+                const categoryId = Number(category.id);
+                const selected = activeFilters.categorias.includes(categoryId);
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => handleQuickCategory(categoryId)}
+                    className={`shrink-0 border px-4 py-2 text-xs font-medium transition-all duration-300 ${
+                      selected
+                        ? 'border-primary bg-primary text-secondary'
+                        : 'border-primary/15 bg-product-bg text-primary hover:border-terciary hover:text-terciary'
+                    }`}
+                  >
+                    {category.nome}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        )}
+
+        <section className="page-container py-5 lg:py-7" aria-label="Benefícios da loja">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+            <TrustBadge icon={<BsTruck size={20} />} title="Entrega para todo Brasil" description="Calcule o prazo pelo seu CEP" accent="border-terciary/20 bg-terciary/8 text-terciary" />
+            <TrustBadge icon={<BsShieldCheck size={20} />} title="Compra protegida" description="Pagamento seguro e monitorado" accent="border-primary/15 bg-primary/5 text-primary" />
+            <TrustBadge icon={<BsArrowRepeat size={20} />} title="Troca facilitada" description="Consulte as regras da loja" accent="border-terciary/20 bg-terciary/8 text-terciary" />
+            <TrustBadge icon={<MdOutlineInventory2 size={20} />} title="Estoque atualizado" description="Disponibilidade em tempo real" accent="border-primary/15 bg-primary/5 text-primary" />
+          </div>
+        </section>
+
+        <section id="catalogo" className="page-container scroll-mt-36 pb-10 lg:pb-14">
+          <div className="mb-5 border-y border-primary/10 py-5 lg:flex lg:items-end lg:justify-between">
+            <div>
+              <span className="overline-label">Catálogo</span>
+              <h1 className="mt-1 font-serif text-3xl font-medium tracking-tight text-primary sm:text-4xl">
+                {isFiltering ? 'Produtos encontrados' : 'Descubra nossa seleção'}
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-primary/60">
+                Encontre roupas, calçados e acessórios usando os filtros para chegar mais rápido ao produto ideal.
+              </p>
+            </div>
+            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-primary/55 lg:mt-0">
+              {filteredTotal || filteredProducts.length} {filteredTotal === 1 ? 'produto' : 'produtos'}
+            </p>
+          </div>
+
+          <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-[17rem_minmax(0,1fr)] xl:gap-7">
+            <FilterSidebar
+              filterOptions={filterOptions}
+              activeFilters={activeFilters}
+              onFilterChange={applyFilters}
+              isLoading={isLoadingSidebarFilters}
+              className="hidden min-w-0 lg:block"
+            />
+
+            <div className="min-w-0">
+              <FilterToolbar
+                totalProdutos={filteredTotal || filteredProducts.length}
+                onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
+                activeFilterCount={activeFilterCount}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+              />
+
+              <CatalogActiveFilters
+                activeFilters={activeFilters}
+                filterOptions={filterOptions}
+                onChange={applyFilters}
+              />
+
+              {isLoadingFilters ? (
+                <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-5">
+                  {Array.from({ length: 8 }).map((_, index) => (
+                    <SkeletonProductCard key={index} />
+                  ))}
+                </div>
+              ) : filteredProducts.length > 0 ? (
+                <div className={`grid grid-cols-1 items-stretch min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${viewMode === 'compact' ? 'gap-3 xl:gap-4' : 'gap-4 xl:gap-5'}`}>
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product.id} produto={product} compact={viewMode === 'compact'} />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-80 flex-col items-center justify-center border border-primary/10 bg-product-bg px-6 text-center">
+                  <HiOutlineSparkles size={32} className="text-terciary" />
+                  <h2 className="mt-4 font-serif text-2xl font-medium">Nenhum produto encontrado</h2>
+                  <p className="mt-2 max-w-md text-sm text-primary/60">Tente remover alguns filtros para ampliar os resultados.</p>
+                  <button type="button" onClick={() => applyFilters(defaultFilters)} className="mt-5 border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-secondary transition-colors hover:bg-terciary">
+                    Limpar filtros
+                  </button>
+                </div>
+              )}
+
+              {filteredProducts.length > 0 && filteredTotal > filteredProducts.length && (
+                <div className="mt-6 flex flex-col items-center gap-2">
+                  <p className="text-center text-xs text-primary/55">Exibindo {filteredProducts.length} de {filteredTotal} produtos</p>
+                  <button
+                    type="button"
+                    onClick={loadMoreProducts}
+                    disabled={isLoadingMore}
+                    className="min-w-48 border border-primary bg-product-bg px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary hover:text-secondary disabled:cursor-wait disabled:opacity-55"
+                  >
+                    {isLoadingMore ? 'Carregando...' : 'Carregar mais'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <SecondaryBannerGrid
+          leftBanners={pos0Banners}
+          rightBanners={pos1Banners}
+          canLoadImages={isInitialDataLoaded}
+        />
+
+        <div className="page-container pb-12 lg:pb-16">
+          <section className="mt-10">
+            <SectionHeader eyebrow="Navegue por" title="Departamentos" description="Encontre exatamente o que procura" icon={<HiOutlineSparkles size={20} />} accent="primary" onLinkClick={scrollToCatalog} />
+            <LazySection forceVisible>
+              <CarouselCategoriaComImagem
+                id="departamentos_home"
+                onChange={(category) => handleSectionCategoryClick('departamentos_home', category)}
+                selectedCategoryId={sectionCategories.departamentos_home}
+                canLoadImages={isInitialDataLoaded}
+              />
+            </LazySection>
+          </section>
+
+          <div className="section-divider" />
+
+          <ProductSection
+            id="maisprocurados_home"
+            title="Tendências do momento"
+            eyebrow="Mais procurados"
+            description="O que todo mundo está olhando"
+            icon={<MdTrendingUp size={22} />}
+            accent="terciary"
+            filtros="maisprocurados"
+            selectedCategoryId={sectionCategories.maisprocurados_home}
+            onCategoryChange={handleSectionCategoryClick}
+            onLinkClick={scrollToCatalog}
+          />
+
+          {pos2Banners.length > 0 ? (
+            <div className="mt-10">
+              <SecondaryBannerCarousel banners={pos2Banners} canLoadImages={isInitialDataLoaded} className="h-[180px] md:h-[260px]" />
+            </div>
+          ) : secondaryBanners.length === 0 && (
+            <div className="mt-10"><FallbackBannerCard title="Destaques da loja" className="h-[180px] md:h-[260px]" /></div>
+          )}
+
+          <section className="mt-10">
+            <SectionHeader eyebrow="As que você ama" title="Marcas em destaque" description="Seleções para todos os estilos" icon={<MdWorkspacePremium size={20} />} accent="amber" onLinkClick={scrollToCatalog} />
+            <LazySection forceVisible>
+              <CarouselMarcaComImagem
+                id="marcas_home"
+                onChange={(brand) => handleSectionBrandClick('marcas_home', brand)}
+                selectedMarcaId={sectionMarcas.marcas_home}
+                canLoadImages={isInitialDataLoaded}
+              />
+            </LazySection>
+          </section>
+
+          <div className="section-divider" />
+
+          <ProductSection
+            id="novidades_home"
+            title="Acabaram de chegar"
+            eyebrow="Novidades"
+            description="Lançamentos recém-chegados ao estoque"
+            icon={<MdNewReleases size={22} />}
+            accent="emerald"
+            filtros="order_by=recente"
+            selectedCategoryId={sectionCategories.novidades_home}
+            onCategoryChange={handleSectionCategoryClick}
+            onLinkClick={scrollToCatalog}
+          />
+
+          <div className="section-divider" />
+
+          <ProductSection
+            id="maisvendidos_home"
+            title="Mais vendidos"
+            eyebrow="Preferidos dos clientes"
+            description="Produtos que fazem sucesso na loja"
+            icon={<MdLocalFireDepartment size={22} />}
+            accent="rose"
+            filtros="maisvendidos"
+            selectedCategoryId={sectionCategories.maisvendidos_home}
+            onCategoryChange={handleSectionCategoryClick}
+            onLinkClick={scrollToCatalog}
+          />
+        </div>
+      </main>
+
+      <Footer />
+      <MobileFilterDrawer
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
+        activeFilters={activeFilters}
+        filterOptions={filterOptions}
+        onApply={applyFilters}
+      />
+    </div>
+  );
+}
+
+function getActiveFilterCount(filters: ActiveFilters) {
+  return filters.marcas.length
+    + filters.categorias.length
+    + filters.cores.length
+    + filters.tamanhos.length
+    + Number(filters.minPreco !== undefined || filters.maxPreco !== undefined)
+    + Number(filters.freteGratis)
+    + Number(filters.promocao);
+}
+
+interface CatalogActiveFiltersProps {
+  activeFilters: ActiveFilters;
+  filterOptions: FilterOptions;
+  onChange: (filters: ActiveFilters) => void;
+}
+
+function CatalogActiveFilters({ activeFilters, filterOptions, onChange }: CatalogActiveFiltersProps) {
+  const chips: Array<{ key: string; label: string; remove: () => void }> = [];
+  const addArrayChips = (
+    type: 'categorias' | 'marcas' | 'cores' | 'tamanhos',
+    values: Array<number | string>,
+    getLabel: (value: number | string) => string,
+  ) => {
+    values.forEach((value) => chips.push({
+      key: `${type}-${value}`,
+      label: getLabel(value),
+      remove: () => onChange({ ...activeFilters, [type]: activeFilters[type].filter((item: number | string) => item !== value) }),
+    }));
+  };
+
+  addArrayChips('categorias', activeFilters.categorias, (value) => filterOptions.categorias.find((item) => Number(item.id) === Number(value))?.nome ?? String(value));
+  addArrayChips('marcas', activeFilters.marcas, (value) => filterOptions.marcas.find((item) => Number(item.id) === Number(value))?.nome ?? String(value));
+  addArrayChips('cores', activeFilters.cores, (value) => filterOptions.cores.find((item) => Number(item.id) === Number(value))?.nome ?? String(value));
+  addArrayChips('tamanhos', activeFilters.tamanhos, (value) => `Tamanho ${value}`);
+
+  if (activeFilters.freteGratis) chips.push({ key: 'frete', label: 'Frete grátis', remove: () => onChange({ ...activeFilters, freteGratis: false }) });
+  if (activeFilters.promocao) chips.push({ key: 'promocao', label: 'Em promoção', remove: () => onChange({ ...activeFilters, promocao: false }) });
+  if (activeFilters.minPreco !== undefined || activeFilters.maxPreco !== undefined) {
+    chips.push({
+      key: 'preco',
+      label: 'Faixa de preço',
+      remove: () => onChange({ ...activeFilters, minPreco: undefined, maxPreco: undefined }),
+    });
+  }
+
+  if (chips.length === 0) return null;
+
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-primary/10 pb-4">
+      <span className="mr-1 text-xs font-medium uppercase tracking-[0.14em] text-primary/55">Filtros ativos</span>
+      {chips.map((chip) => (
+        <button key={chip.key} type="button" onClick={chip.remove} className="flex items-center gap-2 border border-primary/15 bg-product-bg px-3 py-1.5 text-xs text-primary transition-colors hover:border-terciary hover:text-terciary">
+          {chip.label}<MdClose size={14} />
+        </button>
+      ))}
+      <button type="button" onClick={() => onChange(defaultFilters)} className="px-2 py-1.5 text-xs font-semibold text-terciary hover:underline">
+        Limpar tudo
+      </button>
+    </div>
+  );
+}
+
+function SecondaryBannerGrid({ leftBanners, rightBanners, canLoadImages }: { leftBanners: Banner[]; rightBanners: Banner[]; canLoadImages: boolean }) {
+  if (leftBanners.length === 0 && rightBanners.length === 0) return null;
+  return (
+    <section className="page-container pb-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {leftBanners.length > 0 && <SecondaryBannerCarousel banners={leftBanners} canLoadImages={canLoadImages} className="h-[190px] md:h-[230px]" />}
+        {rightBanners.length > 0 && <SecondaryBannerCarousel banners={rightBanners} canLoadImages={canLoadImages} className="h-[190px] md:h-[230px]" />}
+      </div>
+    </section>
+  );
+}
+
+function SecondaryBannerCarousel({ banners, canLoadImages, className }: { banners: Banner[]; canLoadImages: boolean; className: string }) {
+  return (
+    <Swiper modules={[EffectFade, Autoplay, Pagination]} slidesPerView={1} rewind={banners.length > 1} effect="fade" autoplay={{ delay: 5500, disableOnInteraction: false }} pagination={banners.length > 1 ? { clickable: true } : false} className="w-full overflow-hidden border border-primary/10 bg-primary/5">
+      {banners.map((banner, index) => (
+        <SwiperSlide key={banner.id}>
+          <OptimizedImage src={banner.imagemUrl} fallbackSrc={getBannerImageFallback(`Banner ${index + 1}`)} alt={`Banner promocional ${index + 1}`} allowNetworkLoad={canLoadImages} className={`w-full object-cover ${className}`} />
+        </SwiperSlide>
+      ))}
+    </Swiper>
+  );
+}
+
+function LegacyHomePage() {
   const { isFiltering, filteredProducts, activeFilters, applyFilters, filterOptions, produtos, sectionCategories, setSectionCategories, sectionMarcas, setSectionMarcas, banners, secondaryBanners, isInitialDataLoaded, isLoadingSidebarFilters } = useHome();
   const navigate = useNavigate();
 
@@ -416,10 +788,10 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
   // 2. Filtra as imagens baseado no estado
   const bannersFiltrados = (images ?? []).filter((v) => {
     if (isMobile) {
-      return v.paraCelular === 'Sim';
+      return v.paraCelular === 'Sim' || !(images ?? []).some((banner) => banner.paraCelular === 'Sim');
     } else {
       // Assume que se não for 'Sim', é para desktop (ou verifique se existe 'Não')
-      return v.paraCelular !== 'Sim';
+      return v.paraCelular !== 'Sim' || !(images ?? []).some((banner) => banner.paraCelular !== 'Sim');
     }
   });
 
@@ -461,7 +833,7 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
             <OptimizedImage
               src={image.imagemUrl}
               fallbackSrc={getBannerImageFallback(`Banner principal ${index + 1}`)}
-              className="w-full h-full object-cover"
+              className="h-[200px] w-full object-cover md:h-[300px] lg:h-[450px]"
               priority={index === 0}
               allowNetworkLoad={canLoadImages}
               alt={`Banner principal ${index + 1}`}
@@ -473,12 +845,12 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
       <div
         className={`${prevButtonId} absolute left-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-secondary/70 bg-primary/35 hover:bg-primary/80 hover:border-terciary flex justify-center items-center p-3 opacity-0 group-hover:opacity-100 transition-all duration-500`}
       >
-        <SlArrowLeft color="white" size={14} />
+        <SlArrowLeft className="text-secondary" size={14} />
       </div>
       <div
         className={`${nextButtonId} absolute right-4 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-secondary/70 bg-primary/35 hover:bg-primary/80 hover:border-terciary flex justify-center items-center p-3 opacity-0 group-hover:opacity-100 transition-all duration-500`}
       >
-        <SlArrowRight color="white" size={14} />
+        <SlArrowRight className="text-secondary" size={14} />
       </div>
     </div>
   );
@@ -561,7 +933,7 @@ function ProductSection({
 
   // If loading or has data, render.
   return (
-    <section className="my-6 rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm py-3 shadow-[0_4px_24px_rgba(15,23,42,0.05)] section-shell fade-in-up">
+    <section className="section-shell fade-in-up my-8 border-y border-primary/10 bg-product-bg py-5 shadow-[0_4px_24px_rgba(0,0,0,0.035)]">
       <SectionHeader
         eyebrow={eyebrow}
         title={title}
@@ -610,7 +982,7 @@ interface CategoriaCardProps {
 export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardProps) {
   return (
     <div
-      className={`border px-4 py-2 rounded-sm text-center w-auto cursor-pointer transition-colors ${isSelected ? 'bg-primary text-white border-primary' : 'border-primary hover:bg-gray-50'}`}
+      className={`w-auto cursor-pointer border px-4 py-2 text-center text-xs font-medium transition-colors ${isSelected ? 'border-primary bg-primary text-secondary' : 'border-primary/20 bg-product-bg text-primary hover:border-terciary hover:text-terciary'}`}
       onClick={() => onClick && onClick(categoria)}
     >
       <p className="max-lg:text-sm lg:text-sm">{categoria.nome}</p>
@@ -625,12 +997,12 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoad
 
   return (
     <div
-      className={`flex w-52 flex-col items-center gap-1 px-3 py-3 text-center rounded-2xl cursor-pointer bg-white border border-slate-200 lift-hover ${isSelected ? 'border-primary ring-2 ring-primary/30' : ''}`}
+      className={`lift-hover flex w-52 cursor-pointer flex-col items-center gap-1 border bg-product-bg px-3 py-3 text-center ${isSelected ? 'border-terciary ring-1 ring-terciary/30' : 'border-primary/10 hover:border-terciary/50'}`}
       onClick={() => {
         navigate('/categoria/' + categoria.id);
       }}
     >
-      <div className="relative h-32 w-full overflow-hidden rounded-xl bg-slate-50">
+      <div className="relative h-32 w-full overflow-hidden bg-main-bg">
         <NormalizedProductImage
           src={categoria.imagem}
           fallbackSrc={categoryImageFallback}
@@ -640,7 +1012,7 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoad
           alt={categoria.nome}
         />
       </div>
-      <p className="text-sm font-medium text-slate-700 mt-1 truncate max-w-48">{categoria.nome}</p>
+      <p className="mt-1 max-w-48 truncate text-sm font-medium text-primary">{categoria.nome}</p>
     </div>
   );
 }
@@ -659,12 +1031,12 @@ export function MarcaCardComImagem({ marca, onClick, isSelected, canLoadImages =
 
   return (
     <div
-      className={`flex h-full w-72 flex-col border border-slate-200 text-center rounded-2xl overflow-hidden bg-white cursor-pointer lift-hover group ${isSelected ? 'ring-2 ring-amber-400/50 border-amber-300' : ''}`}
+      className={`group lift-hover flex h-full w-72 cursor-pointer flex-col overflow-hidden border bg-product-bg text-center ${isSelected ? 'border-terciary ring-1 ring-terciary/30' : 'border-primary/10 hover:border-terciary/50'}`}
       onClick={() => {
         navigate(`/marca/${marca.id}/${gerarSlug(marca.nome)}`);
       }}
     >
-      <div className="relative h-40 w-full overflow-hidden bg-slate-50">
+      <div className="relative h-40 w-full overflow-hidden bg-main-bg">
         <NormalizedProductImage
           src={marca.imagem}
           fallbackSrc={fallbackMarcaImage}
@@ -674,7 +1046,7 @@ export function MarcaCardComImagem({ marca, onClick, isSelected, canLoadImages =
           alt={marca.nome}
         />
       </div>
-      <p className="px-2 py-2 text-sm font-medium text-slate-700 border-t border-slate-100">{marca.nome}</p>
+      <p className="border-t border-primary/8 px-2 py-3 text-sm font-medium text-primary">{marca.nome}</p>
     </div>
   );
 }
@@ -809,14 +1181,14 @@ export function CarouselBannersSecundarios({ id, filtros, globalFilters, selecte
         </Swiper>
 
         <div
-          className={`${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+          className={`${prevButtonId} absolute left-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center border border-primary/15 bg-product-bg p-2 text-primary shadow-md hover:border-terciary hover:text-terciary`}
         >
-          <SlArrowLeft color="black" size={16} />
+          <SlArrowLeft size={16} />
         </div>
         <div
-          className={`${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+          className={`${nextButtonId} absolute right-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center border border-primary/15 bg-product-bg p-2 text-primary shadow-md hover:border-terciary hover:text-terciary`}
         >
-          <SlArrowRight color="black" size={16} />
+          <SlArrowRight size={16} />
         </div>
       </div>
     </div>
@@ -914,14 +1286,14 @@ export function CarouselCategoria({ id, onChange, selectedCategoryId }: Carousel
       </Swiper>
 
       <div
-        className={`max-lg:hidden ${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100 ${navState.isBeginning || navState.isLocked ? 'hidden!' : ''}`}
+        className={`max-lg:hidden ${prevButtonId} absolute left-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center border border-primary/15 bg-product-bg p-2 text-primary shadow-md hover:border-terciary hover:text-terciary ${navState.isBeginning || navState.isLocked ? 'hidden!' : ''}`}
       >
-        <SlArrowLeft color="black" size={16} />
+        <SlArrowLeft size={16} />
       </div>
       <div
-        className={`max-lg:hidden ${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100 ${navState.isEnd || navState.isLocked ? 'hidden!' : ''}`}
+        className={`max-lg:hidden ${nextButtonId} absolute right-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center border border-primary/15 bg-product-bg p-2 text-primary shadow-md hover:border-terciary hover:text-terciary ${navState.isEnd || navState.isLocked ? 'hidden!' : ''}`}
       >
-        <SlArrowRight color="black" size={16} />
+        <SlArrowRight size={16} />
       </div>
     </div>
   );
@@ -977,14 +1349,14 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId, c
       </Swiper>
 
       <div
-        className={`max-lg:hidden ${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`max-lg:hidden ${prevButtonId} absolute left-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center border border-primary/15 bg-product-bg p-2 text-primary shadow-md hover:border-terciary hover:text-terciary`}
       >
-        <SlArrowLeft color="black" size={16} />
+        <SlArrowLeft size={16} />
       </div>
       <div
-        className={`max-lg:hidden ${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`max-lg:hidden ${nextButtonId} absolute right-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center border border-primary/15 bg-product-bg p-2 text-primary shadow-md hover:border-terciary hover:text-terciary`}
       >
-        <SlArrowRight color="black" size={16} />
+        <SlArrowRight size={16} />
       </div>
     </div>
   );
@@ -1047,14 +1419,14 @@ export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId, canLoadI
       </Swiper>
 
       <div
-        className={`max-lg:hidden ${prevButtonId} absolute left-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`max-lg:hidden ${prevButtonId} absolute left-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center border border-primary/15 bg-product-bg p-2 text-primary shadow-md hover:border-terciary hover:text-terciary`}
       >
-        <SlArrowLeft color="black" size={16} />
+        <SlArrowLeft size={16} />
       </div>
       <div
-        className={`max-lg:hidden ${nextButtonId} absolute right-5 top-1/2 -translate-y-1/2 z-10 cursor-pointer border border-gray-300 bg-white shadow-md rounded-full flex justify-center items-center p-2 hover:bg-gray-100`}
+        className={`max-lg:hidden ${nextButtonId} absolute right-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center border border-primary/15 bg-product-bg p-2 text-primary shadow-md hover:border-terciary hover:text-terciary`}
       >
-        <SlArrowRight color="black" size={16} />
+        <SlArrowRight size={16} />
       </div>
     </div>
   );

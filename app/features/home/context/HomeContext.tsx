@@ -17,8 +17,11 @@ interface HomeContextType {
     setActiveFilters: React.Dispatch<React.SetStateAction<ActiveFilters>>;
     applyFilters: (newFilters: ActiveFilters) => void;
     filteredProducts: Produto[];
+    filteredTotal: number;
+    loadMoreProducts: () => Promise<void>;
     isFiltering: boolean;
     isLoadingFilters: boolean;
+    isLoadingMore: boolean;
     isLoadingSidebarFilters: boolean;
     sectionCategories: Record<string, number | null>;
     setSectionCategories: React.Dispatch<React.SetStateAction<Record<string, number | null>>>;
@@ -94,7 +97,7 @@ function decodeJwt(token: string): any {
     }
 }
 
-const defaultFilters: ActiveFilters = {
+export const defaultFilters: ActiveFilters = {
     marcas: [],
     categorias: [],
     cores: [],
@@ -119,6 +122,9 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     });
     const [activeFilters, setActiveFilters] = useState<ActiveFilters>(defaultFilters);
     const [filteredProducts, setFilteredProducts] = useState<Produto[]>([]);
+    const [filteredTotal, setFilteredTotal] = useState(0);
+    const [filteredPage, setFilteredPage] = useState(1);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isFiltering, setIsFiltering] = useState(false);
     const latestFilterRequestRef = useRef<string>('');
 
@@ -213,15 +219,27 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         loadInitialData();
     }, []);
 
-    const fetchFilteredProducts = useCallback(async (token: string) => {
-        latestFilterRequestRef.current = token;
-        setIsLoadingFilters(true);
+    const fetchFilteredProducts = useCallback(async (token?: string, page = 1, append = false) => {
+        const requestKey = `${token || 'catalogo-padrao'}:pagina-${page}`;
+        latestFilterRequestRef.current = requestKey;
+        if (append) {
+            setIsLoadingMore(true);
+        } else {
+            setIsLoadingMore(false);
+            setIsLoadingFilters(true);
+        }
         try {
             const params = new URLSearchParams();
-            params.append('filtros', token);
+            params.set('por_pagina', '24');
+            params.set('pagina', String(page));
+            if (token) {
+                params.append('filtros', token);
+            } else {
+                params.set('order_by', 'mais_procurados');
+            }
 
             // Add id_cliente if user is logged in
-            const authToken = localStorage.getItem('@ecommerce/token');
+            const authToken = localStorage.getItem('token');
             if (authToken) {
                 const decodedAuth = decodeJwt(authToken);
                 if (decodedAuth && decodedAuth.id) {
@@ -233,17 +251,38 @@ export function HomeProvider({ children }: { children: ReactNode }) {
 
             const response = await produtoService.listarProdutos(queryString);
 
-            if (response.sucesso && latestFilterRequestRef.current === token) {
-                setFilteredProducts(response.data.produtos);
+            if (response.sucesso && latestFilterRequestRef.current === requestKey) {
+                setFilteredProducts((currentProducts) => {
+                    if (!append) return response.data.produtos;
+
+                    const knownIds = new Set(currentProducts.map((product) => product.id));
+                    return [
+                        ...currentProducts,
+                        ...response.data.produtos.filter((product) => !knownIds.has(product.id)),
+                    ];
+                });
+                setFilteredTotal(Number(response.data.paginacao?.total ?? response.data.produtos.length));
+                setFilteredPage(page);
             }
         } catch (error) {
             console.error("Error fetching filtered products", error);
         } finally {
-            if (latestFilterRequestRef.current === token) {
-                setIsLoadingFilters(false);
+            if (latestFilterRequestRef.current === requestKey) {
+                if (append) {
+                    setIsLoadingMore(false);
+                } else {
+                    setIsLoadingFilters(false);
+                }
             }
         }
     }, []);
+
+    const loadMoreProducts = useCallback(async () => {
+        if (isLoadingMore || filteredProducts.length >= filteredTotal) return;
+
+        const token = searchParams.get('filtros') ?? undefined;
+        await fetchFilteredProducts(token, filteredPage + 1, true);
+    }, [fetchFilteredProducts, filteredPage, filteredProducts.length, filteredTotal, isLoadingMore, searchParams]);
 
     useEffect(() => {
         const token = searchParams.get('filtros');
@@ -257,8 +296,8 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             }
         } else {
             setIsFiltering(false);
-            setFilteredProducts([]);
             setActiveFilters(defaultFilters);
+            fetchFilteredProducts();
         }
     }, [fetchFilteredProducts, searchParams]);
 
@@ -276,14 +315,19 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         if (filters.freteGratis) payload.freteGratis = true;
         if (filters.promocao) payload.promocao = true;
 
-        if (filters.ordenacao !== 'mais_procurados') payload.ordenacao = filters.ordenacao;
-
         if (Object.keys(payload).length === 0) {
-            setSearchParams({});
+            if (filters.ordenacao === 'mais_procurados') {
+                setSearchParams({});
+                return;
+            }
+
+            payload.ordenacao = filters.ordenacao;
         } else {
-            const token = sign(payload, 'secret');
-            setSearchParams({ filtros: token });
+            payload.ordenacao = filters.ordenacao;
         }
+
+        const token = sign(payload, 'secret');
+        setSearchParams({ filtros: token });
     }, [setSearchParams]);
 
     const listarProdutos = useCallback(async (id: string, filtros: string) => {
@@ -358,8 +402,11 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         setActiveFilters,
         applyFilters,
         filteredProducts,
+        filteredTotal,
+        loadMoreProducts,
         isFiltering,
         isLoadingFilters,
+        isLoadingMore,
         isLoadingSidebarFilters,
         sectionCategories,
         setSectionCategories,
@@ -375,8 +422,11 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         activeFilters,
         applyFilters,
         filteredProducts,
+        filteredTotal,
+        loadMoreProducts,
         isFiltering,
         isLoadingFilters,
+        isLoadingMore,
         isLoadingSidebarFilters,
         sectionCategories,
         sectionMarcas,

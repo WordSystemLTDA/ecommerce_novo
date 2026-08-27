@@ -31,15 +31,18 @@ export function MobileFilterDrawer({ isOpen, onClose, activeFilters, filterOptio
         <div className="fixed inset-0 z-50 flex h-dvh items-center justify-center lg:hidden">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
+                className="absolute inset-0 bg-primary/45 backdrop-blur-[2px] transition-opacity"
                 onClick={onClose}
             ></div>
 
             {/* Drawer Content */}
-            <div className="relative flex h-full w-full flex-col overflow-hidden bg-white shadow-xl animate-slide-up md:h-[90%] md:w-[80%] md:rounded-lg md:animate-fade-in">
-                <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                    <h2 className="text-lg font-bold text-gray-900">Filtros</h2>
-                    <button onClick={onClose} className="p-2 text-gray-500 hover:text-gray-700">
+            <div className="relative flex h-full w-full flex-col overflow-hidden bg-sidebar-bg text-primary shadow-xl animate-slide-up md:h-[90%] md:w-[80%] md:max-w-2xl md:animate-fade-in">
+                <div className="flex items-center justify-between border-b border-primary/10 p-4">
+                    <div>
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/45">Refine sua busca</span>
+                        <h2 className="font-serif text-2xl font-medium text-primary">Filtros</h2>
+                    </div>
+                    <button onClick={onClose} className="flex h-11 w-11 items-center justify-center border border-primary/15 text-primary/60 hover:border-terciary hover:text-terciary" aria-label="Fechar filtros">
                         <SlClose size={24} />
                     </button>
                 </div>
@@ -52,12 +55,12 @@ export function MobileFilterDrawer({ isOpen, onClose, activeFilters, filterOptio
                     />
                 </div>
 
-                <div className="safe-bottom border-t border-gray-200 bg-white p-4">
+                <div className="safe-bottom border-t border-primary/10 bg-sidebar-bg p-4">
                     <button
                         onClick={handleApply}
-                        className="w-full py-3 bg-terciary text-white font-bold rounded-lg hover:bg-opacity-90 transition-colors"
+                        className="w-full bg-primary py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-secondary transition-colors hover:bg-terciary"
                     >
-                        Aplicar Filtros
+                        Ver resultados
                     </button>
                 </div>
             </div>

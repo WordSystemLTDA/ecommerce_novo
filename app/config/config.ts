@@ -65,8 +65,8 @@ const URBAN_BOY_IDENTIDADE = {
     LOGO_HEADER_TIPO: 'mask',
     LOGO_ALT: 'Urban Boy',
     LOGO_MASK: {
-        aspect: 'aspect-2048/431',
-        classe: 'w-20 lg:w-36 xl:w-90'
+        aspect: 'aspect-square',
+        classe: 'w-14 lg:w-20 xl:w-24'
     }
 };
 

@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { BsBoxes, BsCartPlus } from "react-icons/bs";
-import { MdFavorite, MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout } from "react-icons/md";
+import { MdFavorite, MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout, MdStar } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { toast } from 'react-toastify';
 import { useAuth } from '~/features/auth/context/AuthContext';
@@ -15,9 +15,10 @@ import { NormalizedProductImage } from "./NormalizedProductImage";
 
 interface ProductCardProps {
     produto: Produto;
+    compact?: boolean;
 }
 
-export function ProductCard({ produto }: ProductCardProps) {
+export function ProductCard({ produto, compact = false }: ProductCardProps) {
     let navigate = useNavigate();
     const { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
     const estaNoCarrinho = verificarAdicionadoCarrinho(produto);
@@ -128,12 +129,12 @@ export function ProductCard({ produto }: ProductCardProps) {
 
     return (
         <div
-            className="group relative flex h-full w-full min-w-0 cursor-pointer flex-col overflow-hidden border-t border-primary/15 bg-product-bg shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-shadow duration-500 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
+            className="group relative flex h-full w-full min-w-0 cursor-pointer flex-col overflow-hidden border border-primary/10 bg-white shadow-[0_3px_14px_rgba(0,0,0,0.045)] transition-all duration-500 hover:z-10 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-[0_12px_30px_rgba(0,0,0,0.09)]"
             onClick={() => {
                 navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
             }}
         >
-            <div className="relative h-40 shrink-0 overflow-hidden sm:h-48">
+            <div className={`relative shrink-0 overflow-hidden bg-white ${compact ? 'h-44 sm:h-48 xl:h-52' : 'h-52 sm:h-60 xl:h-64'}`}>
                 <div className="absolute right-2 top-2 z-10 flex cursor-auto gap-1 bg-product-bg/90 p-1 opacity-100 shadow-sm transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100">
                     <button onClick={toggleFavorite} className="flex h-8 w-8 items-center justify-center transition-transform duration-300 hover:scale-110" aria-label="Adicionar aos favoritos">
                         {isFavorite ? (
@@ -169,9 +170,19 @@ export function ProductCard({ produto }: ProductCardProps) {
                 />
             </div>
 
-            <div className="flex min-h-[12.75rem] flex-1 flex-col border-t border-primary/8 p-3 lg:p-4">
+            <div className="flex min-h-[14rem] flex-1 flex-col border-t border-primary/8 p-3 lg:p-4">
                 <div className="flex flex-1 flex-col">
-                    <h3 className="line-clamp-2 h-10 shrink-0 overflow-hidden text-ellipsis text-xs font-normal leading-relaxed text-primary transition-colors duration-500 group-hover:text-terciary">
+                    <div className="mb-2 flex min-h-4 items-center justify-between gap-2 text-[9px] uppercase tracking-[0.16em] text-primary/45">
+                        <span className="truncate">{produto.nomeMarca || produto.marca?.nome || produto.nomeCategoria || 'Produto'}</span>
+                        {Number(produto.avaliacao) > 0 && (
+                            <span className="flex shrink-0 items-center gap-1 normal-case tracking-normal text-primary/60">
+                                <MdStar className="text-terciary" size={12} />
+                                {Number(produto.avaliacao).toFixed(1)}
+                            </span>
+                        )}
+                    </div>
+
+                    <h3 className="line-clamp-2 h-10 shrink-0 overflow-hidden text-ellipsis text-sm font-semibold leading-snug text-primary transition-colors duration-500 group-hover:text-terciary">
                         {produto.nome}
                     </h3>
 
@@ -183,7 +194,7 @@ export function ProductCard({ produto }: ProductCardProps) {
                     </span>
 
                     <div className="mb-0 flex min-h-7 flex-wrap items-center gap-1 sm:gap-2">
-                        <span className="text-sm font-medium text-primary sm:text-base">
+                        <span className="text-lg font-semibold tracking-tight text-primary">
                             {currencyFormatter.format(parseFloat(precoExibido))}
                         </span>
 
@@ -194,7 +205,7 @@ export function ProductCard({ produto }: ProductCardProps) {
                         )}
 
                         {produto.promocaoAtiva === 'Sim' && (Number(produto.quantidadeLimiteDesconto) <= Number(produto.estoque) && produto.idPromocoesEcommerce) ? (
-                            <span className="text-medium-tiny font-bold text-white bg-primary px-1 py-0.5 flex items-center gap-0.5 absolute top-2 left-2">
+                            <span className="text-medium-tiny absolute left-2 top-2 flex items-center gap-0.5 bg-primary px-1 py-0.5 font-bold text-secondary">
                                 <BsBoxes />
                                 Restam {(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} un.
                             </span>
@@ -224,6 +235,9 @@ export function ProductCard({ produto }: ProductCardProps) {
                             ? <>ou até <span className="font-medium text-primary">{produto.parcelaMaxima}</span></>
                             : '\u00A0'
                         }
+                    </span>
+                    <span className={`mt-1 min-h-4 text-[10px] font-semibold uppercase tracking-[0.12em] text-terciary ${produto.temFreteGratis ? '' : 'invisible'}`} aria-hidden={!produto.temFreteGratis}>
+                        Frete grátis
                     </span>
                 </div>
 

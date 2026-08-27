@@ -52,7 +52,7 @@ export default function Header() {
 
     return (
         <header className="sticky top-0 z-50 flex w-full flex-col overflow-x-clip border-b border-primary/10 bg-header-bg pt-[env(safe-area-inset-top)] shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
-            <div className="relative flex min-h-16 w-full min-w-0 flex-row items-center">
+            <div className="page-container relative flex min-h-16 w-full min-w-0 flex-row items-center">
                 <button
                     type="button"
                     aria-label="Abrir menu"
@@ -172,8 +172,8 @@ export default function Header() {
                             </nav>
                         </div>
 
-                        <div className="w-64 ml-4 hidden 2xl:block shrink-0">
-                            <div className="border border-primary/20 px-4 py-1.5 text-tiny uppercase tracking-[0.2em] font-medium text-primary flex items-center justify-between gap-2 cursor-pointer hover:border-terciary hover:text-terciary transition-colors duration-500">
+                        <div className="ml-4 hidden w-56 shrink-0 xl:block 2xl:w-64">
+                            <div className="flex cursor-pointer items-center justify-between gap-2 border border-primary/20 px-4 py-2 text-tiny font-medium uppercase tracking-[0.2em] text-primary transition-colors duration-500 hover:border-terciary hover:text-terciary">
                                 Seja um sócio
                                 <MdKeyboardArrowDown className="-rotate-90" />
                             </div>

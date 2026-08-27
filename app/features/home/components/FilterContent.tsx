@@ -1,98 +1,78 @@
 import { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { PriceRangeSlider } from "~/components/price_range_slider";
-import type { FilterOptions } from '../context/HomeContext'; // Assuming this type exists or I need to define/mock it for now
+import type { ActiveFilters, FilterOptions } from '../context/HomeContext';
 
 interface FilterContentProps {
-    activeFilters: any;
-    filterOptions: any; // Using any for now to match HomePage usage, will refine
-    onFilterChange: (newFilters: any) => void;
+    activeFilters: ActiveFilters;
+    filterOptions: FilterOptions;
+    onFilterChange: (newFilters: ActiveFilters) => void;
 }
 
-export function FilterContent({ activeFilters, filterOptions, onFilterChange }: FilterContentProps) {
+type ArrayFilterKey = 'categorias' | 'marcas' | 'cores' | 'tamanhos';
 
-    const handleCheckboxChange = (type: string, value: any) => {
-        const currentValues = activeFilters[type] as any[];
-        let newValues;
-        if (currentValues.includes(value)) {
-            newValues = currentValues.filter((v: any) => v !== value);
-        } else {
-            newValues = [...currentValues, value];
-        }
-        const newFilters = { ...activeFilters, [type]: newValues };
-        onFilterChange(newFilters);
+export function FilterContent({ activeFilters, filterOptions, onFilterChange }: FilterContentProps) {
+    const handleCheckboxChange = (type: ArrayFilterKey, value: number | string) => {
+        const currentValues = activeFilters[type] as Array<number | string>;
+        const nextValues = currentValues.includes(value)
+            ? currentValues.filter((currentValue) => currentValue !== value)
+            : [...currentValues, value];
+
+        onFilterChange({ ...activeFilters, [type]: nextValues } as ActiveFilters);
     };
 
     const handleToggleChange = (type: 'freteGratis' | 'promocao') => {
-        const newFilters = { ...activeFilters, [type]: !activeFilters[type] };
-        onFilterChange(newFilters);
+        onFilterChange({ ...activeFilters, [type]: !activeFilters[type] });
     };
 
     return (
-        <div className="flex flex-col gap-2">
-            {filterOptions.categorias && filterOptions.categorias.length > 0 && (
+        <div className="flex flex-col">
+            {filterOptions.categorias.length > 0 && (
                 <FilterSection title="Departamentos" defaultOpen>
                     <CheckboxFilter
-                        items={filterOptions.categorias.map((c: any) => ({ id: c.id, label: c.nome }))}
+                        items={filterOptions.categorias.map((category) => ({ id: Number(category.id), label: category.nome }))}
                         selectedValues={activeFilters.categorias}
                         onChange={(id) => handleCheckboxChange('categorias', id)}
-                        showSearch={true}
+                        showSearch
                     />
                 </FilterSection>
             )}
 
-            {filterOptions.marcas && filterOptions.marcas.length > 0 && (
-                <FilterSection title="Marcas" defaultOpen={true}>
+            {filterOptions.marcas.length > 0 && (
+                <FilterSection title="Marcas" defaultOpen>
                     <CheckboxFilter
-                        items={filterOptions.marcas.map((m: any) => ({ id: m.id, label: m.nome }))}
+                        items={filterOptions.marcas.map((brand) => ({ id: Number(brand.id), label: brand.nome }))}
                         selectedValues={activeFilters.marcas}
                         onChange={(id) => handleCheckboxChange('marcas', id)}
-                        showSearch={true}
+                        showSearch
                     />
                 </FilterSection>
             )}
 
-            {filterOptions.cores && filterOptions.cores.length > 0 && (
-                <FilterSection title="Cores" defaultOpen={true}>
+            {filterOptions.cores.length > 0 && (
+                <FilterSection title="Cores" defaultOpen>
                     <CheckboxFilter
-                        items={filterOptions.cores.map((c: any) => ({ id: c.id, label: c.nome }))}
+                        items={filterOptions.cores.map((color) => ({ id: Number(color.id), label: color.nome }))}
                         selectedValues={activeFilters.cores}
                         onChange={(id) => handleCheckboxChange('cores', id)}
-                        showSearch={true}
+                        showSearch={filterOptions.cores.length > 7}
                     />
                 </FilterSection>
             )}
 
-            {filterOptions.tamanhos && filterOptions.tamanhos.length > 0 && (
-                <FilterSection title="Tamanhos" defaultOpen={true}>
+            {filterOptions.tamanhos.length > 0 && (
+                <FilterSection title="Tamanhos" defaultOpen>
                     <CheckboxFilter
-                        items={filterOptions.tamanhos.map((t: any) => ({ id: t, label: t }))}
+                        items={filterOptions.tamanhos.map((size) => ({ id: size, label: size }))}
                         selectedValues={activeFilters.tamanhos}
                         onChange={(id) => handleCheckboxChange('tamanhos', id)}
-                        showSearch={true}
+                        layout="grid"
                     />
                 </FilterSection>
             )}
 
-            <FilterSection title="Opções" defaultOpen={true}>
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-700">Frete Grátis</span>
-                    <ToggleSwitch
-                        checked={activeFilters.freteGratis}
-                        onChange={() => handleToggleChange('freteGratis')}
-                    />
-                </div>
-                <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Promoção</span>
-                    <ToggleSwitch
-                        checked={activeFilters.promocao}
-                        onChange={() => handleToggleChange('promocao')}
-                    />
-                </div>
-            </FilterSection>
-
-            <FilterSection title="Preço" defaultOpen={true}>
-                {filterOptions.maxPrice != undefined &&
+            <FilterSection title="Preço" defaultOpen>
+                {filterOptions.maxPrice !== undefined ? (
                     <PriceRangeSlider
                         min={0}
                         max={filterOptions.maxPrice || 5000}
@@ -100,7 +80,22 @@ export function FilterContent({ activeFilters, filterOptions, onFilterChange }: 
                         maxVal={activeFilters.maxPreco}
                         onChange={(min, max) => onFilterChange({ ...activeFilters, minPreco: min, maxPreco: max })}
                     />
-                }
+                ) : (
+                    <p className="text-xs text-primary/50">Carregando faixa de preço...</p>
+                )}
+            </FilterSection>
+
+            <FilterSection title="Opções" defaultOpen>
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-4">
+                        <span className="text-sm text-primary/70">Frete grátis</span>
+                        <ToggleSwitch checked={activeFilters.freteGratis} onChange={() => handleToggleChange('freteGratis')} label="Filtrar produtos com frete grátis" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                        <span className="text-sm text-primary/70">Somente promoções</span>
+                        <ToggleSwitch checked={activeFilters.promocao} onChange={() => handleToggleChange('promocao')} label="Filtrar produtos em promoção" />
+                    </div>
+                </div>
             </FilterSection>
         </div>
     );
@@ -112,80 +107,76 @@ interface FilterSectionProps {
     defaultOpen?: boolean;
 }
 
-export const FilterSection = ({ title, children, defaultOpen = false }: FilterSectionProps) => {
+export function FilterSection({ title, children, defaultOpen = false }: FilterSectionProps) {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <div className="border-b border-gray-200 py-4 last:border-0">
-            <div
-                className="flex items-center justify-between cursor-pointer mb-2"
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                <h3 className="font-medium text-gray-900">{title}</h3>
-                {isOpen ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
-            </div>
-            {isOpen && <div className="mt-2">{children}</div>}
-        </div>
+        <section className="border-b border-primary/10 py-4 last:border-0">
+            <button type="button" className="flex w-full items-center justify-between text-left" onClick={() => setIsOpen((current) => !current)} aria-expanded={isOpen}>
+                <h3 className="text-sm font-semibold text-primary">{title}</h3>
+                {isOpen ? <FaChevronUp size={11} className="text-primary/50" /> : <FaChevronDown size={11} className="text-primary/50" />}
+            </button>
+            {isOpen && <div className="mt-3">{children}</div>}
+        </section>
     );
-};
+}
 
 interface CheckboxFilterProps {
-    items: { id: number | string; label: string }[];
-    selectedValues: (number | string)[];
+    items: Array<{ id: number | string; label: string }>;
+    selectedValues: Array<number | string>;
     onChange: (id: number | string) => void;
     showSearch?: boolean;
+    layout?: 'list' | 'grid';
 }
 
-export const CheckboxFilter = ({ items, selectedValues, onChange, showSearch }: CheckboxFilterProps) => {
-    const [searchTerm, setSearchTerm] = useState("");
-
-    const filteredItems = items.filter(item =>
-        item.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+export function CheckboxFilter({ items, selectedValues, onChange, showSearch = false, layout = 'list' }: CheckboxFilterProps) {
+    const [searchTerm, setSearchTerm] = useState('');
+    const filteredItems = items.filter((item) => item.label.toLocaleLowerCase('pt-BR').includes(searchTerm.toLocaleLowerCase('pt-BR')));
 
     return (
-        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+        <div>
             {showSearch && (
                 <input
-                    type="text"
+                    type="search"
                     placeholder="Buscar..."
-                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2 focus:outline-none focus:border-primary"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    className="mb-3 w-full border border-primary/15 bg-main-bg px-3 py-2 text-xs text-primary outline-none placeholder:text-primary/40 focus:border-terciary"
                 />
             )}
-            {filteredItems.map((item) => (
-                <label key={item.id} className="flex items-center gap-2 cursor-pointer group">
-                    <div className={`w-4 h-4 border rounded flex items-center justify-center ${selectedValues.includes(item.id) ? 'bg-terciary border-terciary' : 'border-gray-300 group-hover:border-primary'}`}>
-                        {selectedValues.includes(item.id) && <div className="w-2 h-2 bg-white rounded-sm" />}
-                    </div>
-                    <span className="text-sm text-gray-600 group-hover:text-gray-900">{item.label}</span>
-                    <input
-                        type="checkbox"
-                        className="hidden"
-                        checked={selectedValues.includes(item.id)}
-                        onChange={() => onChange(item.id)}
-                    />
-                </label>
-            ))}
+
+            <div className={layout === 'grid' ? 'grid max-h-44 grid-cols-3 gap-2 overflow-y-auto pr-1' : 'flex max-h-48 flex-col gap-2 overflow-y-auto pr-1'}>
+                {filteredItems.map((item) => {
+                    const selected = selectedValues.includes(item.id);
+                    if (layout === 'grid') {
+                        return (
+                            <button key={item.id} type="button" onClick={() => onChange(item.id)} aria-pressed={selected} className={`min-h-9 border px-2 text-xs transition-colors ${selected ? 'border-primary bg-primary text-secondary' : 'border-primary/15 bg-product-bg text-primary hover:border-terciary'}`}>
+                                {item.label}
+                            </button>
+                        );
+                    }
+
+                    return (
+                        <label key={item.id} className="group flex cursor-pointer items-center gap-2.5 py-0.5">
+                            <span className={`flex h-4 w-4 shrink-0 items-center justify-center border transition-colors ${selected ? 'border-terciary bg-terciary' : 'border-primary/25 group-hover:border-terciary'}`}>
+                                {selected && <span className="h-1.5 w-1.5 bg-secondary" />}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate text-xs text-primary/70 transition-colors group-hover:text-primary">{item.label}</span>
+                            <input type="checkbox" className="sr-only" checked={selected} onChange={() => onChange(item.id)} />
+                        </label>
+                    );
+                })}
+
+                {filteredItems.length === 0 && <p className="py-2 text-xs text-primary/50">Nenhuma opção encontrada.</p>}
+            </div>
         </div>
     );
-};
-
-interface ToggleSwitchProps {
-    checked: boolean;
-    onChange: () => void;
 }
 
-export const ToggleSwitch = ({ checked, onChange }: ToggleSwitchProps) => {
+function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: () => void; label: string }) {
     return (
-        <div
-            className={`w-10 h-5 rounded-full cursor-pointer relative transition-colors ${checked ? 'bg-terciary' : 'bg-gray-300'}`}
-            onClick={onChange}
-        >
-            <div
-                className={`w-4 h-4 bg-white rounded-full absolute top-0.5 transition-transform ${checked ? 'left-5.5' : 'left-0.5'}`}
-            />
-        </div>
+        <button type="button" role="switch" aria-checked={checked} aria-label={label} onClick={onChange} className={`relative h-5 w-10 rounded-full transition-colors ${checked ? 'bg-terciary' : 'bg-primary/15'}`}>
+            <span className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-secondary shadow-sm transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
+        </button>
     );
-};
+}

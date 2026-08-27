@@ -15,10 +15,8 @@ export function PriceRangeSlider({ min = 2.87, max = 89093.72, minVal, maxVal, o
   const [values, setValues] = useState<[number, number]>([minVal ?? min, maxVal ?? max]);
 
   useEffect(() => {
-    if (minVal !== undefined && maxVal !== undefined) {
-      setValues([minVal, maxVal]);
-    }
-  }, [minVal, maxVal]);
+    setValues([minVal ?? min, maxVal ?? max]);
+  }, [max, maxVal, min, minVal]);
 
   const handleMinInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let newMin = Number(event.target.value);
@@ -71,7 +69,7 @@ export function PriceRangeSlider({ min = 2.87, max = 89093.72, minVal, maxVal, o
   return (
     <div className="p-0">
 
-      <div className="text-xs text-gray-500 mb-2">Intervalo de Preço</div>
+      <div className="mb-3 text-xs text-primary/55">Intervalo de preço</div>
 
       <RangeSlider
         min={min}
@@ -91,7 +89,7 @@ export function PriceRangeSlider({ min = 2.87, max = 89093.72, minVal, maxVal, o
         id="range-slider-custom"
       />
 
-      <div className="flex justify-between text-xs text-gray-600 mt-2 mb-4">
+      <div className="mb-4 mt-2 flex justify-between text-xs text-primary/65">
         <span>{currencyFormatter.format(values[0])}</span>
         <span>{currencyFormatter.format(values[1])}</span>
       </div>
@@ -99,24 +97,26 @@ export function PriceRangeSlider({ min = 2.87, max = 89093.72, minVal, maxVal, o
       <div className="flex items-center gap-2">
         <input
           type="number"
+          aria-label="Preço mínimo"
           placeholder={`Mínimo - R$ ${Math.floor(min)}`}
           value={values[0]}
           onChange={handleMinInputChange}
           onBlur={commitChanges}
           onKeyDown={handleKeyDown}
-          className="w-full border border-gray-300 rounded-md p-2 text-sm"
+          className="min-w-0 w-full border border-primary/15 bg-main-bg p-2 text-xs text-primary outline-none focus:border-terciary"
         />
 
-        <span className="text-gray-400">-</span>
+        <span className="text-primary/35">–</span>
 
         <input
           type="number"
+          aria-label="Preço máximo"
           placeholder={`Máximo - R$ ${Math.ceil(max)}`}
           value={values[1]}
           onChange={handleMaxInputChange}
           onBlur={commitChanges}
           onKeyDown={handleKeyDown}
-          className="w-full border border-gray-300 rounded-md p-2 text-sm"
+          className="min-w-0 w-full border border-primary/15 bg-main-bg p-2 text-xs text-primary outline-none focus:border-terciary"
         />
       </div>
     </div>

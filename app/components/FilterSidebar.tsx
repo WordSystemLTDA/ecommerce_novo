@@ -17,7 +17,12 @@ export default function FilterSidebar({
 }: FilterSidebarProps) {
     return (
         <aside className={className}>
-            <div className="bg-sidebar-bg p-4 border border-primary/15 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sticky top-4">
+            <div className="sticky top-36 border border-primary/10 bg-sidebar-bg shadow-[0_4px_20px_rgba(0,0,0,0.035)]">
+                <div className="border-b border-primary/10 px-4 py-4">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-primary/45">Refine sua busca</span>
+                    <h2 className="mt-1 font-serif text-xl font-medium text-primary">Filtros</h2>
+                </div>
+                <div className="max-h-[calc(100vh-11rem)] overflow-y-auto px-4 no-scrollbar">
                 {isLoading ? (
                     <SidebarSkeleton />
                 ) : (
@@ -27,6 +32,7 @@ export default function FilterSidebar({
                         onFilterChange={onFilterChange}
                     />
                 )}
+                </div>
             </div>
         </aside>
     );
@@ -34,7 +40,7 @@ export default function FilterSidebar({
 
 function SidebarSkeleton() {
     return (
-        <div className="flex flex-col gap-4 animate-pulse">
+        <div className="flex animate-pulse flex-col gap-4 py-4">
             {Array.from({ length: 4 }).map((_, sectionIndex) => (
                 <div key={sectionIndex} className="border-b border-primary/10 pb-4 last:border-0 last:pb-0">
                     <div className="h-4 w-28 bg-primary/10 mb-3" />
