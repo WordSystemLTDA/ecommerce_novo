@@ -22,6 +22,7 @@ import {
     getOrderId,
     getOrderItemName,
     getOrderItems,
+    getOrderLookupId,
     normalizeText,
 } from "~/features/minhaconta/utils/orderHelpers";
 
@@ -122,6 +123,7 @@ export default function PedidosPage() {
             const search = normalizeText(searchTerm);
             const orderText = normalizeText([
                 getOrderId(pedido),
+                getOrderLookupId(pedido),
                 getOrderItems(pedido).map(getOrderItemName).join(" "),
             ].join(" "));
             const status = normalizeText(pedido.status || pedido.situacao || "pendente");
@@ -196,13 +198,16 @@ export default function PedidosPage() {
                 <>
                     <div className="space-y-4">
                         {filteredPedidos.map((pedido, index) => {
-                            const orderId = getOrderId(pedido) || String(index);
+                            const orderLookupId =
+                                getOrderLookupId(pedido) ||
+                                getOrderId(pedido) ||
+                                String(index);
 
                             return (
                                 <OrderCard
-                                    key={`${getOrderId(pedido)}-${index}`}
+                                    key={`${orderLookupId}-${index}`}
                                     pedido={pedido}
-                                    detailsHref={getOrderDetailsPath(orderId)}
+                                    detailsHref={getOrderDetailsPath(orderLookupId)}
                                 />
                             );
                         })}

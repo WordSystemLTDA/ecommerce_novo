@@ -22,7 +22,6 @@ interface OrderCardProps {
 
 export function OrderCard({ pedido, detailsHref }: OrderCardProps) {
     const items = getOrderItems(pedido);
-    const firstItem = items[0];
     const orderId = getOrderId(pedido);
     const status = getOrderStatusInfo(pedido.status || pedido.situacao);
     const payment = getOrderPaymentLabel(pedido);
@@ -57,8 +56,15 @@ export function OrderCard({ pedido, detailsHref }: OrderCardProps) {
                     <span className="min-w-0 truncate">{payment}</span>
                 </div>
 
-                {firstItem ? (
-                    <OrderProduct item={firstItem} />
+                {items.length > 0 ? (
+                    <div className="divide-y divide-primary/10">
+                        {items.map((item, index) => (
+                            <OrderProduct
+                                key={`${getOrderItemName(item)}-${index}`}
+                                item={item}
+                            />
+                        ))}
+                    </div>
                 ) : (
                     <div className="flex items-center gap-3 p-4 text-sm text-primary/60">
                         <Package size={24} className="shrink-0 text-primary/35" />

@@ -37,14 +37,23 @@ export function getOrderDetailsPath(orderId: string | number) {
     return `/minha-conta/meus-pedidos/detalhes/${encodeURIComponent(orderId)}`;
 }
 
-export function getOrderId(order: OrderRecord | null | undefined) {
+export function getOrderLookupId(order: OrderRecord | null | undefined) {
     const value =
         order?.id_venda ??
         order?.idVenda ??
         order?.id ??
+        "";
+
+    return String(value).trim();
+}
+
+export function getOrderId(order: OrderRecord | null | undefined) {
+    const value =
+        order?.numero_pedido ??
+        order?.numeroPedido ??
         order?.codigo ??
         order?.numero ??
-        "";
+        getOrderLookupId(order);
 
     return String(value).trim();
 }
@@ -84,6 +93,7 @@ export function getOrderItemName(item: OrderItem | null | undefined) {
 
 export function getOrderItemImage(item: OrderItem | null | undefined) {
     return (
+        item?.foto_principal ||
         item?.foto ||
         item?.imagem ||
         item?.image ||
@@ -122,6 +132,7 @@ export function getOrderItemTotal(item: OrderItem | null | undefined) {
 
 export function getOrderPaymentLabel(order: OrderRecord | null | undefined) {
     return (
+        (typeof order?.pagamento === "string" ? order.pagamento : "") ||
         order?.pagamento?.nome ||
         order?.pagamento?.tipo ||
         order?.forma_pagamento ||

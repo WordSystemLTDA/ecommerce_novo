@@ -217,15 +217,20 @@ function LatestOrderCard({
   }
 
   const items = getOrderItems(order);
-  const firstItem = items[0];
-  const productName = getOrderItemName(firstItem);
-  const productImage = getOrderItemImage(firstItem);
   const status = formatStatus(order.status || order.situacao || "Pendente");
-  const payment = order.pagamento?.nome ||
+  const payment = typeof order.pagamento === "string" ? order.pagamento :
+    order.pagamento?.nome ||
     order.pagamento?.tipo ||
     order.forma_pagamento ||
     "Pagamento não informado";
-  const orderId = order.id_venda || order.id || order.codigo || "-";
+  const orderId =
+    order.numero_pedido ||
+    order.numeroPedido ||
+    order.codigo ||
+    order.numero ||
+    order.id_venda ||
+    order.id ||
+    "-";
   const total = formatMoney(order.valor ?? order.total ?? order.valor_total);
 
   return (
@@ -247,31 +252,43 @@ function LatestOrderCard({
         {payment}
       </div>
 
-      {firstItem ? (
-        <div className="flex gap-3 p-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-primary/10 bg-main-bg">
-            {productImage ? (
-              <OptimizedImage
-                src={productImage}
-                fallbackSrc={getProductImageFallback(productName)}
-                alt={productName}
-                className="h-full w-full object-contain p-1 mix-blend-multiply"
-              />
-            ) : (
-              <Package size={26} className="text-primary/35" />
-            )}
+      {items.length > 0 ? (
+        <div>
+          <div className="divide-y divide-primary/10">
+            {items.map((item, index) => {
+              const productName = getOrderItemName(item);
+              const productImage = getOrderItemImage(item);
+
+              return (
+                <div key={`${productName}-${index}`} className="flex gap-3 p-4">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-primary/10 bg-main-bg">
+                    {productImage ? (
+                      <OptimizedImage
+                        src={productImage}
+                        fallbackSrc={getProductImageFallback(productName)}
+                        alt={productName}
+                        className="h-full w-full object-contain p-1 mix-blend-multiply"
+                      />
+                    ) : (
+                      <Package size={26} className="text-primary/35" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-2 text-sm font-semibold text-primary">
+                      {productName}
+                    </p>
+                    <p className="mt-1 text-xs text-primary/55">
+                      Quantidade: {item.quantidade || 1}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="min-w-0 flex-1">
-            <p className="line-clamp-2 text-sm font-semibold text-primary">
-              {productName}
-            </p>
-            <p className="mt-1 text-xs text-primary/55">
-              Quantidade: {firstItem.quantidade || 1}
-            </p>
-            <p className="mt-2 text-sm font-bold text-primary">
-              {total}
-            </p>
+          <div className="border-t border-primary/10 px-4 py-3 text-sm font-bold text-primary">
+            Total: {total}
           </div>
         </div>
       ) : (
@@ -283,7 +300,7 @@ function LatestOrderCard({
   );
 }
 
-function extractOrders(response: any) {
+function extractOrders(response: any): any[] {
   if (Array.isArray(response)) return response;
   if (Array.isArray(response?.data?.dados)) return response.data.dados;
   if (Array.isArray(response?.data)) return response.data;
@@ -292,7 +309,7 @@ function extractOrders(response: any) {
   return [];
 }
 
-function getOrderItems(order: any) {
+function getOrderItems(order: any): any[] {
   if (Array.isArray(order?.itens)) return order.itens;
   if (Array.isArray(order?.produtos)) return order.produtos;
 
@@ -307,7 +324,8 @@ function getOrderItemName(item: any) {
 }
 
 function getOrderItemImage(item: any) {
-  return item?.foto ||
+  return item?.foto_principal ||
+    item?.foto ||
     item?.imagem ||
     item?.image ||
     item?.produto?.foto ||
