@@ -69,6 +69,7 @@ function ModernHomePage() {
     banners,
     filteredProducts,
     filteredTotal,
+    searchSuggestion,
     filterOptions,
     isFiltering,
     isInitialDataLoaded,
@@ -224,7 +225,16 @@ function ModernHomePage() {
                 <div className="flex min-h-80 flex-col items-center justify-center border border-primary/10 bg-product-bg px-6 text-center">
                   <HiOutlineSparkles size={32} className="text-terciary" />
                   <h2 className="mt-4 font-serif text-2xl font-medium">Nenhum produto encontrado</h2>
-                  <p className="mt-2 max-w-md text-sm text-primary/60">Tente remover alguns filtros para ampliar os resultados.</p>
+                  <p className="mt-2 max-w-md text-sm text-primary/60">Tente remover alguns filtros ou buscar com outras palavras.</p>
+                  {searchSuggestion && (
+                    <button
+                      type="button"
+                      onClick={() => applyFilters({ ...defaultFilters, pesquisa: searchSuggestion })}
+                      className="mt-4 text-sm font-semibold text-terciary underline underline-offset-4"
+                    >
+                      Você quis dizer “{searchSuggestion}”?
+                    </button>
+                  )}
                   <button type="button" onClick={() => applyFilters(defaultFilters)} className="mt-5 border border-primary bg-primary px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-secondary transition-colors hover:bg-terciary">
                     Limpar filtros
                   </button>
@@ -363,7 +373,8 @@ function getActiveFilterCount(filters: ActiveFilters) {
     + filters.tamanhos.length
     + Number(filters.minPreco !== undefined || filters.maxPreco !== undefined)
     + Number(filters.freteGratis)
-    + Number(filters.promocao);
+    + Number(filters.promocao)
+    + Number(Boolean(filters.pesquisa));
 }
 
 interface CatalogActiveFiltersProps {
@@ -390,6 +401,14 @@ function CatalogActiveFilters({ activeFilters, filterOptions, onChange }: Catalo
   addArrayChips('marcas', activeFilters.marcas, (value) => filterOptions.marcas.find((item) => Number(item.id) === Number(value))?.nome ?? String(value));
   addArrayChips('cores', activeFilters.cores, (value) => filterOptions.cores.find((item) => Number(item.id) === Number(value))?.nome ?? String(value));
   addArrayChips('tamanhos', activeFilters.tamanhos, (value) => `Tamanho ${value}`);
+
+  if (activeFilters.pesquisa) {
+    chips.push({
+      key: 'pesquisa',
+      label: `Busca: ${activeFilters.pesquisa}`,
+      remove: () => onChange({ ...activeFilters, pesquisa: undefined }),
+    });
+  }
 
   if (activeFilters.freteGratis) chips.push({ key: 'frete', label: 'Frete grátis', remove: () => onChange({ ...activeFilters, freteGratis: false }) });
   if (activeFilters.promocao) chips.push({ key: 'promocao', label: 'Em promoção', remove: () => onChange({ ...activeFilters, promocao: false }) });

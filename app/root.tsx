@@ -19,6 +19,7 @@ import appStyles from "./app.css?url";
 import { HeaderProvider } from "./context/HeaderContext";
 import { CarrinhoProvider } from "./features/carrinho/context/CarrinhoContext";
 import { FavoritoProvider } from "./features/favoritos/context/FavoritoContext";
+import { WhatsAppFloatingButton } from "./components/WhatsAppFloatingButton";
 
 const apiOrigin = new URL(config.API).origin;
 const themeStyles = {
@@ -36,6 +37,7 @@ const themeStyles = {
 } as CSSProperties;
 
 export const links: Route.LinksFunction = () => [
+  { rel: "icon", href: "/favicon.ico" },
   { rel: "dns-prefetch", href: apiOrigin },
   { rel: "preconnect", href: apiOrigin },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -55,10 +57,41 @@ export const links: Route.LinksFunction = () => [
   { rel: "stylesheet", href: appStyles },
 ];
 
+export function meta() {
+  const company = config.FOOTER_CONFIG;
+  const description = `Compre online na ${company.nomeExibicao}. Produtos selecionados, pagamento seguro e entrega para todo o Brasil.`;
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    name: company.nomeExibicao,
+    ...(config.SITE_URL ? { url: config.SITE_URL } : {}),
+    telephone: company.telefone,
+    email: company.email,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: company.endereco.logradouro,
+      addressLocality: company.endereco.cidade,
+      addressRegion: company.endereco.estado,
+      postalCode: company.endereco.cep,
+      addressCountry: company.endereco.pais,
+    },
+  };
+
+  return [
+    { title: company.nomeExibicao },
+    { name: "description", content: description },
+    { name: "robots", content: "index, follow, max-image-preview:large" },
+    { property: "og:site_name", content: company.nomeExibicao },
+    { property: "og:locale", content: "pt_BR" },
+    { name: "twitter:card", content: "summary_large_image" },
+    { "script:ld+json": organization },
+  ];
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-br" translate="no" className="notranslate" style={themeStyles} suppressHydrationWarning>
-      <head>
+      <head suppressHydrationWarning>
         <meta charSet="utf-8" />
         <meta name="google" content="notranslate" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -103,6 +136,7 @@ export default function App() {
           <CarrinhoProvider>
             <HeaderProvider>
               <Outlet />
+              <WhatsAppFloatingButton />
               <ToastContainer limit={3} newestOnTop />
             </HeaderProvider>
           </CarrinhoProvider>

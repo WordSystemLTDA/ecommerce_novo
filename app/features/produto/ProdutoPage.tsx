@@ -13,6 +13,8 @@ import {
     ShoppingBag,
     Star,
     Truck,
+    X,
+    ZoomIn,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
@@ -31,8 +33,11 @@ import type { TipoDeEntrega } from "~/types/TipoDeEntrega";
 import { getDeliveryPrice, getDeliveryTime } from "~/utils/delivery";
 import { currencyFormatter, gerarSlug } from "~/utils/formatters";
 import { getProductImageFallback } from "~/utils/imagePlaceholders";
+import { getProductDescription } from "~/utils/seo";
+import config from "~/config/config";
 import { produtoService } from "./services/produtoService";
 import type { Produto, ProdutoCor, ProdutoTamanho } from "./types";
+import { getRecentlyViewed, rememberRecentlyViewed } from "./recentlyViewed";
 
 interface ProdutoProps {
     produto: Produto;
@@ -77,6 +82,7 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
         if (slug !== correctSlug) {
             window.history.replaceState(null, "", `/produto/${produto.id}/${correctSlug}`);
         }
+        rememberRecentlyViewed(produto);
     }, [produto, slug]);
 
     const handleMissingSize = () => {
@@ -130,6 +136,19 @@ export default function ProdutoPage({ produto }: ProdutoProps) {
                 </div>
             </main>
 
+            <a
+                href="#comprar-produto"
+                className="fixed inset-x-0 bottom-0 z-40 grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-primary/15 bg-product-bg/96 px-4 py-2 shadow-[0_-8px_24px_rgba(0,0,0,0.12)] backdrop-blur lg:hidden"
+            >
+                <span className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-[0.14em] text-primary/50">Preço no PIX</span>
+                    <strong className="block truncate text-base text-primary">{currencyFormatter.format(getPriceDetails(produto, tamanhoSelecionado).pixPrice)}</strong>
+                </span>
+                <span className="max-w-[55vw] bg-primary px-3 py-3 text-center text-[10px] font-semibold uppercase leading-4 tracking-[0.12em] text-secondary sm:px-4 sm:text-[11px]">
+                    {Number(produto.estoque) > 0 ? "Escolher e comprar" : "Ver disponibilidade"}
+                </span>
+            </a>
+
             <Footer />
         </div>
     );
@@ -166,6 +185,7 @@ interface ProductGalleryProps {
 function ProductGallery({ images, produtoId, produtoNome }: ProductGalleryProps) {
     const [activeImage, setActiveImage] = useState(0);
     const [isFavorite, setIsFavorite] = useState(false);
+    const [isZoomOpen, setIsZoomOpen] = useState(false);
     const { cliente } = useAuth();
     const { atualizarQuantidade } = useFavorito();
     const imageFallback = getProductImageFallback(produtoNome);
@@ -175,8 +195,23 @@ function ProductGallery({ images, produtoId, produtoNome }: ProductGalleryProps)
     }, [produtoId]);
 
     useEffect(() => {
+        if (!isZoomOpen) return;
+
+        const previousOverflow = document.body.style.overflow;
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setIsZoomOpen(false);
+        };
+        document.body.style.overflow = "hidden";
+        document.addEventListener("keydown", closeOnEscape);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [isZoomOpen]);
+
+    useEffect(() => {
         if (!cliente?.id) {
-            setIsFavorite(false);
+            setIsFavorite(favoritoService.verificarLocal(produtoId));
             return;
         }
 
@@ -187,7 +222,12 @@ function ProductGallery({ images, produtoId, produtoNome }: ProductGalleryProps)
 
     const toggleFavorite = async () => {
         if (!cliente?.id) {
-            toast.info("Faça login para favoritar produtos.");
+            const nextState = !isFavorite;
+            setIsFavorite(nextState);
+            if (nextState) favoritoService.adicionarLocal(produtoId);
+            else favoritoService.removerLocal(produtoId);
+            await atualizarQuantidade();
+            toast.success(nextState ? "Produto salvo nos favoritos deste dispositivo." : "Produto removido dos favoritos.");
             return;
         }
 
@@ -248,7 +288,16 @@ function ProductGallery({ images, produtoId, produtoNome }: ProductGalleryProps)
                     {safeActiveIndex + 1} / {images.length}
                 </span>
 
-                <div className="absolute right-3 top-3 flex flex-col gap-2 sm:right-4 sm:top-4">
+                <button
+                    type="button"
+                    onClick={() => setIsZoomOpen(true)}
+                    className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-product-bg/95 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-primary shadow-sm sm:bottom-4 sm:left-4"
+                    aria-label="Ampliar imagem do produto"
+                >
+                    <ZoomIn className="h-3.5 w-3.5" /> Ampliar
+                </button>
+
+                <div className="absolute right-3 top-3 z-10 flex flex-col gap-2 sm:right-4 sm:top-4">
                     <button
                         type="button"
                         onClick={toggleFavorite}
@@ -292,28 +341,50 @@ function ProductGallery({ images, produtoId, produtoNome }: ProductGalleryProps)
                     </button>
                 ))}
             </div>
+
+            {isZoomOpen && (
+                <div
+                    className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 p-3 sm:p-8"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={`Imagem ampliada de ${produtoNome}`}
+                    onClick={() => setIsZoomOpen(false)}
+                >
+                    <button type="button" onClick={() => setIsZoomOpen(false)} className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-black shadow-lg" aria-label="Fechar imagem ampliada">
+                        <X className="h-5 w-5" />
+                    </button>
+                    <div className="flex h-full w-full items-center justify-center" onClick={(event) => event.stopPropagation()}>
+                        <OptimizedImage
+                            src={activeSource}
+                            fallbackSrc={imageFallback}
+                            alt={`${produtoNome} ampliado`}
+                            className="max-h-[92vh]! max-w-[94vw]! object-contain!"
+                            priority
+                        />
+                    </div>
+                </div>
+            )}
         </section>
     );
 }
 
 function ProductHeading({ produto }: ProdutoProps) {
-    const description = firstNonEmpty(produto.descricao, produto.descricaolonga1, produto.descricaolonga2);
+    const description = getProductDescription(produto, 240);
     const rating = Number(produto.avaliacao) || 0;
     const reviewCount = Number(produto.quantidadeAvaliacoes) || 0;
-    const soldLabel = reviewCount > 0 ? `+${reviewCount} vendidos` : "Produto disponível";
+    const badge = produto.selo?.titulo || (produto.promocaoAtiva === "Sim" ? "Oferta" : "");
 
     return (
         <div>
             <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em]">
-                <span className="bg-primary px-2.5 py-1 text-secondary">
-                    {produto.selo?.titulo || (produto.promocaoAtiva === "Sim" ? "Oferta" : "Novo")}
-                </span>
-                <span className="text-primary/55">{soldLabel}</span>
-                <span className="inline-flex items-center gap-1 text-primary/65">
-                    <Star className="h-3 w-3 fill-terciary text-terciary" />
-                    {rating.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                    {reviewCount > 0 && ` (${reviewCount})`}
-                </span>
+                {badge && <span className="bg-primary px-2.5 py-1 text-secondary">{badge}</span>}
+                <span className="text-primary/55">Produto disponível</span>
+                {rating > 0 && reviewCount > 0 && (
+                    <span className="inline-flex items-center gap-1 text-primary/65">
+                        <Star className="h-3 w-3 fill-terciary text-terciary" />
+                        {rating.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ({reviewCount})
+                    </span>
+                )}
             </div>
 
             <h1 className="mt-3 overflow-wrap-anywhere text-[1.4rem] font-semibold leading-[1.08] tracking-[-0.02em] text-primary sm:text-[1.7rem] lg:text-[2.05rem]">
@@ -326,17 +397,19 @@ function ProductHeading({ produto }: ProdutoProps) {
                 </p>
             )}
 
-            <div className="mt-3 flex items-center gap-2 text-xs text-primary/55 sm:hidden">
-                <RatingStars rating={rating} variant="tiny" />
-                <span>{reviewCount} avaliações</span>
-            </div>
+            {rating > 0 && reviewCount > 0 && (
+                <div className="mt-3 flex items-center gap-2 text-xs text-primary/55 sm:hidden">
+                    <RatingStars rating={rating} variant="tiny" />
+                    <span>{reviewCount} avaliações</span>
+                </div>
+            )}
         </div>
     );
 }
 
 function PriceBlock({ produto, tamanhoSelecionado }: ProdutoProps & { tamanhoSelecionado: ProdutoTamanho | null }) {
     const price = getPriceDetails(produto, tamanhoSelecionado);
-    const installments = 6;
+    const installments = Math.max(1, Number(produto.numeroParcelas) || 1);
     const installmentPrice = price.cardPrice / installments;
 
     return (
@@ -359,8 +432,12 @@ function PriceBlock({ produto, tamanhoSelecionado }: ProdutoProps & { tamanhoSel
             <p className="mt-1.5 text-xs leading-5 text-primary/60 sm:text-sm">
                 À vista no PIX
                 {price.pixPercentage > 0 && ` com ${formatNumber(price.pixPercentage)}% de desconto`}
-                <span className="px-1.5 text-primary/30">·</span>
-                ou <strong className="font-semibold text-primary">{installments}x de {currencyFormatter.format(installmentPrice)}</strong> sem juros
+                {installments > 1 && (
+                    <>
+                        <span className="px-1.5 text-primary/30">·</span>
+                        ou <strong className="font-semibold text-primary">{installments}x de {currencyFormatter.format(installmentPrice)}</strong>
+                    </>
+                )}
             </p>
         </div>
     );
@@ -458,7 +535,7 @@ function SizeSelector({ produto, erroTamanho, onSelect, sectionRef }: SizeSelect
                                             : "border-primary/15 text-primary hover:border-primary"
                             }`}
                         >
-                            {size.tamanho}
+                            {getDisplaySize(size.tamanho)}
                         </button>
                     );
                 })}
@@ -466,7 +543,7 @@ function SizeSelector({ produto, erroTamanho, onSelect, sectionRef }: SizeSelect
 
             <p className={`mt-1.5 text-xs ${erroTamanho ? "font-medium text-red-600" : "text-primary/55"}`}>
                 {tamanhoSelecionado
-                    ? `Tamanho ${tamanhoSelecionado.tamanho} · ${tamanhoSelecionado.estoque} em estoque`
+                    ? `Tamanho ${getDisplaySize(tamanhoSelecionado.tamanho)} · ${tamanhoSelecionado.estoque} em estoque`
                     : erroTamanho
                         ? "Selecione um tamanho para continuar."
                         : "Selecione o tamanho desejado."}
@@ -488,7 +565,7 @@ function SizeSelector({ produto, erroTamanho, onSelect, sectionRef }: SizeSelect
                 </p>
                 {tamanhoSelecionado && (
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-primary/10 pt-3 text-sm">
-                        <span>Grade <strong className="font-semibold">{tamanhoSelecionado.tamanho}</strong></span>
+                        <span>Grade <strong className="font-semibold">{getDisplaySize(tamanhoSelecionado.tamanho)}</strong></span>
                         <span className="text-primary/60">
                             {Number(tamanhoSelecionado.valorGrade) > 0
                                 ? `Adicional de ${currencyFormatter.format(Number(tamanhoSelecionado.valorGrade))}`
@@ -588,7 +665,7 @@ function PurchaseActions({ produto, quantity, setQuantity, onMissingSize }: Purc
 
     if (isOutOfStock && produto.habilitarAviso === "Sim") {
         return (
-            <div className="mt-5 sm:mt-6">
+            <div id="comprar-produto" className="mt-5 scroll-mt-32 sm:mt-6">
                 <p className="mb-3 text-sm font-semibold text-red-600">Produto sem estoque.</p>
                 <button
                     type="button"
@@ -603,7 +680,7 @@ function PurchaseActions({ produto, quantity, setQuantity, onMissingSize }: Purc
     }
 
     return (
-        <div className="mt-5 sm:mt-6">
+        <div id="comprar-produto" className="mt-5 scroll-mt-32 sm:mt-6">
             <p className={`mb-3 text-xs font-semibold ${isOutOfStock ? "text-red-600" : "text-emerald-700"}`}>
                 {isOutOfStock
                     ? "Produto sem estoque"
@@ -750,6 +827,14 @@ function FreightCalculator({ produto }: ProdutoProps) {
                 <span className="flex items-center gap-2"><RotateCcw className="h-4 w-4 shrink-0" /> Troca facilitada</span>
                 <span className="flex items-center gap-2"><Package className="h-4 w-4 shrink-0" /> Embalagem segura</span>
             </div>
+            <a
+                href={`${config.WHATSAPP_URL}?text=${encodeURIComponent(`Olá! Gostaria de consultar a retirada de ${produto.nome} na loja física.`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-flex text-xs font-semibold text-terciary underline underline-offset-4"
+            >
+                Consultar retirada na loja física
+            </a>
         </div>
     );
 }
@@ -764,6 +849,7 @@ function ProductDetails({ produto }: ProdutoProps) {
         ["Categoria", produto.nomeCategoria],
         ["Subcategoria", produto.nomeSubCategoria],
         ["Marca", produto.nomeMarca || produto.marca?.nome],
+        ["Cor", produto.nomeCor],
         ["Tipo de estoque", produto.habil_tipo === "Grade" ? "Por grade / tamanho" : produto.tipodeestoque],
         ["Garantia", produto.garantia],
     ] as Array<[string, unknown]>)
@@ -781,9 +867,7 @@ function ProductDetails({ produto }: ProdutoProps) {
                     <div className="mt-2 space-y-2 text-sm leading-6 text-primary/65">
                         {descriptions.map((description, index) => <p key={`${description}-${index}`}>{description}</p>)}
                     </div>
-                ) : (
-                    <p className="mt-2 text-sm text-primary/55">Descrição ainda não informada.</p>
-                )}
+                ) : null}
 
                 {technicalDetails.length > 0 && (
                     <div className="mt-4">
@@ -843,11 +927,16 @@ function ProductRecommendations({ produto }: ProdutoProps) {
     const [colorProducts, setColorProducts] = useState<Produto[]>([]);
     const [similarProducts, setSimilarProducts] = useState<Produto[]>([]);
     const [loading, setLoading] = useState(false);
+    const [recentProducts, setRecentProducts] = useState<ProductPreview[]>([]);
     const linkedColors = useMemo(
         () => (produto.cores ?? []).filter((color) => Number(color.id) !== Number(produto.id)),
         [produto.cores, produto.id],
     );
     const colorIdsKey = linkedColors.map((color) => color.id).join(",");
+
+    useEffect(() => {
+        setRecentProducts(getRecentlyViewed(produto.id));
+    }, [produto.id]);
 
     useEffect(() => {
         let active = true;
@@ -915,6 +1004,15 @@ function ProductRecommendations({ produto }: ProdutoProps) {
                     title="Quem viu este, também levou"
                     subtitle="Produtos semelhantes da mesma categoria."
                     products={similarProducts}
+                />
+            )}
+
+            {recentProducts.length > 0 && (
+                <ProductShelf
+                    title="Vistos recentemente"
+                    subtitle="Continue de onde parou neste dispositivo"
+                    products={recentProducts}
+                    columns="four"
                 />
             )}
 
@@ -1063,8 +1161,20 @@ function formatDimensions(produto: Produto) {
     return `${formatNumber(values[0])} × ${formatNumber(values[1])} × ${formatNumber(values[2])} cm`;
 }
 
-function firstNonEmpty(...values: unknown[]) {
-    return values.map((value) => String(value ?? "").trim()).find(Boolean) || "";
+function getDisplaySize(value: unknown) {
+    const rawSize = String(value ?? "").trim().replace(/\s+/g, " ");
+    if (!rawSize) return "—";
+
+    if (/^(?:PP|P|M|G|GG|XG|XGG|ÚNICO|UNICO)$/i.test(rawSize)) {
+        return rawSize.toLocaleUpperCase("pt-BR");
+    }
+
+    if (/^\d{1,3}(?:\s*[/-]\s*\d{1,3})?$/.test(rawSize)) {
+        return rawSize.replace(/\s+/g, "");
+    }
+
+    const leadingNumber = rawSize.match(/^\d{1,3}/)?.[0];
+    return leadingNumber || rawSize;
 }
 
 function maskCep(value: string) {

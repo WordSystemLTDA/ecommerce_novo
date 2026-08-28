@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "~/features/auth/context/AuthContext";
-import { favoritoService } from "~/features/favoritos/services/favoritoService";
+import { favoritoService, localFavoritesEvent } from "~/features/favoritos/services/favoritoService";
 
 interface FavoritoContextType {
     quantidade: number;
@@ -24,13 +24,24 @@ export function FavoritoProvider({ children }: { children: ReactNode }) {
                 console.error("Erro ao atualizar quantidade de favoritos:", error);
             }
         } else {
-            setQuantidade(0);
+            setQuantidade(favoritoService.contarLocais());
         }
     };
 
     useEffect(() => {
         atualizarQuantidade();
     }, [cliente]);
+
+    useEffect(() => {
+        if (cliente?.id) return;
+        const updateLocalCount = () => setQuantidade(favoritoService.contarLocais());
+        window.addEventListener(localFavoritesEvent, updateLocalCount);
+        window.addEventListener('storage', updateLocalCount);
+        return () => {
+            window.removeEventListener(localFavoritesEvent, updateLocalCount);
+            window.removeEventListener('storage', updateLocalCount);
+        };
+    }, [cliente?.id]);
 
     return (
         <FavoritoContext.Provider value={{ quantidade, atualizarQuantidade }}>

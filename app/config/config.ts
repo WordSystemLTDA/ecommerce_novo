@@ -76,10 +76,19 @@ type FooterCompanyConfig = {
     cnpj: string;
     email: string;
     telefone: string;
+    whatsapp: string;
+    siteUrl: string;
     atendimento: string;
     lojaFisica: string;
     enderecoResumo: string;
     enderecoCompleto: string;
+    endereco: {
+        logradouro: string;
+        cidade: string;
+        estado: string;
+        cep: string;
+        pais: string;
+    };
 };
 
 const DEFAULT_FOOTER_CONFIG: FooterCompanyConfig = {
@@ -88,10 +97,19 @@ const DEFAULT_FOOTER_CONFIG: FooterCompanyConfig = {
     cnpj: '09.376.495/0001-22',
     email: 'sac@pichau.com.br',
     telefone: '(44) 9118-8369',
+    whatsapp: '554491188369',
+    siteUrl: '',
     atendimento: 'Seg-Sex 8h-12h / 14h-18h',
     lojaFisica: 'Santa Fé - PR · Seg-Sex 9h-19h / Sáb 9h-13h',
-    enderecoResumo: 'bruno 1 Rua Luiz Roncalha, 169 · Jardim Itália · Santa Fé - PR',
-    enderecoCompleto: 'bruno 2 Rua Luiz Roncalha, 169 · Jardim Italia · Santa Fé - PR · 86770-000'
+    enderecoResumo: 'Rua Luiz Roncalha, 169 · Jardim Itália · Santa Fé - PR',
+    enderecoCompleto: 'Rua Luiz Roncalha, 169 · Jardim Itália · Santa Fé - PR · 86770-000',
+    endereco: {
+        logradouro: 'Rua Luiz Roncalha, 169 - Jardim Itália',
+        cidade: 'Santa Fé',
+        estado: 'PR',
+        cep: '86770-000',
+        pais: 'BR',
+    },
 };
 
 const PRIETO_KOUROS_FOOTER_CONFIG: FooterCompanyConfig = {
@@ -100,10 +118,19 @@ const PRIETO_KOUROS_FOOTER_CONFIG: FooterCompanyConfig = {
     cnpj: '05.836.833/0001-00',
     email: 'crispkouros@hotmail.com',
     telefone: '(44) 99926-4055',
+    whatsapp: '5544999264055',
+    siteUrl: 'https://prietokouros.com.br',
     atendimento: 'Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
     lojaFisica: 'Colorado - PR · Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
     enderecoResumo: 'Avenida Brasil, 1170 · Centro · Colorado - PR · 86690-000',
-    enderecoCompleto: 'Avenida Brasil, 1170 · Centro · Colorado - PR · 86690-000'
+    enderecoCompleto: 'Avenida Brasil, 1170 · Centro · Colorado - PR · 86690-000',
+    endereco: {
+        logradouro: 'Avenida Brasil, 1170 - Centro',
+        cidade: 'Colorado',
+        estado: 'PR',
+        cep: '86690-000',
+        pais: 'BR',
+    },
 };
 
 const URBAN_BOY_FOOTER_CONFIG: FooterCompanyConfig = {
@@ -111,11 +138,20 @@ const URBAN_BOY_FOOTER_CONFIG: FooterCompanyConfig = {
     nomeExibicao: 'Urban Boy',
     cnpj: '57.332.623/0001-89',
     email: 'urbanbelavista@hotmail.com',
-    telefone: '(44) 99110-8466',
+    telefone: '(43) 99110-8466',
+    whatsapp: '5543991108466',
+    siteUrl: '',
     atendimento: 'Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
     lojaFisica: 'Bela Vista do Paraíso - PR · Seg-Sex 08:00-18:00 / Sáb 08:00-13:00',
     enderecoResumo: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86130-000',
-    enderecoCompleto: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86130-000'
+    enderecoCompleto: 'Avenida Independência, 1100 · Centro · Bela Vista do Paraíso - PR · 86130-000',
+    endereco: {
+        logradouro: 'Avenida Independência, 1100 - Centro',
+        cidade: 'Bela Vista do Paraíso',
+        estado: 'PR',
+        cep: '86130-000',
+        pais: 'BR',
+    },
 };
 
 const EMPRESAS_IDENTIDADE = {
@@ -134,8 +170,10 @@ const EMPRESAS: string[] = String(import.meta.env.VITE_EMPRESAS ?? '135')
     .filter(Boolean);
 
 const config = {
-    // API: 'http://127.0.0.1/sistema/apis_restaurantes/api_e_commerce/api1',
-    API: 'https://eadsagestart.com.br/sistema/apis_restaurantes/api_e_commerce/api1',
+    API: String(
+        import.meta.env.VITE_API_URL
+        ?? 'https://eadsagestart.com.br/sistema/apis_restaurantes/api_e_commerce/api1',
+    ).replace(/\/$/, ''),
     EMPRESAS,
     get IDENTIDADE_VISUAL() {
         return this.getIdentidadeVisualAtiva();
@@ -157,6 +195,12 @@ const config = {
     },
     get FOOTER_CONFIG() {
         return this.getFooterConfigAtivo();
+    },
+    get SITE_URL() {
+        return String(import.meta.env.VITE_SITE_URL ?? this.FOOTER_CONFIG.siteUrl ?? '').replace(/\/$/, '');
+    },
+    get WHATSAPP_URL() {
+        return `https://wa.me/${this.FOOTER_CONFIG.whatsapp}`;
     },
     getIdentidadeVisualAtiva() {
         const empresaAtiva = this.EMPRESAS.find((empresaId: string) => EMPRESAS_IDENTIDADE[empresaId as keyof typeof EMPRESAS_IDENTIDADE]);

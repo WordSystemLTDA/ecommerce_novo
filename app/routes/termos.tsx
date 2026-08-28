@@ -1,8 +1,19 @@
 /* eslint-disable react/no-unescaped-entities */
 import Header from '~/components/header';
 import Footer from '~/components/footer';
+import config from '~/config/config';
+
+export function meta() {
+    const name = config.FOOTER_CONFIG.nomeExibicao;
+    return [
+        { title: `Termos e condições | ${name}` },
+        { name: 'description', content: `Consulte os termos e condições de venda da ${name}.` },
+        ...(config.SITE_URL ? [{ tagName: 'link' as const, rel: 'canonical', href: `${config.SITE_URL}/termos` }] : []),
+    ];
+}
 
 export default function Termos() {
+    const storeName = config.FOOTER_CONFIG.nomeExibicao;
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Header />
@@ -14,7 +25,7 @@ export default function Termos() {
                         <section>
                             <h2 className="text-xl font-semibold text-gray-800 mb-3">1. Introdução</h2>
                             <p>
-                                Bem-vindo à Word System! Ao realizar compras em nossa loja virtual, você concorda com os termos e condições descritos abaixo.
+                                Bem-vindo à {storeName}! Ao realizar compras em nossa loja virtual, você concorda com os termos e condições descritos abaixo.
                                 Recomendamos a leitura atenta deste documento antes de finalizar seu pedido.
                             </p>
                         </section>
@@ -23,7 +34,7 @@ export default function Termos() {
                             <h2 className="text-xl font-semibold text-gray-800 mb-3">2. Produtos e Disponibilidade</h2>
                             <p>
                                 Todos os produtos apresentados em nossa loja estão sujeitos à disponibilidade de estoque.
-                                A Word System se reserva o direito de limitar a quantidade de produtos por cliente ou cancelar pedidos em caso de erro sistêmico de estoque.
+                                A {storeName} se reserva o direito de limitar a quantidade de produtos por cliente ou cancelar pedidos em caso de erro sistêmico de estoque.
                                 As imagens dos produtos são meramente ilustrativas e podem sofrer pequenas variações de cor dependendo do monitor.
                             </p>
                         </section>
@@ -43,7 +54,7 @@ export default function Termos() {
                             <p>
                                 O prazo de entrega varia de acordo com o endereço de destino e a modalidade de frete escolhida.
                                 O prazo começa a contar a partir da confirmação do pagamento.
-                                A Word System não se responsabiliza por atrasos decorrentes de greves, fenômenos naturais ou falhas nas transportadoras parceiras,
+                                A {storeName} não se responsabiliza por atrasos decorrentes de greves, fenômenos naturais ou falhas nas transportadoras parceiras,
                                 embora nos comprometamos a prestar todo o suporte necessário.
                             </p>
                         </section>
@@ -84,7 +95,7 @@ export default function Termos() {
                         <section>
                             <h2 className="text-xl font-semibold text-gray-800 mb-3">9. Alterações nos Termos</h2>
                             <p>
-                                A Word System reserva-se o direito de atualizar estes Termos e Condições a qualquer momento.
+                                A {storeName} reserva-se o direito de atualizar estes Termos e Condições a qualquer momento.
                                 As alterações entrarão em vigor imediatamente após a publicação no site.
                             </p>
                         </section>

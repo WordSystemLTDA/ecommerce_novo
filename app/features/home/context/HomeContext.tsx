@@ -19,6 +19,7 @@ interface HomeContextType {
     applyFilters: (newFilters: ActiveFilters) => void;
     filteredProducts: Produto[];
     filteredTotal: number;
+    searchSuggestion: string;
     loadMoreProducts: () => Promise<void>;
     isFiltering: boolean;
     isLoadingFilters: boolean;
@@ -48,6 +49,7 @@ export interface ActiveFilters {
     tamanhos: string[];
     minPreco?: number;
     maxPreco?: number;
+    pesquisa?: string;
     freteGratis: boolean;
     promocao: boolean;
     ordenacao: string;
@@ -197,6 +199,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     const [activeFilters, setActiveFilters] = useState<ActiveFilters>(defaultFilters);
     const [filteredProducts, setFilteredProducts] = useState<Produto[]>(cachedCatalog?.produtos ?? []);
     const [filteredTotal, setFilteredTotal] = useState(cachedCatalog?.total ?? 0);
+    const [searchSuggestion, setSearchSuggestion] = useState("");
     const [filteredPage, setFilteredPage] = useState(1);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isFiltering, setIsFiltering] = useState(false);
@@ -352,6 +355,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             if (response.sucesso && latestFilterRequestRef.current === requestKey) {
                 const responseProducts = response.data.produtos as Produto[];
                 const responseTotal = Number(response.data.paginacao?.total ?? responseProducts.length);
+                if (!append) setSearchSuggestion(String(response.data.sugestao ?? ""));
                 setFilteredProducts((currentProducts) => {
                     if (!append) return responseProducts;
 
@@ -370,6 +374,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             }
         } catch (error) {
             console.error("Error fetching filtered products", error);
+            if (!append) setSearchSuggestion("");
         } finally {
             if (latestFilterRequestRef.current === requestKey) {
                 if (append) {
@@ -384,12 +389,15 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     const loadMoreProducts = useCallback(async () => {
         if (isLoadingMore || filteredProducts.length >= filteredTotal) return;
 
-        const token = searchParams.get('filtros') ?? undefined;
+        const query = searchParams.get('q')?.trim();
+        const token = searchParams.get('filtros')
+            ?? (query ? sign({ pesquisa: query, ordenacao: 'mais_procurados' }, 'secret') : undefined);
         await fetchFilteredProducts(token, filteredPage + 1, true);
     }, [fetchFilteredProducts, filteredPage, filteredProducts.length, filteredTotal, isLoadingMore, searchParams]);
 
     useEffect(() => {
         const token = searchParams.get('filtros');
+        const query = searchParams.get('q')?.trim();
         if (token) {
             const decodedPartial = decodeJwt(token);
             if (decodedPartial) {
@@ -398,9 +406,16 @@ export function HomeProvider({ children }: { children: ReactNode }) {
                 setIsFiltering(true);
                 fetchFilteredProducts(token);
             }
+        } else if (query) {
+            const searchFilters = { ...defaultFilters, pesquisa: query };
+            const searchToken = sign({ pesquisa: query, ordenacao: searchFilters.ordenacao }, 'secret');
+            setActiveFilters(searchFilters);
+            setIsFiltering(true);
+            fetchFilteredProducts(searchToken);
         } else {
             setIsFiltering(false);
             setActiveFilters(defaultFilters);
+            setSearchSuggestion("");
             fetchFilteredProducts(undefined, 1, false, !!cachedCatalog);
         }
     }, [cachedCatalog, fetchFilteredProducts, searchParams]);
@@ -415,6 +430,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
 
         if (filters.minPreco !== undefined) payload.minPreco = filters.minPreco;
         if (filters.maxPreco !== undefined) payload.maxPreco = filters.maxPreco;
+        if (filters.pesquisa?.trim()) payload.pesquisa = filters.pesquisa.trim();
 
         if (filters.freteGratis) payload.freteGratis = true;
         if (filters.promocao) payload.promocao = true;
@@ -507,6 +523,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         applyFilters,
         filteredProducts,
         filteredTotal,
+        searchSuggestion,
         loadMoreProducts,
         isFiltering,
         isLoadingFilters,
@@ -527,6 +544,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         applyFilters,
         filteredProducts,
         filteredTotal,
+        searchSuggestion,
         loadMoreProducts,
         isFiltering,
         isLoadingFilters,

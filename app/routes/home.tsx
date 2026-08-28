@@ -13,13 +13,34 @@ export const links: Route.LinksFunction = () => [
 // A home não deve aguardar a API para começar a renderizar.
 export function meta() {
   const storeName = config.FOOTER_CONFIG.nomeExibicao || "E-commerce";
+  const canonicalUrl = config.SITE_URL ? `${config.SITE_URL}/` : "";
 
   return [
-    { title: storeName },
+    { title: `${storeName} | Loja online` },
     {
       name: "description",
-      content: `Encontre produtos e ofertas na ${storeName}.`,
+      content: `Encontre novidades, marcas e ofertas na ${storeName}. Compre online com pagamento seguro e entrega para todo o Brasil.`,
     },
+    { property: "og:title", content: `${storeName} | Loja online` },
+    { property: "og:description", content: `Encontre produtos e ofertas na ${storeName}.` },
+    { property: "og:type", content: "website" },
+    ...(canonicalUrl ? [
+      { property: "og:url", content: canonicalUrl },
+      { tagName: "link" as const, rel: "canonical", href: canonicalUrl },
+      {
+        "script:ld+json": {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: storeName,
+          url: canonicalUrl,
+          potentialAction: {
+            "@type": "SearchAction",
+            target: `${canonicalUrl}?q={search_term_string}`,
+            "query-input": "required name=search_term_string",
+          },
+        },
+      },
+    ] : []),
   ];
 }
 

@@ -49,7 +49,7 @@ export function ButtonFavoritos() {
             type="button"
             aria-label="Abrir favoritos"
             className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary lg:h-auto lg:w-auto"
-            onClick={() => navigate('/minha-conta/favoritos')}
+            onClick={() => navigate('/favoritos')}
         >
             <MdOutlineFavorite size={24} />
             {quantidade > 0 && (

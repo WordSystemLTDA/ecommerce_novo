@@ -8,6 +8,7 @@ import { ProductCard } from "~/components/ProductCard";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { favoritoService } from "~/features/favoritos/services/favoritoService";
 import type { Produto } from "~/features/produto/types";
+import { produtoService } from "~/features/produto/services/produtoService";
 
 export default function MinhaContaFavoritosPage() {
     const { cliente } = useAuth();
@@ -17,10 +18,24 @@ export default function MinhaContaFavoritosPage() {
     const [page, setPage] = useState(1);
 
     const carregarFavoritos = async () => {
-        if (!cliente?.id) return;
-
         setLoading(true);
         try {
+            if (!cliente?.id) {
+                const ids = favoritoService.listarLocais();
+                const localProducts = await Promise.all(ids.map(async (id) => {
+                    try {
+                        const response = await produtoService.listarProduto(String(id));
+                        return response.data;
+                    } catch {
+                        return null;
+                    }
+                }));
+                const availableProducts = localProducts.filter((produto): produto is Produto => Boolean(produto));
+                setProdutos(availableProducts);
+                setTotal(availableProducts.length);
+                return;
+            }
+
             const data = await favoritoService.listar(cliente.id, page);
             // Ensure data.produtos is an array
             const lista = Array.isArray(data.produtos) ? data.produtos : [];
@@ -36,7 +51,7 @@ export default function MinhaContaFavoritosPage() {
 
     useEffect(() => {
         carregarFavoritos();
-    }, [cliente, page]);
+    }, [cliente?.id, page]);
 
     const handleFavoriteChange = (produto: Produto, isFavorite: boolean) => {
         if (isFavorite) {
@@ -66,6 +81,7 @@ export default function MinhaContaFavoritosPage() {
                         {total > 0
                             ? `${total} produto${total === 1 ? "" : "s"} salvo${total === 1 ? "" : "s"}.`
                             : "Nenhum produto salvo."}
+                        {!cliente?.id && total > 0 && " Os favoritos ficam armazenados neste dispositivo."}
                     </p>
                 </div>
             </div>

@@ -39,9 +39,9 @@ export function ProductCard({ produto, compact = false, onFavoriteChange }: Prod
         if (cliente?.id) {
             setIsFavorite(produto.ehFavorito === 'Sim');
         } else {
-            setIsFavorite(false);
+            setIsFavorite(favoritoService.verificarLocal(produto.id));
         }
-    }, [cliente, produto.ehFavorito]);
+    }, [cliente, produto.ehFavorito, produto.id]);
 
     useEffect(() => {
         setIsImageLoading(true);
@@ -50,7 +50,13 @@ export function ProductCard({ produto, compact = false, onFavoriteChange }: Prod
     const toggleFavorite = async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!cliente?.id) {
-            toast.info("Faça login para favoritar.");
+            const newState = !isFavorite;
+            setIsFavorite(newState);
+            if (newState) favoritoService.adicionarLocal(produto.id);
+            else favoritoService.removerLocal(produto.id);
+            await atualizarQuantidade();
+            onFavoriteChange?.(produto, newState);
+            toast.success(newState ? "Produto salvo nos favoritos deste dispositivo." : "Produto removido dos favoritos.");
             return;
         }
 

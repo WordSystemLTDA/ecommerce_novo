@@ -10,6 +10,11 @@ export default [
 
     route("termos", "routes/termos.tsx"),
     route("privacidade", "routes/privacidade.tsx"),
+    route("quem-somos", "routes/quem-somos.tsx"),
+    route("entrega-e-trocas", "routes/entrega-e-trocas.tsx"),
+    route("formas-de-pagamento", "routes/formas-de-pagamento.tsx"),
+    route("contato", "routes/contato.tsx"),
+    route("favoritos", "routes/favoritos.tsx"),
 
     route("carrinho", "routes/checkout.layout.tsx", [
         index("routes/checkout.cart.tsx"),

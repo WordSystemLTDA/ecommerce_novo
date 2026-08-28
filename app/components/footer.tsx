@@ -1,275 +1,135 @@
-﻿import React from 'react';
-import {
-    FaArrowRight,
-    FaClock,
-    FaEnvelope,
-    FaFacebookF,
-    FaHome,
-    FaInstagram,
-    FaPhoneAlt,
-    FaTwitter,
-    FaYoutube
-} from 'react-icons/fa';
-import { SiApple, SiGoogleplay } from 'react-icons/si';
-import config from '~/config/config';
+import type { ComponentType, ReactNode } from "react";
+import { FaClock, FaEnvelope, FaHome, FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
+import { Link } from "react-router";
+import config from "~/config/config";
 
-const departamentosColuna1 = [
-    'Hardware',
-    'Computadores',
-    'Monitores',
-    'Eletrônicos',
-    'Mochilas',
-    'Redes e Wireless',
-    'Casa Inteligente',
-    'Vestuário'
+const institutionalLinks = [
+    { label: "Quem somos", to: "/quem-somos" },
+    { label: "Entrega e trocas", to: "/entrega-e-trocas" },
+    { label: "Formas de pagamento", to: "/formas-de-pagamento" },
+    { label: "Fale conosco", to: "/contato" },
 ];
 
-const departamentosColuna2 = [
-    'Periféricos',
-    'Kit Upgrade',
-    'Notebooks',
-    'Video Games',
-    'Realidade Virtual',
-    'Casa e Lazer',
-    'Pets',
-    'Energético'
+const legalLinks = [
+    { label: "Termos e condições", to: "/termos" },
+    { label: "Política de privacidade", to: "/privacidade" },
 ];
 
-const institucionalLinks = ['Quem somos', 'Localização', 'Nossas Lojas', 'Blog'];
-const ajudaLinks = ['Entrega', 'Garantia', 'Como comprar', 'Formas de Pagamento'];
-const sacLinks = ['Fale conosco', 'Termos de aceite', 'Políticas de Privacidade'];
-
-const redesSociais = [
-    { label: 'Facebook', icon: FaFacebookF },
-    { label: 'Instagram', icon: FaInstagram },
-    { label: 'Twitter', icon: FaTwitter },
-    { label: 'YouTube', icon: FaYoutube },
-];
-
-const pagamentos = [
-    { alt: 'Visa', src: 'https://logodownload.org/wp-content/uploads/2016/10/visa-logo-0-2048x2048.png' },
-    { alt: 'Mastercard', src: 'https://logodownload.org/wp-content/uploads/2014/07/mastercard-logo-1-1.png' },
-    { alt: 'Amex', src: 'https://logodownload.org/wp-content/uploads/2014/04/amex-american-express-logo-1-2048x2048.png' },
-    { alt: 'Boleto', src: 'https://logodownload.org/wp-content/uploads/2019/09/boleto-logo-1.png' },
-    { alt: 'Pix', src: 'https://logodownload.org/wp-content/uploads/2020/02/pix-bc-logo-1-2048x726.png' },
-    { alt: 'Nubank', src: 'https://logodownload.org/wp-content/uploads/2019/08/nubank-logo-1.png' },
-];
-
-const FooterLink = ({ href = '#', children }: { href?: string, children: React.ReactNode }) => (
+const FooterLink = ({ to, children }: { to: string; children: ReactNode }) => (
     <li>
-        <a href={href} className="inline-flex text-secondary/84 hover:text-white transition-colors duration-500 text-[13px] leading-relaxed tracking-[0.02em]">
+        <Link to={to} className="inline-flex text-[13px] leading-relaxed tracking-[0.02em] text-secondary/84 transition-colors duration-300 hover:text-white">
             {children}
-        </a>
+        </Link>
     </li>
 );
 
 const FooterTitle = ({ title }: { title: string }) => (
     <div className="mb-5">
-        <p className="text-tiny uppercase tracking-[0.28em] font-medium text-terciary mb-3">{title}</p>
-        <div className="h-px w-12 bg-secondary/10" />
+        <p className="text-tiny mb-3 font-medium uppercase tracking-[0.28em] text-terciary">{title}</p>
+        <div className="h-px w-12 bg-secondary/15" />
     </div>
 );
 
-const FooterInfoCard = ({ icon: Icon, label, value }: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string; value: React.ReactNode }) => (
+const FooterInfoCard = ({ icon: Icon, label, value }: {
+    icon: ComponentType<{ size?: number; className?: string }>;
+    label: string;
+    value: ReactNode;
+}) => (
     <div className="min-h-[88px] min-w-0 border border-secondary/16 bg-white/10 px-4 py-4 backdrop-blur-sm">
         <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border border-secondary/16 text-terciary bg-white/10">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center border border-secondary/16 bg-white/10 text-terciary">
                 <Icon size={14} className="shrink-0" />
             </div>
-            <div>
-                <p className="text-tiny uppercase tracking-[0.2em] text-secondary/70 mb-1">{label}</p>
-                <div className="text-sm text-secondary/96 leading-relaxed font-medium">{value}</div>
+            <div className="min-w-0">
+                <p className="text-tiny mb-1 uppercase tracking-[0.2em] text-secondary/70">{label}</p>
+                <div className="overflow-wrap-anywhere text-sm font-medium leading-relaxed text-secondary/96">{value}</div>
             </div>
         </div>
     </div>
 );
 
 export function Footer() {
-    const footerConfig = config.FOOTER_CONFIG;
+    const company = config.FOOTER_CONFIG;
+    const phoneHref = `tel:+${company.whatsapp}`;
+    const emailHref = `mailto:${company.email}`;
+    const whatsappUrl = `${config.WHATSAPP_URL}?text=${encodeURIComponent(`Olá! Vim pelo site da ${company.nomeExibicao} e preciso de atendimento.`)}`;
 
     return (
-        <footer className="bg-footer-bg text-secondary relative overflow-hidden border-t border-secondary/5">
-            <div className="absolute inset-0 pointer-events-none opacity-100">
+        <footer className="relative overflow-hidden border-t border-secondary/5 bg-footer-bg text-secondary">
+            <div className="pointer-events-none absolute inset-0">
                 <div className="absolute left-0 top-0 h-64 w-64 bg-terciary/10 blur-3xl" />
-                <div className="absolute right-0 top-24 h-72 w-72 bg-white/16 blur-3xl" />
+                <div className="absolute right-0 top-24 h-72 w-72 bg-white/12 blur-3xl" />
                 <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-secondary/15 to-transparent" />
             </div>
 
             <div className="relative mx-auto max-w-[1600px] px-4 pt-8 sm:px-8 sm:pt-10 lg:px-16 lg:pt-14">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4">
-                    <FooterInfoCard
-                        icon={FaClock}
-                        label="Atendimento"
-                        value={<span>{footerConfig.atendimento}</span>}
-                    />
-                    <FooterInfoCard
-                        icon={FaPhoneAlt}
-                        label="Telefone"
-                        value={<span>{footerConfig.telefone}</span>}
-                    />
-                    <FooterInfoCard
-                        icon={FaEnvelope}
-                        label="E-mail"
-                        value={<span>{footerConfig.email}</span>}
-                    />
-                    <FooterInfoCard
-                        icon={FaHome}
-                        label="Loja física"
-                        value={<span>{footerConfig.lojaFisica}</span>}
-                    />
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+                    <FooterInfoCard icon={FaClock} label="Atendimento" value={company.atendimento} />
+                    <FooterInfoCard icon={FaWhatsapp} label="WhatsApp" value={<a href={whatsappUrl} target="_blank" rel="noreferrer" className="hover:text-white">{company.telefone}</a>} />
+                    <FooterInfoCard icon={FaEnvelope} label="E-mail" value={<a href={emailHref} className="hover:text-white">{company.email}</a>} />
+                    <FooterInfoCard icon={FaHome} label="Loja física" value={company.lojaFisica} />
                 </div>
 
-                <div className="grid grid-cols-1 gap-10 py-10 lg:grid-cols-12 lg:gap-12 lg:py-18">
-                    <div className="lg:col-span-4 xl:col-span-3">
-                        <p className="text-tiny uppercase tracking-[0.3em] text-terciary mb-4">{footerConfig.nomeExibicao}</p>
-                        <h2 className="mb-4 font-serif text-2xl leading-tight text-white sm:text-3xl">Informações e atendimento</h2>
-                        <p className="text-sm text-secondary/62 leading-7 max-w-md">
-                            Consulte contato, endereço, links institucionais, departamentos e canais oficiais da loja em um único lugar.
+                <div className="grid grid-cols-1 gap-10 py-10 md:grid-cols-2 lg:grid-cols-12 lg:gap-12 lg:py-16">
+                    <div className="lg:col-span-5">
+                        <p className="text-tiny mb-4 uppercase tracking-[0.3em] text-terciary">{company.nomeExibicao}</p>
+                        <h2 className="mb-4 font-serif text-2xl leading-tight text-white sm:text-3xl">Moda, atendimento e compra segura</h2>
+                        <p className="max-w-xl text-sm leading-7 text-secondary/72">
+                            Compre pelo site ou fale diretamente com nossa equipe. Preços, estoque, prazo de entrega e opções de pagamento são confirmados durante a compra.
                         </p>
 
-                        <div className="mt-8 space-y-3">
-                            <div className="border border-secondary/16 bg-white/10 px-4 py-4">
-                                <p className="text-tiny uppercase tracking-[0.2em] text-secondary/50 mb-1">Endereço</p>
-                                <p className="text-sm text-secondary/82 leading-relaxed">{footerConfig.enderecoResumo}</p>
-                            </div>
-                            <div className="border border-secondary/16 bg-white/10 px-4 py-4">
-                                <p className="text-tiny uppercase tracking-[0.2em] text-secondary/50 mb-1">Empresa</p>
-                                <p className="overflow-wrap-anywhere text-sm leading-relaxed text-secondary/82">{footerConfig.nome} · CNPJ {footerConfig.cnpj}</p>
-                            </div>
-                        </div>
+                        <address className="mt-7 border border-secondary/16 bg-white/10 px-4 py-4 text-sm not-italic leading-6 text-secondary/82">
+                            <span className="text-tiny mb-1 block uppercase tracking-[0.2em] text-secondary/55">Endereço</span>
+                            {company.enderecoResumo}
+                        </address>
                     </div>
 
-                    <div className="lg:col-span-4 xl:col-span-4">
-                        <FooterTitle title="Departamentos" />
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-                            <ul className="space-y-2.5">
-                                {departamentosColuna1.map((item) => (
-                                    <FooterLink key={item}>{item}</FooterLink>
-                                ))}
-                            </ul>
-                            <ul className="space-y-2.5">
-                                {departamentosColuna2.map((item) => (
-                                    <FooterLink key={item}>{item}</FooterLink>
-                                ))}
-                            </ul>
-                        </div>
+                    <div className="lg:col-span-3">
+                        <FooterTitle title="Informações" />
+                        <ul className="space-y-3">
+                            {institutionalLinks.map((item) => <FooterLink key={item.to} to={item.to}>{item.label}</FooterLink>)}
+                        </ul>
 
-                        <div className="mt-10">
-                            <FooterTitle title="Aplicativos" />
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <a href="#" className="flex items-center gap-3 border border-secondary/16 bg-white/10 px-4 py-3 hover:border-terciary/50 hover:bg-white/14 transition-colors duration-500">
-                                    <SiApple size={20} className="text-secondary/70" />
-                                    <div>
-                                        <span className="text-tiny uppercase tracking-widest text-secondary/60 block">Baixe na</span>
-                                        <span className="text-sm font-medium text-secondary/96">App Store</span>
-                                    </div>
-                                </a>
-                                <a href="#" className="flex items-center gap-3 border border-secondary/16 bg-white/10 px-4 py-3 hover:border-terciary/50 hover:bg-white/14 transition-colors duration-500">
-                                    <SiGoogleplay size={20} className="text-secondary/70" />
-                                    <div>
-                                        <span className="text-tiny uppercase tracking-widest text-secondary/60 block">Disponível no</span>
-                                        <span className="text-sm font-medium text-secondary/96">Google Play</span>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="lg:col-span-2 xl:col-span-2 grid gap-10 content-start">
-                        <div>
-                            <FooterTitle title="Institucional" />
-                            <ul className="space-y-2.5">
-                                {institucionalLinks.map((item) => (
-                                    <FooterLink key={item}>{item}</FooterLink>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div>
-                            <FooterTitle title="Ajuda" />
-                            <ul className="space-y-2.5">
-                                {ajudaLinks.map((item) => (
-                                    <FooterLink key={item}>{item}</FooterLink>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div>
-                            <FooterTitle title="SAC" />
-                            <ul className="space-y-2.5">
-                                {sacLinks.map((item) => (
-                                    <FooterLink key={item}>{item}</FooterLink>
-                                ))}
+                        <div className="mt-9">
+                            <FooterTitle title="Legal" />
+                            <ul className="space-y-3">
+                                {legalLinks.map((item) => <FooterLink key={item.to} to={item.to}>{item.label}</FooterLink>)}
                             </ul>
                         </div>
                     </div>
 
-                    <div className="lg:col-span-2 xl:col-span-3">
-                        <FooterTitle title="Newsletter" />
-                        <p className="text-sm text-secondary/76 mb-5 leading-7 max-w-sm">Receba ofertas exclusivas, novidades e avisos importantes direto no seu e-mail.</p>
-                        <form className="border border-secondary/16 bg-white/10 p-4">
-                            <div className="flex items-center gap-4">
-                                <input
-                                    type="email"
-                                    placeholder="Seu e-mail"
-                                    className="min-w-0 flex-1 border-b border-secondary/28 bg-transparent px-0 py-2 text-sm text-secondary/96 outline-none transition-colors duration-500 placeholder:text-secondary/52 focus:border-terciary"
-                                />
-                                <button
-                                    type="submit"
-                                    className="h-10 w-10 shrink-0 border border-terciary/40 text-terciary hover:bg-terciary hover:text-secondary transition-colors duration-500 flex items-center justify-center bg-white/10"
-                                    aria-label="Inscrever-se na newsletter"
-                                >
-                                    <FaArrowRight size={13} />
-                                </button>
-                            </div>
-                        </form>
-
-                        <div className="mt-10">
-                            <FooterTitle title="Redes sociais" />
-                            <div className="flex flex-wrap gap-3">
-                                {redesSociais.map(({ label, icon: Icon }) => (
-                                    <a key={label} href="#" aria-label={label} className="w-10 h-10 border border-secondary/16 bg-white/10 flex items-center justify-center text-secondary/76 hover:border-terciary hover:text-terciary hover:bg-white/14 transition-all duration-500">
-                                        <Icon size={13} />
-                                    </a>
-                                ))}
-                            </div>
+                    <div className="lg:col-span-4">
+                        <FooterTitle title="Pagamento e segurança" />
+                        <p className="text-sm leading-7 text-secondary/76">As formas habilitadas aparecem no checkout antes da confirmação do pedido.</p>
+                        <div className="mt-5 grid grid-cols-2 gap-2.5">
+                            {['PIX', 'Cartão de crédito', 'Ambiente protegido', 'Mercado Pago'].map((label) => (
+                                <div key={label} className="flex min-h-12 items-center justify-center border border-secondary/16 bg-white/10 px-3 text-center text-xs font-medium text-secondary/90">
+                                    {label}
+                                </div>
+                            ))}
                         </div>
 
-                        <div className="mt-10">
-                            <FooterTitle title="Pagamento" />
-                            <div className="grid grid-cols-3 gap-2.5">
-                                {pagamentos.map((item) => (
-                                    <div key={item.alt} className="bg-white/96 p-2 flex items-center justify-center h-10 border border-secondary/16">
-                                        <img src={item.src} alt={item.alt} className="max-h-full max-w-full object-contain" />
-                                    </div>
-                                ))}
-                            </div>
+                        <div className="mt-7 flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+                            <a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 bg-terciary px-5 text-xs font-semibold uppercase tracking-[0.14em] text-white transition-opacity hover:opacity-90">
+                                <FaWhatsapp /> WhatsApp
+                            </a>
+                            <a href={phoneHref} className="inline-flex min-h-11 items-center justify-center gap-2 border border-secondary/25 px-5 text-xs font-semibold uppercase tracking-[0.14em] text-secondary transition-colors hover:border-white hover:text-white">
+                                <FaPhoneAlt /> Ligar
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="border-t border-secondary/8 relative">
-                <div className="mx-auto max-w-[1600px] px-4 py-7 sm:px-8 lg:px-16 lg:py-8">
-                    <div className="flex flex-col md:flex-row justify-between gap-8 md:items-end">
-                        <div className="flex-1">
-                            <p className="text-tiny uppercase tracking-[0.25em] text-terciary mb-2">{footerConfig.nomeExibicao}</p>
-                            <p className="text-xs text-secondary/72 leading-relaxed max-w-md">
-                                {footerConfig.nome} · CNPJ {footerConfig.cnpj}<br />
-                                {footerConfig.enderecoCompleto}
-                            </p>
-                            <p className="text-xs text-secondary/58 mt-3 leading-relaxed max-w-xl">
-                                Preços e condições exclusivos para compras via internet. Fotos meramente ilustrativas. Ofertas válidas até o término de estoques.
-                            </p>
-                        </div>
-                        <div className="shrink-0 flex flex-col md:items-end gap-3">
-                            <p className="text-tiny uppercase tracking-[0.2em] text-secondary/60">Certificados</p>
-                            <div className="flex flex-wrap gap-2">
-                                <div className="w-24 h-16 border border-secondary/16 bg-white/10 flex items-center justify-center text-tiny text-secondary/64 tracking-wider">BLINDADO</div>
-                                <div className="w-24 h-16 border border-secondary/16 bg-white/10 flex items-center justify-center text-tiny text-secondary/64 tracking-wider">NIQ EBIT</div>
-                            </div>
-                        </div>
+            <div className="relative border-t border-secondary/10">
+                <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-4 py-7 sm:px-8 md:flex-row md:items-end md:justify-between lg:px-16">
+                    <div>
+                        <p className="text-xs leading-relaxed text-secondary/72">{company.nome} · CNPJ {company.cnpj}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-secondary/58">{company.enderecoCompleto}</p>
                     </div>
+                    <p className="max-w-xl text-xs leading-relaxed text-secondary/58 md:text-right">
+                        Preços e condições exclusivos para compras online. Ofertas sujeitas à disponibilidade de estoque.
+                    </p>
                 </div>
             </div>
         </footer>

@@ -1,8 +1,19 @@
 /* eslint-disable react/no-unescaped-entities */
 import Header from '~/components/header';
 import Footer from '~/components/footer';
+import config from '~/config/config';
+
+export function meta() {
+    const name = config.FOOTER_CONFIG.nomeExibicao;
+    return [
+        { title: `Política de privacidade | ${name}` },
+        { name: 'description', content: `Saiba como a ${name} trata e protege seus dados pessoais.` },
+        ...(config.SITE_URL ? [{ tagName: 'link' as const, rel: 'canonical', href: `${config.SITE_URL}/privacidade` }] : []),
+    ];
+}
 
 export default function Privacidade() {
+    const storeName = config.FOOTER_CONFIG.nomeExibicao;
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <Header />
@@ -14,7 +25,7 @@ export default function Privacidade() {
                         <section>
                             <h2 className="text-xl font-semibold text-gray-800 mb-3">1. Compromisso com a Privacidade</h2>
                             <p>
-                                A Word System valoriza a sua privacidade e está comprometida em proteger seus dados pessoais.
+                                A {storeName} valoriza a sua privacidade e está comprometida em proteger seus dados pessoais.
                                 Esta política descreve como coletamos, usamos, armazenamos e protegemos as informações que você nos fornece ao utilizar nosso site.
                             </p>
                         </section>

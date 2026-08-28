@@ -37,6 +37,8 @@ export interface Produto extends DefaultResponse {
     ehMarketplace: boolean,
     marca?: Marca,
     nomeMarca?: string,
+    nomeCor?: string,
+    imagemUrl?: string,
     fotos: Fotos,
     imagens?: string[],
     tagDescricao: string,
@@ -133,6 +135,7 @@ export interface Produtos {
     produtos: Produto[],
     paginacao: Paginacao,
     filtros: Filtros,
+    sugestao?: string,
 }
 
 export interface Paginacao {
