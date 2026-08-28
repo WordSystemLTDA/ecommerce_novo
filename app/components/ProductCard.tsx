@@ -16,9 +16,10 @@ import { NormalizedProductImage } from "./NormalizedProductImage";
 interface ProductCardProps {
     produto: Produto;
     compact?: boolean;
+    onFavoriteChange?: (produto: Produto, isFavorite: boolean) => void;
 }
 
-export function ProductCard({ produto, compact = false }: ProductCardProps) {
+export function ProductCard({ produto, compact = false, onFavoriteChange }: ProductCardProps) {
     let navigate = useNavigate();
     const { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
     const estaNoCarrinho = verificarAdicionadoCarrinho(produto);
@@ -64,6 +65,7 @@ export function ProductCard({ produto, compact = false }: ProductCardProps) {
                 await favoritoService.remover(cliente.id, produto.id);
             }
             atualizarQuantidade();
+            onFavoriteChange?.(produto, newState);
         } catch (error) {
             setIsFavorite(!newState); // Revert
             toast.error("Erro ao atualizar favorito");

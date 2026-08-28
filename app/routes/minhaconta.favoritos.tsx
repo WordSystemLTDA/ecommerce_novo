@@ -1,111 +1,16 @@
-import { Heart, ShoppingBag, Trash2 } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
-import { BsCartPlus } from "react-icons/bs";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import { toast } from "react-toastify";
 import Button from "~/components/button";
 import Loader from "~/components/loader";
-import { OptimizedImage } from "~/components/OptimizedImage";
+import { ProductCard } from "~/components/ProductCard";
 import { useAuth } from "~/features/auth/context/AuthContext";
-import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
 import { favoritoService } from "~/features/favoritos/services/favoritoService";
 import type { Produto } from "~/features/produto/types";
-import { currencyFormatter, gerarSlug } from "~/utils/formatters";
-import { getProductImageFallback } from "~/utils/imagePlaceholders";
-
-import { useFavorito } from "~/features/favoritos/context/FavoritoContext";
-
-const FavoriteItem = ({ produto, onRemove }: { produto: Produto, onRemove: (id: number) => void }) => {
-    let navigate = useNavigate();
-    const { adicionarNovoProduto, verificarAdicionadoCarrinho } = useCarrinho();
-    const estaNoCarrinho = verificarAdicionadoCarrinho(produto);
-
-    const handleAdicionarCarrinho = () => {
-        if (estaNoCarrinho) {
-            navigate('/carrinho');
-            return;
-        }
-
-        if ((produto.tamanhos?.length ?? 0) > 0) {
-            navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
-        } else {
-            adicionarNovoProduto(produto);
-        }
-    };
-
-    return (
-        <div className="border-b border-gray-200 bg-white p-3 transition-colors last:border-0 hover:bg-gray-50 sm:p-4">
-            <div className="flex min-w-0 gap-2 sm:gap-3">
-                <div className="shrink-0 cursor-pointer" onClick={() => navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`)}>
-                    <OptimizedImage
-                        src={produto.fotos?.m?.[0]}
-                        fallbackSrc={getProductImageFallback(produto.nome)}
-                        alt={produto.nome}
-                        className="h-16 w-16 rounded bg-gray-50 object-contain mix-blend-multiply sm:h-20 sm:w-20"
-                    />
-                </div>
-
-                <div className="flex min-h-20 min-w-0 grow flex-col justify-between">
-                    <div className="flex justify-between items-start gap-2">
-                        <Link to={`/produto/${produto.id}/${gerarSlug(produto.nome)}`}>
-                            <h3 className="text-sm text-gray-900 font-medium leading-tight line-clamp-2 hover:text-primary transition-colors">
-                                {produto.nome}
-                            </h3>
-                        </Link>
-                        <button
-                            type="button"
-                            className="text-red-500 p-1 hover:bg-red-50 rounded transition-colors"
-                            onClick={() => onRemove(produto.id)}
-                            title="Remover dos favoritos"
-                        >
-                            <Trash2 size={18} />
-                        </button>
-                    </div>
-
-                    <div className="flex flex-col gap-3 mt-3 sm:flex-row sm:items-end sm:justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-primary font-semibold">
-                                {currencyFormatter.format(parseProductPrice(produto.preco))}
-                            </span>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={handleAdicionarCarrinho}
-                            className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-colors ${estaNoCarrinho
-                                ? "bg-(--dynamic-success-bg) text-(--dynamic-success) hover:bg-(--dynamic-success)"
-                                : "bg-primary text-white hover:bg-terciary"
-                                }`}
-                        >
-                            <BsCartPlus size={18} />
-                            <span className="hidden sm:inline">
-                                {estaNoCarrinho ? "Ver no Carrinho" : "Adicionar ao Carrinho"}
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-function parseProductPrice(preco: string | number) {
-    if (typeof preco === "number") {
-        return preco;
-    }
-
-    const normalizedPrice = preco
-        .replace(/[^\d,.]/g, "")
-        .replace(/\.(?=\d{3}(?:\D|$))/g, "")
-        .replace(",", ".");
-    const parsedPrice = Number(normalizedPrice);
-
-    return Number.isFinite(parsedPrice) ? parsedPrice : 0;
-}
 
 export default function MinhaContaFavoritosPage() {
     const { cliente } = useAuth();
-    const { atualizarQuantidade } = useFavorito();
     const [loading, setLoading] = useState(true);
     const [produtos, setProdutos] = useState<Produto[]>([]);
     const [total, setTotal] = useState(0);
@@ -133,22 +38,13 @@ export default function MinhaContaFavoritosPage() {
         carregarFavoritos();
     }, [cliente, page]);
 
-    const handleRemover = async (idProduto: number) => {
-        if (!cliente?.id) return;
-
-        try {
-            await favoritoService.remover(cliente.id, idProduto);
-            // Optimistic update for smoother UI
-            setProdutos(prev => prev.filter(p => p.id !== idProduto));
-            setTotal(prev => prev - 1);
-            atualizarQuantidade(); // Update global count
-            // toast.success("Produto removido.");
-        } catch (error) {
-            console.error(error);
-            toast.error("Erro ao remover dos favoritos.");
-            carregarFavoritos(); // Revert on error
-            atualizarQuantidade(); // Revert count
+    const handleFavoriteChange = (produto: Produto, isFavorite: boolean) => {
+        if (isFavorite) {
+            return;
         }
+
+        setProdutos(prev => prev.filter(item => item.id !== produto.id));
+        setTotal(prev => Math.max(0, prev - 1));
     };
 
     if (loading && page === 1) {
@@ -188,12 +84,12 @@ export default function MinhaContaFavoritosPage() {
                     </Link>
                 </div>
             ) : (
-                <div className="bg-white rounded-lg shadow-sm border border-primary/10 overflow-hidden">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3 xl:grid-cols-4">
                     {produtos.map((produto) => (
-                        <FavoriteItem
+                        <ProductCard
                             key={produto.id}
-                            produto={produto}
-                            onRemove={handleRemover}
+                            produto={{ ...produto, ehFavorito: "Sim" }}
+                            onFavoriteChange={handleFavoriteChange}
                         />
                     ))}
                 </div>

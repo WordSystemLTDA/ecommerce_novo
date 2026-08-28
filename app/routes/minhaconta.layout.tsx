@@ -42,7 +42,6 @@ export default function MinhaContaLayout() {
 
     return currentPath === item.path || currentPath.startsWith(`${item.path}/`);
   };
-  const visibleNavItems = navItems.filter((item) => !isCurrentItem(item));
 
   return (
     <div className="min-h-screen bg-main-bg">
@@ -86,20 +85,35 @@ export default function MinhaContaLayout() {
                 aria-label="Atalhos da conta"
                 className="grid grid-cols-2 gap-3 lg:grid-cols-1"
               >
-                {visibleNavItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className="group flex min-h-20 items-center gap-3 rounded-lg border border-primary/10 bg-product-bg p-3 shadow-[0_4px_18px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-terciary/40 hover:shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-4 lg:min-h-16"
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-terciary/10 text-terciary transition-colors group-hover:bg-terciary group-hover:text-white">
-                      <item.icon size={19} aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 text-xs font-bold uppercase leading-snug tracking-wide text-primary sm:text-sm">
-                      {item.name}
-                    </span>
-                  </Link>
-                ))}
+                {navItems.map((item) => {
+                  const isActive = isCurrentItem(item);
+
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`group flex min-h-20 items-center gap-3 rounded-lg border p-3 shadow-[0_4px_18px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-terciary/40 hover:shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-4 lg:min-h-16 ${
+                        isActive
+                          ? "border-primary bg-primary text-secondary"
+                          : "border-primary/10 bg-product-bg text-primary"
+                      }`}
+                    >
+                      <span
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors group-hover:bg-terciary group-hover:text-white ${
+                          isActive
+                            ? "bg-secondary text-primary"
+                            : "bg-terciary/10 text-terciary"
+                        }`}
+                      >
+                        <item.icon size={19} aria-hidden="true" />
+                      </span>
+                      <span className={`min-w-0 text-xs font-bold uppercase leading-snug tracking-wide sm:text-sm ${isActive ? "text-secondary" : "text-primary"}`}>
+                        {item.name}
+                      </span>
+                    </Link>
+                  );
+                })}
 
                 <button
                   type="button"
