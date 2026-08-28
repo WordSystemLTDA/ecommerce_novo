@@ -354,7 +354,7 @@ video {
 .section-divider {
   position: relative;
   height: 1px;
-  margin: 2.5rem auto;
+  margin: 1.25rem auto;
   width: min(90%, 1100px);
   background: linear-gradient(90deg, transparent 0%, rgba(15, 23, 42, 0.08) 20%, rgba(15, 23, 42, 0.12) 50%, rgba(15, 23, 42, 0.08) 80%, transparent 100%);
 }

@@ -1,4 +1,5 @@
 import apiClient from "~/services/api";
+import config from "~/config/config";
 import type { CalculcarFreteResponse, Produto, ProdutoResponse, ProdutosResponse } from "../types";
 
 type CacheEntry<T> = {
@@ -8,6 +9,7 @@ type CacheEntry<T> = {
 
 const responseCache = new Map<string, CacheEntry<unknown>>();
 const inFlightRequests = new Map<string, Promise<unknown>>();
+const EMPRESAS_CACHE_SCOPE = config.EMPRESAS.join(',') || 'default';
 
 async function getCached<T>(cacheKey: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
     const now = Date.now();
@@ -40,7 +42,7 @@ async function getCached<T>(cacheKey: string, ttlMs: number, fetcher: () => Prom
 
 export const produtoService = {
     listarProduto: async (id: string) => {
-        return getCached<ProdutoResponse>(`produto:${id}`, 60_000, async () => {
+        return getCached<ProdutoResponse>(`produto:${EMPRESAS_CACHE_SCOPE}:${id}`, 60_000, async () => {
             const { data } = await apiClient.get<ProdutoResponse>(`/produtos/${id}`);
             return data;
         });
@@ -49,7 +51,7 @@ export const produtoService = {
     listarProdutos: async (filtros: string) => {
         const query = filtros.length <= 0 ? '/produtos' : `/produtos?${filtros}`;
 
-        return getCached<ProdutosResponse>(`produtos:${query}`, 20_000, async () => {
+        return getCached<ProdutosResponse>(`produtos:${EMPRESAS_CACHE_SCOPE}:${query}`, 20_000, async () => {
             const { data } = await apiClient.get<ProdutosResponse>(query);
             return data;
         });
@@ -65,7 +67,7 @@ export const produtoService = {
     },
 
     listarFiltros: async () => {
-        return getCached<any>('produtos:filtros', 300_000, async () => {
+        return getCached<any>(`produtos:${EMPRESAS_CACHE_SCOPE}:filtros`, 300_000, async () => {
             const { data } = await apiClient.get<any>('/produtos/filtros');
             return data;
         });

@@ -134,22 +134,22 @@ export function ProductCard({ produto, compact = false }: ProductCardProps) {
                 navigate(`/produto/${produto.id}/${gerarSlug(produto.nome)}`);
             }}
         >
-            <div className={`relative shrink-0 overflow-hidden bg-white ${compact ? 'h-44 sm:h-48 xl:h-52' : 'h-52 sm:h-60 xl:h-64'}`}>
-                <div className="absolute right-2 top-2 z-10 flex cursor-auto gap-1 bg-product-bg/90 p-1 opacity-100 shadow-sm transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100">
-                    <button onClick={toggleFavorite} className="flex h-8 w-8 items-center justify-center transition-transform duration-300 hover:scale-110" aria-label="Adicionar aos favoritos">
+            <div className={`relative shrink-0 overflow-hidden bg-white ${compact ? 'h-36 min-[380px]:h-40 sm:h-48 xl:h-52' : 'h-40 min-[380px]:h-44 sm:h-56 xl:h-64'}`}>
+                <div className="absolute right-1.5 top-1.5 z-10 flex cursor-auto gap-0.5 bg-white/95 p-0.5 opacity-100 shadow-sm transition-opacity duration-300 sm:right-2 sm:top-2 sm:gap-1 sm:p-1 lg:opacity-0 lg:group-hover:opacity-100">
+                    <button onClick={toggleFavorite} className="flex h-7 w-7 items-center justify-center transition-transform duration-300 hover:scale-110 sm:h-8 sm:w-8" aria-label="Adicionar aos favoritos">
                         {isFavorite ? (
-                            <MdFavorite size={20} className="text-terciary" />
+                            <MdFavorite size={18} className="text-terciary" />
                         ) : (
-                            <MdFavoriteBorder size={20} className="text-primary" />
+                            <MdFavoriteBorder size={18} className="text-primary" />
                         )}
                     </button>
                     {estaNoCarrinho ? (
-                        <button type="button" className="flex h-8 w-8 items-center justify-center" onClick={handleAdicionarCarrinho} aria-label="Ver no carrinho">
-                            <MdShoppingCartCheckout size={20} className="cursor-pointer text-primary" />
+                        <button type="button" className="flex h-7 w-7 items-center justify-center sm:h-8 sm:w-8" onClick={handleAdicionarCarrinho} aria-label="Ver no carrinho">
+                            <MdShoppingCartCheckout size={18} className="cursor-pointer text-primary" />
                         </button>
                     ) : (
-                        <button type="button" className="flex h-8 w-8 items-center justify-center" onClick={handleAdicionarCarrinho} aria-label="Adicionar ao carrinho">
-                            <MdOutlineAddShoppingCart size={20} className="cursor-pointer text-primary" />
+                        <button type="button" className="flex h-7 w-7 items-center justify-center sm:h-8 sm:w-8" onClick={handleAdicionarCarrinho} aria-label="Adicionar ao carrinho">
+                            <MdOutlineAddShoppingCart size={18} className="cursor-pointer text-primary" />
                         </button>
                     )}
                 </div>
@@ -165,41 +165,42 @@ export function ProductCard({ produto, compact = false }: ProductCardProps) {
                     alt={produto.nome}
                     fallbackSrc={productImageFallback}
                     normalizeContent={shouldNormalizeImage}
+                    contentInset={12}
                     isLoading={isImageLoading}
                     onLoad={() => setIsImageLoading(false)}
                 />
             </div>
 
-            <div className="flex min-h-[14rem] flex-1 flex-col border-t border-primary/8 p-3 lg:p-4">
-                <div className="flex flex-1 flex-col">
-                    <div className="mb-2 flex min-h-4 items-center justify-between gap-2 text-[9px] uppercase tracking-[0.16em] text-primary/45">
+            <div className="flex flex-1 flex-col border-t border-primary/8 p-2.5 sm:p-3 lg:p-4">
+                <div className="flex flex-col">
+                    <div className="mb-1.5 flex min-h-4 items-center justify-between gap-1.5 text-[8px] uppercase tracking-[0.14em] text-primary/45 sm:mb-2 sm:gap-2 sm:text-[9px] sm:tracking-[0.16em]">
                         <span className="truncate">{produto.nomeMarca || produto.marca?.nome || produto.nomeCategoria || 'Produto'}</span>
                         {Number(produto.avaliacao) > 0 && (
                             <span className="flex shrink-0 items-center gap-1 normal-case tracking-normal text-primary/60">
-                                <MdStar className="text-terciary" size={12} />
+                                <MdStar className="text-terciary" size={11} />
                                 {Number(produto.avaliacao).toFixed(1)}
                             </span>
                         )}
                     </div>
 
-                    <h3 className="line-clamp-2 h-10 shrink-0 overflow-hidden text-ellipsis text-sm font-semibold leading-snug text-primary transition-colors duration-500 group-hover:text-terciary">
+                    <h3 className="line-clamp-2 h-9 shrink-0 overflow-hidden text-ellipsis text-[13px] font-semibold leading-snug text-primary transition-colors duration-500 group-hover:text-terciary sm:h-10 sm:text-sm">
                         {produto.nome}
                     </h3>
 
                     <span
-                        className={`mb-0.5 block h-4 shrink-0 text-xs text-primary/70 line-through ${precoAntigo ? '' : 'invisible'}`}
+                        className={`mb-0.5 block h-4 shrink-0 text-[11px] text-primary/70 line-through sm:text-xs ${precoAntigo ? '' : 'invisible'}`}
                         aria-hidden={!precoAntigo}
                     >
                         {precoAntigo ? currencyFormatter.format(produto.precoAntigo) : '\u00A0'}
                     </span>
 
                     <div className="mb-0 flex min-h-7 flex-wrap items-center gap-1 sm:gap-2">
-                        <span className="text-lg font-semibold tracking-tight text-primary">
+                        <span className="text-base font-semibold tracking-tight text-primary sm:text-lg">
                             {currencyFormatter.format(parseFloat(precoExibido))}
                         </span>
 
                         {descontoTotal > 0 && (
-                            <span className="text-tiny font-medium text-terciary border border-terciary px-1 py-0.5 tracking-wider">
+                            <span className="border border-terciary px-1 py-0.5 text-[10px] font-medium tracking-wider text-terciary">
                                 -{descontoTotal}%
                             </span>
                         )}
@@ -221,29 +222,27 @@ export function ProductCard({ produto, compact = false }: ProductCardProps) {
                         }
                     </div>
 
-                    <span className="block min-h-3 text-medium-tiny text-pix">
+                    <span className="block min-h-3 text-[8px] leading-snug text-pix sm:text-medium-tiny">
                         {percentualPix > 0
                             ? <>À vista no PIX com <span className='font-semibold'>{percentualPix}% de desconto</span></>
                             : 'À vista no PIX'
                         }
                     </span>
-                    <span
-                        className={`mt-1 block min-h-4 text-xs text-primary/70 ${produto.parcelaMaxima ? '' : 'invisible'}`}
-                        aria-hidden={!produto.parcelaMaxima}
-                    >
-                        {produto.parcelaMaxima
-                            ? <>ou até <span className="font-medium text-primary">{produto.parcelaMaxima}</span></>
-                            : '\u00A0'
-                        }
-                    </span>
-                    <span className={`mt-1 min-h-4 text-[10px] font-semibold uppercase tracking-[0.12em] text-terciary ${produto.temFreteGratis ? '' : 'invisible'}`} aria-hidden={!produto.temFreteGratis}>
-                        Frete grátis
-                    </span>
+                    {produto.parcelaMaxima && (
+                        <span className="mt-1 block text-[10px] text-primary/70 sm:text-xs">
+                            ou até <span className="font-medium text-primary">{produto.parcelaMaxima}</span>
+                        </span>
+                    )}
+                    {produto.temFreteGratis && (
+                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-terciary">
+                            Frete grátis
+                        </span>
+                    )}
                 </div>
 
-                <div className="mt-auto flex shrink-0 gap-0.5">
+                <div className="mt-3 flex shrink-0 gap-0.5">
                     <button
-                        className="z-10 mt-2 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center bg-primary py-2 text-xs font-medium text-secondary transition-colors duration-500 hover:bg-terciary"
+                        className="z-10 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center bg-primary py-2 text-xs font-medium text-secondary transition-colors duration-500 hover:bg-terciary sm:h-10 sm:w-10"
                         aria-label="Adicionar ao carrinho"
                         onClick={handleAdicionarCarrinho}
                     >
@@ -254,12 +253,12 @@ export function ProductCard({ produto, compact = false }: ProductCardProps) {
                         (timeLeft) ?
                             (
                                 <>
-                                    <p className="mt-2 w-full h-10 bg-product-bg border border-primary/20 text-primary font-medium text-xs py-2 flex flex-col leading-none items-center justify-center cursor-default z-10 lg:group-hover:hidden">
+                                    <p className="z-10 flex h-9 w-full cursor-default flex-col items-center justify-center border border-primary/20 bg-product-bg py-2 text-[10px] font-medium leading-none text-primary sm:h-10 sm:text-xs lg:group-hover:hidden">
                                         <span className="text-[8px] lg:text-tiny font-normal mb-0.5 tracking-wider uppercase">Termina em</span>
                                         <span>{timeLeft}</span>
                                     </p>
 
-                                    <button className="mt-2 w-full h-10 bg-primary text-secondary font-medium text-xs py-2 hidden lg:group-hover:flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase" onClick={handleComprar}>
+                                    <button className="z-10 hidden h-9 w-full cursor-pointer items-center justify-center bg-primary py-2 text-[10px] font-medium uppercase tracking-[0.14em] text-secondary transition-colors duration-500 hover:bg-terciary sm:h-10 sm:text-xs sm:tracking-widest lg:group-hover:flex" onClick={handleComprar}>
                                         Comprar
                                     </button>
                                 </>
@@ -267,19 +266,19 @@ export function ProductCard({ produto, compact = false }: ProductCardProps) {
                             : produto.tipoDaPromocao === 4 && produto.promocaoAtiva === 'Sim' ?
                                 (
                                     <>
-                                        <p className="mt-2 w-full h-10 bg-product-bg border border-primary/20 text-primary font-medium text-xs py-2 flex flex-col leading-none items-center justify-center cursor-default z-10 lg:group-hover:hidden">
+                                        <p className="z-10 flex h-9 w-full cursor-default flex-col items-center justify-center border border-primary/20 bg-product-bg py-2 text-[10px] font-medium leading-none text-primary sm:h-10 sm:text-xs lg:group-hover:hidden">
                                             <span className="text-[8px] lg:text-tiny font-normal mb-0.5 tracking-wider uppercase">Restam</span>
                                             <span>{(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} Unidades</span>
                                         </p>
 
-                                        <button className="mt-2 w-full h-10 bg-primary text-secondary font-medium text-xs py-2 hidden lg:group-hover:flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase" onClick={handleComprar}>
+                                        <button className="z-10 hidden h-9 w-full cursor-pointer items-center justify-center bg-primary py-2 text-[10px] font-medium uppercase tracking-[0.14em] text-secondary transition-colors duration-500 hover:bg-terciary sm:h-10 sm:text-xs sm:tracking-widest lg:group-hover:flex" onClick={handleComprar}>
                                             Comprar
                                         </button>
                                     </>
                                 )
                                 : (
                                     <button
-                                        className="mt-2 w-full h-10 bg-primary text-secondary font-medium text-xs py-2 flex items-center justify-center hover:bg-terciary transition-colors duration-500 cursor-pointer z-10 tracking-widest uppercase"
+                                        className="z-10 flex h-9 w-full cursor-pointer items-center justify-center bg-primary py-2 text-[10px] font-medium uppercase tracking-[0.14em] text-secondary transition-colors duration-500 hover:bg-terciary sm:h-10 sm:text-xs sm:tracking-widest"
                                         onClick={handleComprar}
                                     >
                                         Comprar

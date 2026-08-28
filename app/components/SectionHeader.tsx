@@ -18,10 +18,10 @@ export function SectionHeader({
     linkLabel = "Ver todos",
 }: SectionHeaderProps) {
     return (
-        <div className="mt-2 mb-5 flex flex-col items-start justify-between gap-4 border-t border-primary/10 px-4 pt-6 sm:mb-6 sm:flex-row sm:items-end lg:px-12 lg:pt-8">
+        <div className="mt-1 mb-3 flex flex-col items-start justify-between gap-2 border-t border-primary/10 px-3 pt-4 sm:mb-4 sm:flex-row sm:items-end lg:px-8 lg:pt-5">
             <div className="min-w-0">
                 {eyebrow && (
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="mb-2 flex items-center gap-2">
                         <div className="h-px w-8 bg-primary/30" aria-hidden />
                         <p className="text-[10px] uppercase tracking-[0.25em] font-medium text-primary/70">
                             {eyebrow}
@@ -35,7 +35,7 @@ export function SectionHeader({
                     {title}
                 </h2>
                 {description && (
-                    <p className="text-sm text-primary/70 mt-2 leading-relaxed">
+                    <p className="mt-1 text-sm leading-relaxed text-primary/70">
                         {description}
                     </p>
                 )}
@@ -45,7 +45,7 @@ export function SectionHeader({
                 <button
                     type="button"
                     onClick={onLinkClick}
-                    className="min-h-10 shrink-0 border-b border-primary pb-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-primary transition-colors duration-500 hover:border-terciary hover:text-terciary sm:min-h-0 whitespace-nowrap"
+                    className="min-h-8 shrink-0 whitespace-nowrap border-b border-primary pb-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-primary transition-colors duration-500 hover:border-terciary hover:text-terciary sm:min-h-0"
                 >
                     {linkLabel}
                 </button>

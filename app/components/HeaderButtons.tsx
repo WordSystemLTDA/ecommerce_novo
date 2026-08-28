@@ -70,10 +70,10 @@ export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
         <button
             type="button"
             aria-label="Abrir busca"
-            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary"
+            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-primary transition-all duration-300 hover:bg-primary/8 hover:text-terciary active:scale-95 sm:h-10 sm:w-10"
             onClick={aoClicar}
         >
-            <MdOutlineSearch size={24} />
+            <MdOutlineSearch size={22} />
         </button>
     );
 }
@@ -87,7 +87,7 @@ export function ButtonConta() {
         <button
             type="button"
             aria-label={isAuthenticated ? "Abrir minha conta" : "Entrar"}
-            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary"
+            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-primary transition-all duration-300 hover:bg-primary/8 hover:text-terciary active:scale-95 sm:h-10 sm:w-10"
             onClick={() => {
                 if (isAuthenticated) {
                     navigate('/minha-conta');
@@ -97,9 +97,9 @@ export function ButtonConta() {
             }}
         >
             {isAuthenticated ?
-                <BsPersonFillCheck size={24} />
+                <BsPersonFillCheck size={21} />
                 :
-                <BsPersonFill size={24} />
+                <BsPersonFill size={21} />
             }
 
         </button>
@@ -114,14 +114,14 @@ export function ButtonCarrinho() {
         <button
             type="button"
             aria-label="Abrir carrinho"
-            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary lg:h-auto lg:w-auto"
+            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-primary transition-all duration-300 hover:bg-primary/8 hover:text-terciary active:scale-95 sm:h-10 sm:w-10 lg:h-auto lg:w-auto lg:rounded-none lg:hover:bg-transparent"
             onClick={() => navigate('/carrinho')}
         >
             <FaShoppingCart size={20} className="max-lg:hidden" />
-            <FaShoppingCart size={18} className="hidden max-lg:block" />
+            <FaShoppingCart size={17} className="hidden max-lg:block" />
 
             {produtos.length > 0 && (
-                <span className="absolute -top-1 -right-2 inline-flex items-center justify-center px-1 py-0 text-xs font-medium text-white bg-red-500 rounded-full">
+                <span className="absolute right-0 top-0 inline-flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white shadow-[0_1px_4px_rgba(0,0,0,0.25)] lg:-right-2 lg:-top-1">
                     {produtos.length}
                 </span>
             )}

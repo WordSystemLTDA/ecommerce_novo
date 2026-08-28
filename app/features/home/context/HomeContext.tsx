@@ -6,6 +6,7 @@ import type { Categoria } from '~/features/categoria/types';
 import type { Marca } from '~/features/marca/types';
 import { produtoService } from '~/features/produto/services/produtoService';
 import type { Banner, Produto, ProdutosBanners } from '~/features/produto/types';
+import config from '~/config/config';
 import { getBanners } from '~/services/bannerService';
 
 interface HomeContextType {
@@ -53,8 +54,9 @@ export interface ActiveFilters {
 }
 
 const HomeContext = createContext<HomeContextType | undefined>(undefined);
-const SIDEBAR_FILTERS_CACHE_KEY = 'home:sidebar-filters';
-const CATALOG_CACHE_KEY = 'home:catalog-default';
+const EMPRESAS_CACHE_SCOPE = config.EMPRESAS.join(',') || 'default';
+const SIDEBAR_FILTERS_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:sidebar-filters`;
+const CATALOG_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:catalog-default`;
 
 interface CachedCatalog {
     expiresAt: number;

@@ -51,25 +51,25 @@ export default function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-50 flex w-full flex-col overflow-x-clip border-b border-primary/10 bg-header-bg pt-[env(safe-area-inset-top)] shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
-            <div className="page-container relative flex min-h-16 w-full min-w-0 flex-row items-center">
+        <header className="sticky top-0 z-50 flex w-full flex-col overflow-x-clip border-b border-primary/10 bg-header-bg pt-[env(safe-area-inset-top)] shadow-[0_3px_18px_rgba(0,0,0,0.06)]">
+            <div className="page-container relative flex min-h-[4.25rem] w-full min-w-0 flex-row items-center gap-1 px-3 sm:px-4 lg:min-h-16 lg:gap-0">
                 <button
                     type="button"
                     aria-label="Abrir menu"
                     aria-expanded={isMobileMenuOpen}
                     onClick={() => setIsMobileMenuOpen(true)}
-                    className="ml-1 flex h-11 w-11 shrink-0 items-center justify-center text-primary transition-colors duration-300 hover:text-terciary lg:hidden"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/10 bg-secondary/30 text-primary shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-300 hover:border-terciary/40 hover:bg-primary hover:text-secondary active:scale-95 lg:hidden"
                 >
-                    <MdMenu size={28} className="cursor-pointer" />
+                    <MdMenu size={24} className="cursor-pointer" />
                 </button>
 
-                <div className="flex min-w-0 flex-1 items-center justify-start px-1 lg:w-48 lg:flex-none lg:justify-center lg:px-0 xl:w-55">
+                <div className="flex min-w-0 flex-1 items-center justify-start overflow-hidden px-2 lg:w-48 lg:flex-none lg:justify-center lg:overflow-visible lg:px-0 xl:w-55">
                     {config.LOGO_HEADER_TIPO === 'mask' ? (
                         <button
                             type="button"
                             aria-label="Ir para a página inicial"
                             onClick={navigateHome}
-                            className="cursor-pointer"
+                            className="flex min-h-10 max-w-full cursor-pointer items-center transition-opacity hover:opacity-75"
                         >
                             <div
                                 className={`${config.LOGO_MASK?.classe ?? 'w-20 lg:w-36 xl:w-40'} ${config.LOGO_MASK?.aspect ?? 'aspect-2048/431'} bg-primary`}
@@ -96,7 +96,7 @@ export default function Header() {
                     )}
                 </div>
 
-                <div className="w-auto min-w-0 shrink-0 px-1 py-2 lg:w-full lg:flex-1 lg:px-4 lg:py-4 xl:px-8">
+                <div className="w-auto min-w-0 shrink-0 lg:w-full lg:flex-1 lg:px-4 lg:py-4 xl:px-8">
                     <div className="flex items-center gap-2 lg:gap-4 xl:gap-8 justify-end lg:justify-between min-w-0">
                         <div
                             className="hidden 2xl:flex items-center gap-2 min-w-fit cursor-pointer text-primary/70 hover:text-terciary transition-colors duration-500"
@@ -118,7 +118,7 @@ export default function Header() {
                             <SearchBar ref={inputRef} />
                         </div>
 
-                        <div className="flex shrink-0 items-center gap-1 pr-1 text-primary sm:gap-2 lg:gap-3 lg:pr-0 xl:gap-6">
+                        <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-primary/10 bg-secondary/25 p-0.5 text-primary shadow-[0_2px_10px_rgba(0,0,0,0.04)] sm:gap-1 lg:gap-3 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none xl:gap-6">
                             <ButtonEntreOuCadastrese />
 
                             <div className="lg:hidden">
@@ -182,31 +182,36 @@ export default function Header() {
                 </div>
             </div>
 
-            <div className={`w-full px-4 pb-3 transition-all duration-300 lg:hidden ${isSearchBarOpen ? 'block' : 'hidden'}`}>
+            <div className={`w-full border-t border-primary/8 px-3 pb-3 pt-2 transition-all duration-300 lg:hidden ${isSearchBarOpen ? 'block' : 'hidden'}`}>
                 <SearchBar ref={inputRef} />
             </div>
 
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
                 <div className="fixed inset-0 z-60 flex h-dvh lg:hidden">
-                    <button type="button" aria-label="Fechar menu" className="absolute inset-0 z-0 bg-primary/40" onClick={() => setIsMobileMenuOpen(false)} />
-                    <div className="relative z-10 flex h-full w-[88%] max-w-sm flex-col overflow-y-auto bg-header-bg text-primary shadow-xl">
-                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-primary bg-primary p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-                            <span className="text-tiny uppercase tracking-[0.25em] font-medium text-secondary">Menu</span>
-                            <button type="button" aria-label="Fechar menu" className="flex h-10 w-10 items-center justify-center text-secondary transition-colors hover:text-terciary" onClick={() => setIsMobileMenuOpen(false)}>
+                    <button type="button" aria-label="Fechar menu" className="absolute inset-0 z-0 bg-primary/45 backdrop-blur-[2px]" onClick={() => setIsMobileMenuOpen(false)} />
+                    <div className="relative z-10 flex h-full w-[88%] max-w-sm flex-col overflow-y-auto rounded-r-[1.75rem] bg-header-bg text-primary shadow-[12px_0_40px_rgba(0,0,0,0.2)]">
+                        <div className="sticky top-0 z-10 flex items-center justify-between bg-primary px-5 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
+                            <div>
+                                <span className="block text-[10px] font-medium uppercase tracking-[0.28em] text-secondary/65">Navegação</span>
+                                <span className="mt-0.5 block text-base font-semibold text-secondary">Menu principal</span>
+                            </div>
+                            <button type="button" aria-label="Fechar menu" className="flex h-10 w-10 items-center justify-center rounded-full border border-secondary/20 text-secondary transition-all hover:rotate-90 hover:border-terciary hover:text-terciary" onClick={() => setIsMobileMenuOpen(false)}>
                                 <MdClose size={24} />
                             </button>
                         </div>
 
-                        <div className="p-4 border-b border-primary/10">
+                        <div className="border-b border-primary/10 p-4">
                             <div
-                                className="flex items-center gap-2 cursor-pointer text-primary/70 hover:text-terciary transition-colors duration-300"
+                                className="flex cursor-pointer items-center gap-3 rounded-xl border border-primary/10 bg-secondary/25 p-3 text-primary/70 shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-colors duration-300 hover:border-terciary/40 hover:text-terciary"
                                 onClick={() => {
                                     setIsAddressModalOpen(true);
                                     setIsMobileMenuOpen(false);
                                 }}
                             >
-                                <MdLocationOn size={18} />
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-secondary">
+                                    <MdLocationOn size={18} />
+                                </div>
                                 <div className="flex flex-col text-xs leading-tight">
                                     <span className="opacity-70">Enviar para</span>
                                     <span className="font-medium text-primary">
@@ -219,21 +224,21 @@ export default function Header() {
                             </div>
                         </div>
 
-                        <div className="p-4 grid grid-cols-3 gap-3 border-b border-primary/10 text-center">
-                            <button className="flex flex-col items-center gap-2" onClick={() => { navigate('/minha-conta'); setIsMobileMenuOpen(false); }}>
-                                <div className="bg-primary text-secondary p-2.5">
+                        <div className="grid grid-cols-3 gap-2 border-b border-primary/10 p-4 text-center">
+                            <button className="flex min-w-0 flex-col items-center gap-2 rounded-xl border border-primary/10 bg-secondary/20 px-1 py-3 transition-all hover:-translate-y-0.5 hover:border-terciary/40" onClick={() => { navigate('/minha-conta'); setIsMobileMenuOpen(false); }}>
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-secondary">
                                     <MdPersonOutline size={20} />
                                 </div>
                                 <span className="text-tiny text-primary/70 tracking-wider uppercase">Conta</span>
                             </button>
-                            <button className="flex flex-col items-center gap-2" onClick={() => { navigate('/minha-conta/favoritos'); setIsMobileMenuOpen(false); }}>
-                                <div className="bg-primary text-secondary p-2.5">
+                            <button className="flex min-w-0 flex-col items-center gap-2 rounded-xl border border-primary/10 bg-secondary/20 px-1 py-3 transition-all hover:-translate-y-0.5 hover:border-terciary/40" onClick={() => { navigate('/minha-conta/favoritos'); setIsMobileMenuOpen(false); }}>
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-secondary">
                                     <MdOutlineFavoriteBorder size={20} />
                                 </div>
                                 <span className="text-tiny text-primary/70 tracking-wider uppercase">Favoritos</span>
                             </button>
-                            <button className="flex flex-col items-center gap-2" onClick={() => { navigate('/carrinho'); setIsMobileMenuOpen(false); }}>
-                                <div className="bg-primary text-secondary p-2.5">
+                            <button className="flex min-w-0 flex-col items-center gap-2 rounded-xl border border-primary/10 bg-secondary/20 px-1 py-3 transition-all hover:-translate-y-0.5 hover:border-terciary/40" onClick={() => { navigate('/carrinho'); setIsMobileMenuOpen(false); }}>
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-secondary">
                                     <MdOutlineShoppingCart size={20} />
                                 </div>
                                 <span className="text-tiny text-primary/70 tracking-wider uppercase">Carrinho</span>
@@ -242,7 +247,7 @@ export default function Header() {
 
                         <div className="safe-bottom flex flex-col gap-4 p-4 pb-8">
                             <div className="flex flex-col gap-0">
-                                <h3 className="text-tiny uppercase tracking-[0.25em] font-medium text-primary/70 mb-4">Departamentos</h3>
+                                <h3 className="mb-2 px-1 text-tiny font-semibold uppercase tracking-[0.25em] text-primary/70">Departamentos</h3>
                                 {mobileCategorias.map((categoria) => (
                                     <a
                                         key={categoria.id}
@@ -250,9 +255,10 @@ export default function Header() {
                                             navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`);
                                             setIsMobileMenuOpen(false);
                                         }}
-                                        className="py-3 border-b border-primary/8 cursor-pointer text-sm text-primary hover:text-terciary hover:pl-2 transition-all duration-300"
+                                        className="flex cursor-pointer items-center justify-between border-b border-primary/8 px-1 py-3 text-sm text-primary transition-all duration-300 hover:pl-2 hover:text-terciary"
                                     >
-                                        {categoria.nome}
+                                        <span>{categoria.nome}</span>
+                                        <MdKeyboardArrowDown size={18} className="-rotate-90 opacity-45" />
                                     </a>
                                 ))}
 

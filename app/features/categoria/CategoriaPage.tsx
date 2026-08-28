@@ -7,6 +7,7 @@ import Footer from '~/components/footer';
 import Header from '~/components/header';
 import { ProductCard } from '~/components/ProductCard';
 import { SkeletonProductCard } from '~/components/skeleton_product_card';
+import config from '~/config/config';
 import { categoriaService } from '~/features/categoria/services/categoriaService';
 import type { Categoria } from '~/features/categoria/types';
 import { MobileFilterDrawer } from '~/features/home/components/MobileFilterDrawer';
@@ -43,6 +44,9 @@ const defaultFilters: ActiveFilters = {
     ordenacao: 'mais_procurados'
 };
 
+const EMPRESAS_CACHE_SCOPE = config.EMPRESAS.join(',') || 'default';
+const SIDEBAR_FILTERS_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:sidebar-filters`;
+
 function decodeJwt(token: string): any {
     try {
         const base64Url = token.split('.')[1];
@@ -59,7 +63,7 @@ function decodeJwt(token: string): any {
 const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: boolean }) => {
     if (isLoading) {
         return (
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 xl:gap-4">
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:gap-2 lg:grid-cols-4 xl:grid-cols-5">
                 {Array.from({ length: 10 }).map((_, index) => (
                     <SkeletonProductCard key={index} />
                 ))}
@@ -76,7 +80,7 @@ const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: 
     }
 
     return (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3 lg:grid-cols-4 xl:grid-cols-5 xl:gap-4">
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:gap-2 lg:grid-cols-4 xl:grid-cols-5">
             {products.map((product) => (
                 <ProductCard key={product.id} produto={product} />
             ))}
@@ -161,13 +165,13 @@ export default function CategoryPage() {
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
     const [isLoadingSidebar, setIsLoadingSidebar] = useState(() => {
         try {
-            return !window.sessionStorage.getItem('home:sidebar-filters');
+            return !window.sessionStorage.getItem(SIDEBAR_FILTERS_CACHE_KEY);
         } catch { return true; }
     });
 
     const [filterOptions, setFilterOptions] = useState<FilterOptions>(() => {
         try {
-            const cached = window.sessionStorage.getItem('home:sidebar-filters');
+            const cached = window.sessionStorage.getItem(SIDEBAR_FILTERS_CACHE_KEY);
             if (cached) return JSON.parse(cached);
         } catch { }
         return { marcas: [], categorias: [], cores: [], tamanhos: [] };
@@ -179,7 +183,7 @@ export default function CategoryPage() {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const cached = window.sessionStorage.getItem('home:sidebar-filters');
+                const cached = window.sessionStorage.getItem(SIDEBAR_FILTERS_CACHE_KEY);
                 if (cached) {
                     setFilterOptions(JSON.parse(cached));
                     setIsLoadingSidebar(false);
@@ -188,7 +192,7 @@ export default function CategoryPage() {
                 const response = await produtoService.listarFiltros();
                 if (response.sucesso) {
                     setFilterOptions(response.data);
-                    window.sessionStorage.setItem('home:sidebar-filters', JSON.stringify(response.data));
+                    window.sessionStorage.setItem(SIDEBAR_FILTERS_CACHE_KEY, JSON.stringify(response.data));
                 }
             } catch (error) {
                 console.error("Erro ao buscar opções de filtro", error);

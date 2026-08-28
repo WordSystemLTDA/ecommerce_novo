@@ -44,13 +44,13 @@ interface TrustBadgeProps {
 
 function TrustBadge({ icon, title, description, accent }: TrustBadgeProps) {
   return (
-    <div className="group relative min-w-0 overflow-hidden border border-primary/10 bg-product-bg p-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-0.5 sm:p-3 lg:p-4">
-      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border sm:h-10 sm:w-10 lg:h-11 lg:w-11 ${accent}`}>
+    <div className="group relative min-w-0 overflow-hidden border border-primary/10 bg-product-bg p-2 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-0.5 sm:p-2.5 lg:p-3">
+      <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border sm:h-9 sm:w-9 lg:h-10 lg:w-10 ${accent}`}>
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="line-clamp-2 overflow-wrap-anywhere text-[11px] font-semibold leading-snug text-primary sm:text-sm">{title}</p>
+          <p className="line-clamp-2 overflow-wrap-anywhere text-[11px] font-semibold leading-tight text-primary sm:text-xs lg:text-sm">{title}</p>
           <p className="hidden truncate text-xs text-primary/60 sm:block">{description}</p>
         </div>
       </div>
@@ -157,8 +157,8 @@ function ModernHomePage() {
           </nav>
         )}
 
-        <section className="page-container py-5 lg:py-7" aria-label="Benefícios da loja">
-          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 lg:grid-cols-4 lg:gap-3">
+        <section className="page-container py-3 sm:py-4 lg:py-5" aria-label="Benefícios da loja">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-1.5 sm:gap-2 lg:grid-cols-4">
             <TrustBadge icon={<BsTruck size={20} />} title="Entrega para todo Brasil" description="Calcule o prazo pelo seu CEP" accent="border-terciary/20 bg-terciary/8 text-terciary" />
             <TrustBadge icon={<BsShieldCheck size={20} />} title="Compra protegida" description="Pagamento seguro e monitorado" accent="border-primary/15 bg-primary/5 text-primary" />
             <TrustBadge icon={<BsArrowRepeat size={20} />} title="Troca facilitada" description="Consulte as regras da loja" accent="border-terciary/20 bg-terciary/8 text-terciary" />
@@ -166,23 +166,23 @@ function ModernHomePage() {
           </div>
         </section>
 
-        <section id="catalogo" className="page-container scroll-mt-36 pb-10 lg:pb-14">
-          <div className="mb-5 border-y border-primary/10 py-5 lg:flex lg:items-end lg:justify-between">
+        <section id="catalogo" className="page-container scroll-mt-36 pb-8 lg:pb-14">
+          <div className="mb-3 border-y border-primary/10 py-3 sm:py-4 lg:flex lg:items-end lg:justify-between lg:py-5">
             <div>
               <span className="overline-label">Catálogo</span>
-              <h1 className="mt-1 font-serif text-3xl font-medium tracking-tight text-primary sm:text-4xl">
+              <h1 className="mt-0.5 font-serif text-3xl font-medium tracking-tight text-primary sm:text-4xl">
                 {isFiltering ? 'Produtos encontrados' : 'Descubra nossa seleção'}
               </h1>
-              <p className="mt-2 max-w-2xl text-sm text-primary/60">
+              <p className="mt-1 max-w-2xl text-sm text-primary/60">
                 Encontre roupas, calçados e acessórios usando os filtros para chegar mais rápido ao produto ideal.
               </p>
             </div>
-            <p className="mt-3 text-xs uppercase tracking-[0.18em] text-primary/55 lg:mt-0">
+            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-primary/55 lg:mt-0">
               {filteredTotal || filteredProducts.length} {filteredTotal === 1 ? 'produto' : 'produtos'}
             </p>
           </div>
 
-          <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-[17rem_minmax(0,1fr)] xl:gap-7">
+          <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-[17rem_minmax(0,1fr)] xl:gap-5">
             <FilterSidebar
               filterOptions={filterOptions}
               activeFilters={activeFilters}
@@ -207,13 +207,13 @@ function ModernHomePage() {
               />
 
               {isLoadingFilters ? (
-                <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-5">
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 lg:grid-cols-3 xl:grid-cols-4">
                   {Array.from({ length: 8 }).map((_, index) => (
                     <SkeletonProductCard key={index} />
                   ))}
                 </div>
               ) : filteredProducts.length > 0 ? (
-                <div className={`grid grid-cols-1 items-stretch min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${viewMode === 'compact' ? 'gap-3 xl:gap-4' : 'gap-4 xl:gap-5'}`}>
+                <div className={`grid grid-cols-2 items-stretch ${viewMode === 'compact' ? 'gap-1.5 sm:gap-2' : 'gap-1.5 sm:gap-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
                   {filteredProducts.map((product) => (
                     <ProductCard key={product.id} produto={product} compact={viewMode === 'compact'} />
                   ))}
@@ -230,13 +230,13 @@ function ModernHomePage() {
               )}
 
               {filteredProducts.length > 0 && filteredTotal > filteredProducts.length && (
-                <div className="mt-6 flex flex-col items-center gap-2">
+                <div className="mt-4 flex flex-col items-center gap-1.5">
                   <p className="text-center text-xs text-primary/55">Exibindo {filteredProducts.length} de {filteredTotal} produtos</p>
                   <button
                     type="button"
                     onClick={loadMoreProducts}
                     disabled={isLoadingMore}
-                    className="min-w-48 border border-primary bg-product-bg px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary hover:text-secondary disabled:cursor-wait disabled:opacity-55"
+                    className="min-w-48 border border-primary bg-product-bg px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary hover:text-secondary disabled:cursor-wait disabled:opacity-55"
                   >
                     {isLoadingMore ? 'Carregando...' : 'Carregar mais'}
                   </button>
@@ -252,8 +252,8 @@ function ModernHomePage() {
           canLoadImages={isInitialDataLoaded}
         />
 
-        <div className="page-container pb-12 lg:pb-16">
-          <LazySection minHeight={260} className="mt-10">
+        <div className="page-container pb-8 lg:pb-12">
+          <LazySection minHeight={220} className="mt-4 lg:mt-6">
             <section>
               <SectionHeader eyebrow="Navegue por" title="Departamentos" description="Encontre exatamente o que procura" icon={<HiOutlineSparkles size={20} />} accent="primary" onLinkClick={scrollToCatalog} />
               <CarouselCategoriaComImagem
@@ -267,7 +267,7 @@ function ModernHomePage() {
 
           <div className="section-divider" />
 
-          <LazySection minHeight={520}>
+          <LazySection minHeight={460}>
             <ProductSection
               id="maisprocurados_home"
               title="Tendências do momento"
@@ -283,14 +283,14 @@ function ModernHomePage() {
           </LazySection>
 
           {pos2Banners.length > 0 ? (
-            <LazySection minHeight={260} className="mt-10">
+            <LazySection minHeight={220} className="mt-4 lg:mt-6">
               <SecondaryBannerCarousel banners={pos2Banners} canLoadImages={isInitialDataLoaded} className="h-[180px] md:h-[260px]" />
             </LazySection>
           ) : secondaryBanners.length === 0 && (
-            <div className="mt-10"><FallbackBannerCard title="Destaques da loja" className="h-[180px] md:h-[260px]" /></div>
+            <div className="mt-4 lg:mt-6"><FallbackBannerCard title="Destaques da loja" className="h-[150px] md:h-[220px]" /></div>
           )}
 
-          <LazySection minHeight={280} className="mt-10">
+          <LazySection minHeight={230} className="mt-4 lg:mt-6">
             <section>
               <SectionHeader eyebrow="As que você ama" title="Marcas em destaque" description="Seleções para todos os estilos" icon={<MdWorkspacePremium size={20} />} accent="amber" onLinkClick={scrollToCatalog} />
               <CarouselMarcaComImagem
@@ -304,7 +304,7 @@ function ModernHomePage() {
 
           <div className="section-divider" />
 
-          <LazySection minHeight={520}>
+          <LazySection minHeight={460}>
             <ProductSection
               id="novidades_home"
               title="Acabaram de chegar"
@@ -321,7 +321,7 @@ function ModernHomePage() {
 
           <div className="section-divider" />
 
-          <LazySection minHeight={520}>
+          <LazySection minHeight={460}>
             <ProductSection
               id="maisvendidos_home"
               title="Mais vendidos"
@@ -791,6 +791,32 @@ interface CarouselBannersPrincipaisProps {
   canLoadImages: boolean;
 }
 
+function isMobileBanner(banner: Banner) {
+  const bannerRecord = banner as Banner & {
+    para_celular?: unknown;
+    celular?: unknown;
+    exibicao?: unknown;
+    dispositivo?: unknown;
+  };
+
+  const rawValue = String(
+    bannerRecord.paraCelular ??
+    bannerRecord.para_celular ??
+    bannerRecord.celular ??
+    bannerRecord.exibicao ??
+    bannerRecord.dispositivo ??
+    ''
+  );
+
+  const normalizedValue = rawValue
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+  return ['sim', 's', '1', 'true', 'celular', 'mobile'].includes(normalizedValue);
+}
+
 export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBannersPrincipaisProps) {
   // 1. Chama o hook para saber o estado atual
   const isMobile = useIsMobile();
@@ -801,29 +827,35 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
   // 2. Filtra as imagens baseado no estado
   const bannersFiltrados = (images ?? []).filter((v) => {
     if (isMobile) {
-      return v.paraCelular === 'Sim' || !(images ?? []).some((banner) => banner.paraCelular === 'Sim');
+      return isMobileBanner(v) || !(images ?? []).some(isMobileBanner);
     } else {
       // Assume que se não for 'Sim', é para desktop (ou verifique se existe 'Não')
-      return v.paraCelular !== 'Sim' || !(images ?? []).some((banner) => banner.paraCelular !== 'Sim');
+      return !isMobileBanner(v) || !(images ?? []).some((banner) => !isMobileBanner(banner));
     }
   });
 
   // Enquanto o dispositivo não foi determinado, mostra skeleton
   if (isMobile === null) return <SkeletonMainBanner />;
 
+  const deviceMode = isMobile ? 'mobile' : 'desktop';
+  const bannerHeightClass = isMobile
+    ? 'h-[128px] min-[400px]:h-[138px] sm:h-[180px]'
+    : 'h-[200px] md:h-[300px] lg:h-[450px]';
+
   // Se não houver banners para o dispositivo, não renderiza nada
   if (bannersFiltrados.length === 0) {
     return (
       <FallbackBannerCard
         title="Ofertas em destaque"
-        className="h-[200px] md:h-[300px] lg:h-[450px]"
+        className={bannerHeightClass}
       />
     );
   }
 
   return (
-    <div className="relative group w-full h-[200px] md:h-[300px] lg:h-[450px]">
+    <div className={`relative group w-full ${bannerHeightClass}`}>
       <Swiper
+        key={deviceMode}
         className="main-banner-carousel w-full h-full"
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         effect="fade"
@@ -846,7 +878,7 @@ export function CarouselBannersPrincipais({ images, canLoadImages }: CarouselBan
             <OptimizedImage
               src={image.imagemUrl}
               fallbackSrc={getBannerImageFallback(`Banner principal ${index + 1}`)}
-              className="h-[200px] w-full object-cover md:h-[300px] lg:h-[450px]"
+              className={`${bannerHeightClass} w-full object-cover`}
               priority={index === 0}
               allowNetworkLoad={canLoadImages}
               alt={`Banner principal ${index + 1}`}
@@ -946,7 +978,7 @@ function ProductSection({
 
   // If loading or has data, render.
   return (
-    <section className="section-shell fade-in-up my-8 border-y border-primary/10 bg-product-bg py-5 shadow-[0_4px_24px_rgba(0,0,0,0.035)]">
+    <section className="section-shell fade-in-up my-4 border-y border-primary/10 bg-product-bg py-3 shadow-[0_4px_24px_rgba(0,0,0,0.035)]">
       <SectionHeader
         eyebrow={eyebrow}
         title={title}
@@ -966,7 +998,7 @@ function ProductSection({
         )}
       </LazySection>
 
-      <section className="my-4">
+      <section className="my-3">
         <LazySection forceVisible={!!bannerData}>
           {hasLoadedEmptyState ? (
             <div className="border border-dashed border-primary/20 bg-product-bg px-6 py-10 text-center text-sm text-primary/70">

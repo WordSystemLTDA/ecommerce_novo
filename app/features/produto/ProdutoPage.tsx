@@ -21,6 +21,7 @@ import Footer from "~/components/footer";
 import Header from "~/components/header";
 import Loader from "~/components/loader";
 import { OptimizedImage } from "~/components/OptimizedImage";
+import { ProductCard } from "~/components/ProductCard";
 import RatingStars from "~/components/rating_stars";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { useCarrinho } from "~/features/carrinho/context/CarrinhoContext";
@@ -286,6 +287,7 @@ function ProductGallery({ images, produtoId, produtoNome }: ProductGalleryProps)
                             fallbackSrc={imageFallback}
                             alt={`Miniatura ${index + 1} de ${produtoNome}`}
                             className="h-full! w-full! object-contain! p-2"
+                            priority
                         />
                     </button>
                 ))}
@@ -314,17 +316,17 @@ function ProductHeading({ produto }: ProdutoProps) {
                 </span>
             </div>
 
-            <h1 className="mt-4 overflow-wrap-anywhere text-3xl font-semibold leading-[1.08] tracking-[-0.035em] text-primary sm:text-4xl lg:text-[2.75rem]">
+            <h1 className="mt-3 overflow-wrap-anywhere text-[1.4rem] font-semibold leading-[1.08] tracking-[-0.02em] text-primary sm:text-[1.7rem] lg:text-[2.05rem]">
                 {produto.nome}
             </h1>
 
             {description && (
-                <p className="mt-4 max-w-2xl text-sm leading-6 text-primary/65">
+                <p className="mt-3 max-w-2xl text-sm leading-5 text-primary/65">
                     {description}
                 </p>
             )}
 
-            <div className="mt-4 flex items-center gap-2 text-xs text-primary/55 sm:hidden">
+            <div className="mt-3 flex items-center gap-2 text-xs text-primary/55 sm:hidden">
                 <RatingStars rating={rating} variant="tiny" />
                 <span>{reviewCount} avaliações</span>
             </div>
@@ -338,7 +340,7 @@ function PriceBlock({ produto, tamanhoSelecionado }: ProdutoProps & { tamanhoSel
     const installmentPrice = price.cardPrice / installments;
 
     return (
-        <div className="mt-7 border-y border-primary/10 py-6">
+        <div className="mt-5 border-y border-primary/10 py-4 sm:mt-6 sm:py-5">
             <div className="flex flex-wrap items-center gap-3">
                 {price.oldPrice !== null && price.oldPrice > price.pixPrice && (
                     <span className="text-sm text-primary/50 line-through">
@@ -351,10 +353,10 @@ function PriceBlock({ produto, tamanhoSelecionado }: ProdutoProps & { tamanhoSel
                     </span>
                 )}
             </div>
-            <p className="mt-1 text-4xl font-semibold tracking-[-0.04em] text-primary sm:text-[2.75rem]">
+            <p className="mt-1 text-[1.35rem] font-semibold tracking-[-0.015em] text-primary sm:text-[1.75rem]">
                 {currencyFormatter.format(price.pixPrice)}
             </p>
-            <p className="mt-2 text-xs leading-5 text-primary/60 sm:text-sm">
+            <p className="mt-1.5 text-xs leading-5 text-primary/60 sm:text-sm">
                 À vista no PIX
                 {price.pixPercentage > 0 && ` com ${formatNumber(price.pixPercentage)}% de desconto`}
                 <span className="px-1.5 text-primary/30">·</span>
@@ -373,7 +375,7 @@ function ColorSelector({ produto }: ProdutoProps) {
     const selectedColor = colors.find((color) => Number(color.id) === Number(produto.id));
 
     return (
-        <div className="mt-7">
+        <div className="mt-5 sm:mt-6">
             <div className="flex items-baseline justify-between gap-4">
                 <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Cor</h2>
                 <span className="text-sm text-primary/55">{selectedColor?.nome || "Selecionada"}</span>
@@ -421,7 +423,7 @@ function SizeSelector({ produto, erroTamanho, onSelect, sectionRef }: SizeSelect
     if (sizes.length === 0) return null;
 
     return (
-        <div ref={sectionRef} className="mt-7 scroll-mt-32">
+        <div ref={sectionRef} className="mt-5 scroll-mt-32 sm:mt-6">
             <div className="flex items-center justify-between gap-4">
                 <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Tamanho</h2>
                 <button
@@ -435,7 +437,7 @@ function SizeSelector({ produto, erroTamanho, onSelect, sectionRef }: SizeSelect
                 </button>
             </div>
 
-            <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+            <div className="mt-2.5 grid grid-cols-4 gap-2 sm:grid-cols-6">
                 {sizes.map((size) => {
                     const outOfStock = Number(size.estoque) <= 0;
                     const isSelected = Number(tamanhoSelecionado?.id) === Number(size.id);
@@ -462,7 +464,7 @@ function SizeSelector({ produto, erroTamanho, onSelect, sectionRef }: SizeSelect
                 })}
             </div>
 
-            <p className={`mt-2 text-xs ${erroTamanho ? "font-medium text-red-600" : "text-primary/55"}`}>
+            <p className={`mt-1.5 text-xs ${erroTamanho ? "font-medium text-red-600" : "text-primary/55"}`}>
                 {tamanhoSelecionado
                     ? `Tamanho ${tamanhoSelecionado.tamanho} · ${tamanhoSelecionado.estoque} em estoque`
                     : erroTamanho
@@ -471,7 +473,7 @@ function SizeSelector({ produto, erroTamanho, onSelect, sectionRef }: SizeSelect
             </p>
 
             {showGuide && (
-                <div className="mt-4 border border-primary/10 bg-product-bg p-4 text-xs leading-5 text-primary/65">
+                <div className="mt-3 border border-primary/10 bg-product-bg p-3 text-xs leading-5 text-primary/65 sm:p-4">
                     <p className="font-semibold text-primary">Tamanho / grade da peça</p>
                     <p className="mt-1">
                         As opções exibidas são as grades cadastradas para este produto. As opções riscadas estão sem estoque.
@@ -479,7 +481,7 @@ function SizeSelector({ produto, erroTamanho, onSelect, sectionRef }: SizeSelect
                 </div>
             )}
 
-            <div className="mt-5 border border-primary/10 bg-product-bg p-4 sm:p-5">
+            <div className="mt-3 border border-primary/10 bg-product-bg p-3 sm:p-4">
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Grade da peça</h3>
                 <p className="mt-1 text-xs leading-5 text-primary/55">
                     Cada tamanho acima corresponde a uma grade disponível no estoque.
@@ -586,7 +588,7 @@ function PurchaseActions({ produto, quantity, setQuantity, onMissingSize }: Purc
 
     if (isOutOfStock && produto.habilitarAviso === "Sim") {
         return (
-            <div className="mt-7">
+            <div className="mt-5 sm:mt-6">
                 <p className="mb-3 text-sm font-semibold text-red-600">Produto sem estoque.</p>
                 <button
                     type="button"
@@ -601,7 +603,7 @@ function PurchaseActions({ produto, quantity, setQuantity, onMissingSize }: Purc
     }
 
     return (
-        <div className="mt-7">
+        <div className="mt-5 sm:mt-6">
             <p className={`mb-3 text-xs font-semibold ${isOutOfStock ? "text-red-600" : "text-emerald-700"}`}>
                 {isOutOfStock
                     ? "Produto sem estoque"
@@ -695,13 +697,13 @@ function FreightCalculator({ produto }: ProdutoProps) {
     };
 
     return (
-        <div className="mt-6 border border-primary/10 bg-product-bg p-4 sm:p-5">
+        <div className="mt-5 border border-primary/10 bg-product-bg p-3.5 sm:mt-6 sm:p-4">
             <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4" />
                 <h2 className="text-[11px] font-semibold uppercase tracking-[0.17em]">Calcular frete e prazo</h2>
             </div>
 
-            <form onSubmit={calculateFreight} className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+            <form onSubmit={calculateFreight} className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                 <input
                     type="text"
                     inputMode="numeric"
@@ -721,15 +723,15 @@ function FreightCalculator({ produto }: ProdutoProps) {
                 </button>
             </form>
 
-            {errorMessage && <p role="alert" className="mt-3 text-xs leading-5 text-red-600">{errorMessage}</p>}
+            {errorMessage && <p role="alert" className="mt-2 text-xs leading-5 text-red-600">{errorMessage}</p>}
 
             {freightOptions.length > 0 && (
-                <div className="mt-4 divide-y divide-primary/10 border-t border-primary/10">
+                <div className="mt-3 divide-y divide-primary/10 border-t border-primary/10">
                     {freightOptions.map((option) => {
                         const time = getDeliveryTime(option);
                         const price = getDeliveryPrice(option);
                         return (
-                            <div key={option.id} className="flex items-center justify-between gap-4 py-3 text-xs">
+                            <div key={option.id} className="flex items-center justify-between gap-4 py-2.5 text-xs">
                                 <div>
                                     <p className="font-semibold text-primary">{option.name || option.company?.name || "Entrega"}</p>
                                     <p className="mt-0.5 text-primary/55">até {time} {time === 1 ? "dia útil" : "dias úteis"}</p>
@@ -743,7 +745,7 @@ function FreightCalculator({ produto }: ProdutoProps) {
                 </div>
             )}
 
-            <div className="mt-4 grid gap-3 border-t border-primary/10 pt-4 text-[11px] text-primary/55 sm:grid-cols-3">
+            <div className="mt-3 grid gap-2 border-t border-primary/10 pt-3 text-[11px] text-primary/55 sm:grid-cols-3">
                 <span className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 shrink-0" /> Compra protegida</span>
                 <span className="flex items-center gap-2"><RotateCcw className="h-4 w-4 shrink-0" /> Troca facilitada</span>
                 <span className="flex items-center gap-2"><Package className="h-4 w-4 shrink-0" /> Embalagem segura</span>
@@ -772,23 +774,23 @@ function ProductDetails({ produto }: ProdutoProps) {
     const weight = formatMeasurement(produto.peso, "kg");
 
     return (
-        <section className="mt-20 grid gap-10 border-t border-primary/10 pt-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)] lg:gap-16">
+        <section className="mt-7 grid gap-4 border-t border-primary/10 pt-5 sm:mt-8 sm:pt-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)] lg:gap-6">
             <div>
-                <h2 className="text-2xl font-semibold tracking-[-0.025em]">Sobre o produto</h2>
+                <h2 className="text-xl font-semibold tracking-[-0.02em] sm:text-2xl">Sobre o produto</h2>
                 {descriptions.length > 0 ? (
-                    <div className="mt-5 space-y-4 text-sm leading-7 text-primary/65">
+                    <div className="mt-2 space-y-2 text-sm leading-6 text-primary/65">
                         {descriptions.map((description, index) => <p key={`${description}-${index}`}>{description}</p>)}
                     </div>
                 ) : (
-                    <p className="mt-5 text-sm text-primary/55">Descrição ainda não informada.</p>
+                    <p className="mt-2 text-sm text-primary/55">Descrição ainda não informada.</p>
                 )}
 
                 {technicalDetails.length > 0 && (
-                    <div className="mt-10">
+                    <div className="mt-4">
                         <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em]">Ficha técnica</h3>
-                        <dl className="mt-3 grid gap-x-8 sm:grid-cols-2">
+                        <dl className="mt-2 grid gap-x-8 sm:grid-cols-2">
                             {technicalDetails.map(([label, value]) => (
-                                <div key={label} className="flex justify-between gap-4 border-b border-primary/10 py-3 text-sm">
+                                <div key={label} className="flex justify-between gap-4 border-b border-primary/10 py-2 text-sm">
                                     <dt className="text-primary/55">{label}</dt>
                                     <dd className="text-right font-medium text-primary">{String(value)}</dd>
                                 </div>
@@ -798,18 +800,18 @@ function ProductDetails({ produto }: ProdutoProps) {
                 )}
             </div>
 
-            <aside className="h-fit border border-primary/10 bg-product-bg p-5 sm:p-6">
+            <aside className="h-fit border border-primary/10 bg-product-bg p-3 sm:p-4">
                 <div className="flex items-center gap-2">
                     <Package className="h-4 w-4" />
                     <h2 className="text-[11px] font-semibold uppercase tracking-[0.18em]">Embalagem e envio</h2>
                 </div>
-                <dl className="mt-4 divide-y divide-primary/10">
+                <dl className="mt-2 divide-y divide-primary/10">
                     <PackagingRow label="Peso do pacote" value={weight} />
                     <PackagingRow label="Dimensões" value={dimensions} />
                     <PackagingRow label="Conteúdo" value="1 unidade do produto" />
                     <PackagingRow label="Embalagem" value="Protegida para transporte" />
                 </dl>
-                <ul className="mt-5 space-y-2.5 text-xs leading-5 text-primary/55">
+                <ul className="mt-2 space-y-1.5 text-xs leading-5 text-primary/55">
                     <DetailCheck text="Produto acondicionado para evitar avarias" />
                     <DetailCheck text="Nota fiscal eletrônica enviada por e-mail" />
                     <DetailCheck text="Rastreio disponibilizado após a postagem" />
@@ -821,7 +823,7 @@ function ProductDetails({ produto }: ProdutoProps) {
 
 function PackagingRow({ label, value }: { label: string; value: string }) {
     return (
-        <div className="flex justify-between gap-4 py-3 text-sm">
+        <div className="flex justify-between gap-4 py-2 text-sm">
             <dt className="text-primary/55">{label}</dt>
             <dd className="text-right font-medium text-primary">{value}</dd>
         </div>
@@ -862,7 +864,7 @@ function ProductRecommendations({ produto }: ProdutoProps) {
                     }
                 });
 
-                const filterParams = new URLSearchParams({ por_pagina: "12", pagina: "1", order_by: "nome_asc" });
+                const filterParams = new URLSearchParams({ por_pagina: "15", pagina: "1", order_by: "nome_asc" });
                 if (produto.categoriaId) filterParams.set("categoria", String(produto.categoriaId));
 
                 const [loadedColors, similarResponse] = await Promise.all([
@@ -879,7 +881,7 @@ function ProductRecommendations({ produto }: ProdutoProps) {
                     ...linkedColors.map((color) => Number(color.id)),
                 ]);
                 const products = similarResponse?.data?.produtos ?? [];
-                setSimilarProducts(products.filter((item) => !excludedIds.has(Number(item.id))).slice(0, 4));
+                setSimilarProducts(products.filter((item) => !excludedIds.has(Number(item.id))).slice(0, 5));
             } finally {
                 if (active) setLoading(false);
             }
@@ -895,9 +897,7 @@ function ProductRecommendations({ produto }: ProdutoProps) {
         const fullProduct = colorProducts.find((item) => Number(item.id) === Number(color.id));
         return productToPreview(fullProduct, color, produto.nome);
     });
-    const similarCards = similarProducts.map((item) => productToPreview(item));
-
-    if (!loading && otherColorCards.length === 0 && similarCards.length === 0) return null;
+    if (!loading && otherColorCards.length === 0 && similarProducts.length === 0) return null;
 
     return (
         <div>
@@ -910,22 +910,39 @@ function ProductRecommendations({ produto }: ProdutoProps) {
                 />
             )}
 
-            {similarCards.length > 0 && (
-                <ProductShelf
+            {similarProducts.length > 0 && (
+                <RelatedProductShelf
                     title="Quem viu este, também levou"
                     subtitle="Produtos semelhantes da mesma categoria."
-                    products={similarCards}
-                    columns="four"
+                    products={similarProducts}
                 />
             )}
 
-            {loading && otherColorCards.length === 0 && similarCards.length === 0 && (
-                <div className="mt-20 flex items-center justify-center border-t border-primary/10 pt-12 text-primary/45">
+            {loading && otherColorCards.length === 0 && similarProducts.length === 0 && (
+                <div className="mt-6 flex items-center justify-center border-t border-primary/10 pt-5 text-primary/45">
                     <Loader size="small" />
                     <span className="ml-2 text-xs uppercase tracking-[0.14em]">Carregando produtos relacionados</span>
                 </div>
             )}
         </div>
+    );
+}
+
+function RelatedProductShelf({ title, subtitle, products }: {
+    title: string;
+    subtitle: string;
+    products: Produto[];
+}) {
+    return (
+        <section className="mt-6 border-t border-primary/10 pt-5 sm:mt-7 sm:pt-6">
+            <div>
+                <h2 className="text-2xl font-semibold tracking-[-0.025em]">{title}</h2>
+                <p className="mt-1 text-sm text-primary/55">{subtitle}</p>
+            </div>
+            <div className="mt-4 grid grid-cols-2 items-stretch gap-1.5 sm:gap-2 lg:grid-cols-5">
+                {products.map((product) => <ProductCard key={product.id} produto={product} />)}
+            </div>
+        </section>
     );
 }
 
@@ -936,12 +953,12 @@ function ProductShelf({ title, subtitle, products, columns }: {
     columns: "three" | "four";
 }) {
     return (
-        <section className="mt-20 border-t border-primary/10 pt-12">
+        <section className="mt-6 border-t border-primary/10 pt-5 sm:mt-7 sm:pt-6">
             <div>
                 <h2 className="text-2xl font-semibold tracking-[-0.025em]">{title}</h2>
                 <p className="mt-1 text-sm text-primary/55">{subtitle}</p>
             </div>
-            <div className={`mt-7 grid gap-x-4 gap-y-8 sm:grid-cols-2 ${columns === "three" ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
+            <div className={`mt-4 grid gap-x-4 gap-y-5 sm:grid-cols-2 ${columns === "three" ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
                 {products.map((product) => <ProductPreviewCard key={product.id} product={product} />)}
             </div>
         </section>

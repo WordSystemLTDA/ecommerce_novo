@@ -20,7 +20,7 @@ export function SkeletonBanner({
 export function SkeletonMainBanner() {
     return (
         <div className="w-full relative">
-            <div className="w-full h-[200px] md:h-[300px] lg:h-[450px] shimmer" aria-hidden="true" />
+            <div className="w-full h-[128px] min-[400px]:h-[138px] sm:h-[200px] md:h-[300px] lg:h-[450px] shimmer" aria-hidden="true" />
             <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
                 {Array.from({ length: 4 }).map((_, i) => (
                     <span

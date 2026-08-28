@@ -1,6 +1,7 @@
 
 
 import apiClient from "~/services/api";
+import config from "~/config/config";
 import type { CategoriaResponse } from "../types";
 
 type CacheEntry<T> = {
@@ -10,6 +11,7 @@ type CacheEntry<T> = {
 
 const cache = new Map<string, CacheEntry<unknown>>();
 const inFlight = new Map<string, Promise<unknown>>();
+const EMPRESAS_CACHE_SCOPE = config.EMPRESAS.join(',') || 'default';
 
 async function cachedGet<T>(key: string, ttlMs: number, fetcher: () => Promise<T>): Promise<T> {
     const now = Date.now();
@@ -42,21 +44,21 @@ async function cachedGet<T>(key: string, ttlMs: number, fetcher: () => Promise<T
 
 export const categoriaService = {
     listarCategorias: async () => {
-        return cachedGet<CategoriaResponse>('categorias:all', 300_000, async () => {
+        return cachedGet<CategoriaResponse>(`categorias:${EMPRESAS_CACHE_SCOPE}:all`, 300_000, async () => {
             const { data } = await apiClient.get<CategoriaResponse>('/categorias');
             return data;
         });
     },
 
     listarCategoriasMenu: async () => {
-        return cachedGet<CategoriaResponse>('categorias:menu', 300_000, async () => {
+        return cachedGet<CategoriaResponse>(`categorias:${EMPRESAS_CACHE_SCOPE}:menu`, 300_000, async () => {
             const { data } = await apiClient.get<CategoriaResponse>('/categorias?menu');
             return data;
         });
     },
 
     listarCategoriasComSubCategorias: async () => {
-        return cachedGet<CategoriaResponse>('categorias:with_subcategories', 300_000, async () => {
+        return cachedGet<CategoriaResponse>(`categorias:${EMPRESAS_CACHE_SCOPE}:with_subcategories`, 300_000, async () => {
             const { data } = await apiClient.get<CategoriaResponse>('/categorias?with_subcategories');
             return data;
         });
