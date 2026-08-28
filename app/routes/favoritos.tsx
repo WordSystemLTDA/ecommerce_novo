@@ -1,7 +1,5 @@
-import Footer from "~/components/footer";
-import Header from "~/components/header";
+import { Navigate } from "react-router";
 import config from "~/config/config";
-import FavoritosContent from "./minhaconta.favoritos";
 
 export function meta() {
     return [
@@ -12,13 +10,5 @@ export function meta() {
 }
 
 export default function FavoritosPage() {
-    return (
-        <div className="min-h-screen bg-main-bg text-primary">
-            <Header />
-            <main className="page-container py-8 sm:py-12">
-                <FavoritosContent />
-            </main>
-            <Footer />
-        </div>
-    );
+    return <Navigate to="/minha-conta/favoritos" replace />;
 }

@@ -231,7 +231,7 @@ export default function Header() {
                                 </div>
                                 <span className="text-tiny text-primary/70 tracking-wider uppercase">Conta</span>
                             </button>
-                            <button className="flex min-w-0 flex-col items-center gap-2 rounded-xl border border-primary/10 bg-secondary/20 px-1 py-3 transition-all hover:-translate-y-0.5 hover:border-terciary/40" onClick={() => { navigate('/favoritos'); setIsMobileMenuOpen(false); }}>
+                            <button className="flex min-w-0 flex-col items-center gap-2 rounded-xl border border-primary/10 bg-secondary/20 px-1 py-3 transition-all hover:-translate-y-0.5 hover:border-terciary/40" onClick={() => { navigate('/minha-conta/favoritos'); setIsMobileMenuOpen(false); }}>
                                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-secondary">
                                     <MdOutlineFavoriteBorder size={20} />
                                 </div>
