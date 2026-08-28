@@ -14,7 +14,7 @@ export function ButtonEntreOuCadastrese() {
     const primaryLabel = isLoading
         ? "Verificando"
         : isAuthenticated
-            ? "Minha conta"
+            ? "Minha Conta"
             : "Entrar ou";
     const secondaryLabel = isLoading
         ? "sua conta"
@@ -27,7 +27,7 @@ export function ButtonEntreOuCadastrese() {
             type="button"
             aria-label={isLoading ? "Verificando sua conta" : isAuthenticated ? "Acessar minha conta e meus pedidos" : "Entrar ou cadastrar-se"}
             aria-busy={isLoading}
-            title={isAuthenticated ? "Minha conta e meus pedidos" : "Entrar ou cadastre-se"}
+            title={isAuthenticated ? "Minha Conta e meus pedidos" : "Entrar ou cadastre-se"}
             disabled={isLoading}
             className={`hidden min-h-10 min-w-[132px] items-center gap-2 rounded-lg border border-transparent px-2 py-1 text-left text-primary transition-all duration-300 lg:flex ${isLoading
                 ? "cursor-wait bg-primary/[0.025] text-primary/50"
@@ -80,7 +80,7 @@ export function ButtonFavoritos() {
         <button
             type="button"
             aria-label="Abrir favoritos"
-            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-all duration-300 hover:text-terciary lg:h-9 lg:w-9 lg:rounded-lg lg:text-primary/70 lg:hover:bg-primary/[0.07]"
+            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-primary transition-all duration-300 hover:bg-primary/8 hover:text-terciary active:scale-95 sm:h-10 sm:w-10 lg:h-9 lg:w-9 lg:rounded-lg lg:text-primary/70 lg:hover:bg-primary/[0.07]"
             onClick={() => navigate('/minha-conta/favoritos')}
         >
             <MdOutlineFavorite size={24} />
@@ -111,20 +111,67 @@ export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
 }
 
 
-export function ButtonConta() {
+export function ButtonConta({ compact = false }: { compact?: boolean } = {}) {
     let navigate = useNavigate();
     let { isAuthenticated, isLoading } = useAuth();
 
     const primaryLabel = isLoading
         ? "Verificando"
         : isAuthenticated
-            ? "Minha conta"
+            ? "Minha Conta"
             : "Entrar ou";
     const secondaryLabel = isLoading
         ? "sua conta"
         : isAuthenticated
             ? "Pedidos"
             : "Cadastre-se";
+
+    if (compact) {
+        return (
+            <button
+                type="button"
+                aria-label={isLoading ? "Verificando sua conta" : isAuthenticated ? "Abrir minha conta e meus pedidos" : "Entrar ou cadastrar-se"}
+                aria-busy={isLoading}
+                disabled={isLoading}
+                className={`relative flex h-9 min-w-[104px] items-center justify-center gap-1.5 rounded-full border px-2 text-left transition-all duration-300 active:scale-95 max-[380px]:w-9 max-[380px]:min-w-0 max-[380px]:px-0 ${isLoading
+                    ? "cursor-wait border-primary/8 bg-primary/[0.025] text-primary/50"
+                    : isAuthenticated
+                        ? "cursor-pointer border-primary/12 bg-primary/[0.055] text-primary hover:bg-primary/[0.09]"
+                        : "cursor-pointer border-primary/10 bg-primary/[0.035] text-primary hover:border-primary/15 hover:bg-primary/[0.07]"
+                    }`}
+                onClick={() => {
+                    if (isLoading) return;
+
+                    if (isAuthenticated) {
+                        navigate('/minha-conta');
+                    } else {
+                        navigate('/entrar');
+                    }
+                }}
+            >
+                <span className={`relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${isLoading
+                    ? "animate-pulse border-primary/10 bg-primary/[0.025]"
+                    : "border-primary/15 bg-header-bg"
+                    }`}>
+                    {isAuthenticated ?
+                        <BsPersonFillCheck size={16} />
+                        :
+                        <BsPersonFill size={16} />
+                    }
+                    {isAuthenticated && !isLoading && (
+                        <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-header-bg bg-emerald-500" aria-hidden="true" />
+                    )}
+                </span>
+
+                <span className="flex min-w-0 flex-col leading-none max-[380px]:hidden">
+                    <span className="whitespace-nowrap text-[10px] font-semibold">{primaryLabel}</span>
+                    <span className="mt-0.5 whitespace-nowrap text-[8px] font-medium uppercase tracking-[0.06em] opacity-80">
+                        {secondaryLabel}
+                    </span>
+                </span>
+            </button>
+        );
+    }
 
     return (
         <button

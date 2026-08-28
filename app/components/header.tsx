@@ -138,36 +138,46 @@ export default function Header() {
                             <SearchBar ref={inputRef} />
                         </div>
 
-                        <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-primary/10 bg-secondary/25 p-0.5 text-primary shadow-[0_2px_10px_rgba(0,0,0,0.04)] sm:gap-1 lg:rounded-xl lg:bg-secondary/20 lg:p-1 lg:shadow-[0_2px_10px_rgba(0,0,0,0.035)]">
-                            <ButtonEntreOuCadastrese />
-
+                        <div className="flex shrink-0 items-center gap-1.5 text-primary sm:gap-2">
                             <div className="lg:hidden">
-                                <ButtonBuscar
-                                    aoClicar={() => {
-                                        if (inputRef.current) {
-                                            inputRef.current.focus();
-                                        }
-                                        setIsSearchBarOpen(isSearchBarOpen => !isSearchBarOpen);
-                                    }}
-                                />
+                                <ButtonConta compact />
                             </div>
 
-                            <div className="lg:hidden">
-                                <ButtonCarrinho />
-                            </div>
+                            <div className="flex items-center gap-0.5 rounded-full border border-primary/10 bg-secondary/25 p-0.5 shadow-[0_2px_10px_rgba(0,0,0,0.04)] sm:gap-1 lg:rounded-xl lg:bg-secondary/20 lg:p-1 lg:shadow-[0_2px_10px_rgba(0,0,0,0.035)]">
+                                <ButtonEntreOuCadastrese />
 
-                            <div className="hidden items-center gap-0.5 lg:flex">
-                                <button
-                                    type="button"
-                                    aria-label="Abrir atendimento"
-                                    title="Atendimento"
-                                    onClick={() => navigate('/contato')}
-                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/70 transition-all duration-300 hover:bg-primary/[0.07] hover:text-terciary active:scale-95"
-                                >
-                                    <MdHeadsetMic size={21} />
-                                </button>
-                                <ButtonFavoritos />
-                                <ButtonCarrinho />
+                                <div className="lg:hidden">
+                                    <ButtonBuscar
+                                        aoClicar={() => {
+                                            if (inputRef.current) {
+                                                inputRef.current.focus();
+                                            }
+                                            setIsSearchBarOpen(isSearchBarOpen => !isSearchBarOpen);
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="lg:hidden">
+                                    <ButtonFavoritos />
+                                </div>
+
+                                <div className="lg:hidden">
+                                    <ButtonCarrinho />
+                                </div>
+
+                                <div className="hidden items-center gap-0.5 lg:flex">
+                                    <button
+                                        type="button"
+                                        aria-label="Abrir atendimento"
+                                        title="Atendimento"
+                                        onClick={() => navigate('/contato')}
+                                        className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/70 transition-all duration-300 hover:bg-primary/[0.07] hover:text-terciary active:scale-95"
+                                    >
+                                        <MdHeadsetMic size={21} />
+                                    </button>
+                                    <ButtonFavoritos />
+                                    <ButtonCarrinho />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -213,10 +223,6 @@ export default function Header() {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div className="w-full border-t border-primary/8 px-4 py-1.5 lg:hidden">
-                <ButtonConta />
             </div>
 
             <div className={`w-full border-t border-primary/8 px-3 pb-3 pt-2 transition-all duration-300 lg:hidden ${isSearchBarOpen ? 'block' : 'hidden'}`}>
@@ -283,7 +289,7 @@ export default function Header() {
                                 </div>
                                 <span className="flex flex-col text-primary/75">
                                     <span className="text-[9px] font-semibold uppercase leading-tight tracking-[0.08em]">
-                                        {isAuthLoading ? 'Verificando' : isAuthenticated ? 'Minha conta' : 'Entrar ou'}
+                                        {isAuthLoading ? 'Verificando' : isAuthenticated ? 'Minha Conta' : 'Entrar ou'}
                                     </span>
                                     <span className="mt-0.5 text-[8px] leading-tight">
                                         {isAuthLoading ? 'sua conta' : isAuthenticated ? 'Pedidos e dados' : 'Cadastre-se'}
