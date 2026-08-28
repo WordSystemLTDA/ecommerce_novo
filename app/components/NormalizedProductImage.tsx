@@ -17,6 +17,7 @@ interface NormalizedProductImageProps {
     allowNetworkLoad?: boolean;
     contentInset?: number;
     normalizeContent?: boolean;
+    fillFrame?: boolean;
     isLoading?: boolean;
     onLoad?: () => void;
 }
@@ -32,6 +33,16 @@ const defaultImageLayout: CSSProperties = {
     maxWidth: "100%",
     maxHeight: "100%",
     objectFit: "contain",
+};
+const fillFrameImageLayout: CSSProperties = {
+    width: "100%",
+    height: "100%",
+    left: 0,
+    top: 0,
+    maxWidth: "100%",
+    maxHeight: "100%",
+    objectFit: "fill",
+    padding: 0,
 };
 
 function getCornerColors(data: Uint8ClampedArray, width: number, height: number) {
@@ -192,6 +203,7 @@ export function NormalizedProductImage({
     allowNetworkLoad = true,
     contentInset,
     normalizeContent = true,
+    fillFrame = false,
     isLoading = false,
     onLoad,
 }: NormalizedProductImageProps) {
@@ -209,7 +221,7 @@ export function NormalizedProductImage({
         boundsRef.current = null;
         setImageLayout(undefined);
         setHasContentBounds(false);
-    }, [src, allowNetworkLoad, normalizeContent]);
+    }, [src, allowNetworkLoad, normalizeContent, fillFrame]);
 
     useEffect(() => {
         const frame = frameRef.current;
@@ -226,7 +238,7 @@ export function NormalizedProductImage({
         const loadedSource = image.currentSrc || image.src;
         const loadedFallback = !!fallbackSrc && loadedSource === fallbackSrc;
 
-        if (normalizeContent && allowNetworkLoad && !loadedFallback) {
+        if (!fillFrame && normalizeContent && allowNetworkLoad && !loadedFallback) {
             const cacheKey = loadedSource;
             let bounds = boundsCache.get(cacheKey);
 
@@ -251,8 +263,8 @@ export function NormalizedProductImage({
                 fallbackSrc={fallbackSrc}
                 allowNetworkLoad={allowNetworkLoad}
                 crossOrigin="anonymous"
-                className={`absolute inset-0 h-full w-full object-contain p-4 transition-opacity duration-300 sm:p-5 ${isLoading ? "opacity-0" : "opacity-100"}`}
-                style={imageLayout ?? {
+                className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${fillFrame ? "object-fill p-0" : "object-contain p-4 sm:p-5"} ${isLoading ? "opacity-0" : "opacity-100"}`}
+                style={fillFrame ? fillFrameImageLayout : imageLayout ?? {
                     ...defaultImageLayout,
                     ...(contentInset === undefined ? {} : { padding: contentInset }),
                 }}

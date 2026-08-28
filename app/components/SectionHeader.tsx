@@ -29,7 +29,7 @@ export function SectionHeader({
                     </div>
                 )}
                 <h2
-                    className="text-2xl lg:text-4xl font-serif font-normal text-primary leading-tight"
+                    className="text-[1.35rem] sm:text-[1.55rem] lg:text-[2rem] font-serif font-normal text-primary leading-tight"
                     style={{ fontFamily: 'var(--font-serif, "Playfair Display", Georgia, serif)' }}
                 >
                     {title}

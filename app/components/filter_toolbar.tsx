@@ -1,6 +1,5 @@
 import { FaList, FaTh } from "react-icons/fa";
 import { IoFilter } from "react-icons/io5";
-import { useHome } from "~/features/home/context/HomeContext";
 
 interface FilterToolbarProps {
     onOpenMobileFilter: () => void;
@@ -10,6 +9,8 @@ interface FilterToolbarProps {
     activeFilterCount?: number;
     viewMode?: 'grid' | 'compact';
     onViewModeChange?: (mode: 'grid' | 'compact') => void;
+    sortValue?: string;
+    onSortChange?: (value: string) => void;
 }
 
 export default function FilterToolbar({
@@ -20,11 +21,11 @@ export default function FilterToolbar({
     activeFilterCount = 0,
     viewMode = 'grid',
     onViewModeChange,
+    sortValue = 'mais_procurados',
+    onSortChange,
 }: FilterToolbarProps) {
-    const { activeFilters, applyFilters } = useHome();
-
     const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        applyFilters({ ...activeFilters, ordenacao: event.target.value });
+        onSortChange?.(event.target.value);
     };
 
     return (
@@ -37,7 +38,7 @@ export default function FilterToolbar({
 
                 <div className="ml-auto flex min-w-0 items-center gap-2 sm:ml-0">
                     <label htmlFor="ordenar" className="hidden text-xs font-medium text-primary/60 md:block">Ordenar por</label>
-                    <select id="ordenar" value={activeFilters.ordenacao} onChange={handleSortChange} className="min-w-0 max-w-36 appearance-none truncate border border-primary/15 bg-main-bg px-2.5 py-2 text-xs text-primary outline-none transition-colors focus:border-terciary sm:max-w-none sm:px-3">
+                    <select id="ordenar" value={sortValue} onChange={handleSortChange} className="min-w-0 max-w-36 appearance-none truncate border border-primary/15 bg-main-bg px-2.5 py-2 text-xs text-primary outline-none transition-colors focus:border-terciary sm:max-w-none sm:px-3">
                         <option value="mais_procurados">Mais procurados</option>
                         <option value="mais_recentes">Mais recentes</option>
                         <option value="menor_preco">Menor preço</option>

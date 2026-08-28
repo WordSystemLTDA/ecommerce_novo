@@ -170,7 +170,7 @@ function ModernHomePage() {
           <div className="mb-3 border-y border-primary/10 py-3 sm:py-4 lg:flex lg:items-end lg:justify-between lg:py-5">
             <div>
               <span className="overline-label">Catálogo</span>
-              <h1 className="mt-0.5 font-serif text-3xl font-medium tracking-tight text-primary sm:text-4xl">
+              <h1 className="mt-0.5 font-serif text-2xl font-medium tracking-tight text-primary sm:text-3xl">
                 {isFiltering ? 'Produtos encontrados' : 'Descubra nossa seleção'}
               </h1>
               <p className="mt-1 max-w-2xl text-sm text-primary/60">
@@ -198,6 +198,8 @@ function ModernHomePage() {
                 activeFilterCount={activeFilterCount}
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
+                sortValue={activeFilters.ordenacao}
+                onSortChange={(ordenacao) => applyFilters({ ...activeFilters, ordenacao })}
               />
 
               <CatalogActiveFilters
@@ -533,7 +535,12 @@ function LegacyHomePage() {
             </div>
 
             <div className="lg:col-span-4">
-              <FilterToolbar totalProdutos={produtos?.length ?? 0} onOpenMobileFilter={() => setIsMobileFilterOpen(true)} />
+              <FilterToolbar
+                totalProdutos={produtos?.length ?? 0}
+                onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
+                sortValue={activeFilters.ordenacao}
+                onSortChange={(ordenacao) => applyFilters({ ...activeFilters, ordenacao })}
+              />
 
               <ProductSection
                 id="promocoes"

@@ -63,7 +63,7 @@ function decodeJwt(token: string): any {
 const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: boolean }) => {
     if (isLoading) {
         return (
-            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:gap-2 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 items-stretch gap-1.5 sm:gap-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 10 }).map((_, index) => (
                     <SkeletonProductCard key={index} />
                 ))}
@@ -80,7 +80,7 @@ const ProductGrid = ({ products, isLoading }: { products: Produto[], isLoading: 
     }
 
     return (
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:gap-2 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 items-stretch gap-1.5 sm:gap-2 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((product) => (
                 <ProductCard key={product.id} produto={product} />
             ))}
@@ -345,7 +345,7 @@ export default function CategoryPage() {
                     <div className="lg:col-span-4 lg:mb-5">
                         <div className="mb-4 rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-5">
                             <p className="text-xs uppercase tracking-wide text-slate-500">Resultados da categoria</p>
-                            <p className="text-xl md:text-2xl font-semibold text-slate-800 mt-1">{categoryName}</p>
+                            <p className="mt-1 text-lg font-medium text-slate-800 md:text-xl">{categoryName}</p>
                             <p className="text-sm text-slate-500 mt-1">{pagination.total} itens encontrados</p>
                         </div>
 
@@ -353,6 +353,8 @@ export default function CategoryPage() {
                             totalProdutos={pagination.total}
                             onPerPageChange={setPorPagina}
                             onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
+                            sortValue={activeFilters.ordenacao}
+                            onSortChange={(ordenacao) => handleFilterChange({ ...activeFilters, ordenacao })}
                         />
 
                         <ProductGrid products={products} isLoading={isLoading} />
