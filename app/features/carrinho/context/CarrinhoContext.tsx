@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '~/features/auth/context/AuthContext';
-import { minhacontaService } from '~/features/minhaconta/services/minhacontaService';
 import type { Endereco } from '~/features/minhaconta/types';
 import { produtoService } from '~/features/produto/services/produtoService';
 import type { Produto, ProdutoTamanho } from '~/features/produto/types';
@@ -427,6 +426,7 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
         try {
             setCarregandoEnderecos(true);
 
+            const { minhacontaService } = await import('~/features/minhaconta/services/minhacontaService');
             var response = await minhacontaService.listarEnderecos(cliente!.id);
             const loadedAddresses = Array.isArray(response.data) ? response.data : [];
 

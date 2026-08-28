@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { categoriaService } from "~/features/categoria/services/categoriaService";
 import type { Categoria } from "~/features/categoria/types";
 import { useAuth } from "~/features/auth/context/AuthContext";
-import { minhacontaService } from "~/features/minhaconta/services/minhacontaService";
 import type { Endereco } from "~/features/minhaconta/types";
 
 interface HeaderContextType {
@@ -28,6 +27,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         try {
             setSelectedAddress(address);
 
+            const { minhacontaService } = await import("~/features/minhaconta/services/minhacontaService");
             await minhacontaService.editarEndereco(address.id, {
                 cep: address.cep,
                 logradouro: address.endereco,
@@ -45,29 +45,48 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        const loadInitialData = async () => {
-            try {
-                const [categoriasResponse, categoriasMenuResponse] = await Promise.all([
-                    categoriaService.listarCategoriasComSubCategorias(),
-                    categoriaService.listarCategoriasMenu()
-                ]);
+        let cancelled = false;
 
-                setCategorias(categoriasResponse.data ?? []);
-                setCategoriasMenu(categoriasMenuResponse.data ?? []);
+        const loadMenuCategories = async () => {
+            try {
+                const categoriasMenuResponse = await categoriaService.listarCategoriasMenu();
+                if (cancelled) return;
+
+                const menuCategories = categoriasMenuResponse.data ?? [];
+                setCategoriasMenu(menuCategories);
+                // O menu de departamentos já fica utilizável enquanto as
+                // subcategorias completas são carregadas depois.
+                setCategorias(menuCategories);
             } catch (error) {
-                console.error("Erro ao buscar categorias no HeaderContext", error);
+                console.error("Erro ao buscar categorias do menu", error);
             } finally {
-                setIsLoading(false);
+                if (!cancelled) setIsLoading(false);
             }
         };
 
-        loadInitialData();
+        const loadCategoriesWithChildren = async () => {
+            try {
+                const response = await categoriaService.listarCategoriasComSubCategorias();
+                if (!cancelled) setCategorias(response.data ?? []);
+            } catch (error) {
+                console.error("Erro ao buscar subcategorias do menu", error);
+            }
+        };
+
+        void loadMenuCategories();
+        const fullCategoriesTimer = window.setTimeout(() => void loadCategoriesWithChildren(), 1200);
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(fullCategoriesTimer);
+        };
     }, []);
 
     useEffect(() => {
         const loadAddressData = async () => {
             try {
                 if (isAuthenticated && cliente?.id) {
+                    const { minhacontaService } = await import("~/features/minhaconta/services/minhacontaService");
                     const response = await minhacontaService.listarEnderecos(cliente.id);
                     if (response && Array.isArray(response.data)) {
                         const defaultAddress = response.data.find(addr => addr.padrao === 'Sim');

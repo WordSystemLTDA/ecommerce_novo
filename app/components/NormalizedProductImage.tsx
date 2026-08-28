@@ -198,6 +198,7 @@ export function NormalizedProductImage({
     const frameRef = useRef<HTMLDivElement>(null);
     const boundsRef = useRef<ContentBounds | null>(null);
     const [imageLayout, setImageLayout] = useState<CSSProperties>();
+    const [hasContentBounds, setHasContentBounds] = useState(false);
 
     const updateLayout = useCallback(() => {
         if (!boundsRef.current || !frameRef.current) return;
@@ -207,16 +208,17 @@ export function NormalizedProductImage({
     useEffect(() => {
         boundsRef.current = null;
         setImageLayout(undefined);
+        setHasContentBounds(false);
     }, [src, allowNetworkLoad, normalizeContent]);
 
     useEffect(() => {
         const frame = frameRef.current;
-        if (!frame || typeof ResizeObserver === "undefined") return;
+        if (!frame || !hasContentBounds || typeof ResizeObserver === "undefined") return;
 
         const observer = new ResizeObserver(updateLayout);
         observer.observe(frame);
         return () => observer.disconnect();
-    }, [updateLayout]);
+    }, [hasContentBounds, updateLayout]);
 
     const handleLoad = (event: SyntheticEvent<HTMLImageElement>) => {
         const image = event.currentTarget;
@@ -234,6 +236,7 @@ export function NormalizedProductImage({
             }
 
             boundsRef.current = bounds;
+            setHasContentBounds(!!bounds);
             updateLayout();
         }
 

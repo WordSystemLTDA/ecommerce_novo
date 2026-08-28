@@ -7,26 +7,33 @@ import {
   ScrollRestoration,
 } from "react-router";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, type CSSProperties } from "react";
 import { ToastContainer } from "react-toastify";
 import type { Route } from "./+types/root";
 import Loader from "./components/loader";
-import Loading from "./components/loading";
 import config from "./config/config";
 import { AuthProvider } from "~/features/auth/context/AuthProvider";
-import { ProdutoProvider } from "./features/produto/context/ProdutoContext";
 
-import rangeSliderStyles from 'react-range-slider-input/dist/style.css?url';
 import toastStyles from "react-toastify/dist/ReactToastify.css?url";
-import swiperStyles from 'swiper/swiper-bundle.css?url';
 import appStyles from "./app.css?url";
 import { HeaderProvider } from "./context/HeaderContext";
 import { CarrinhoProvider } from "./features/carrinho/context/CarrinhoContext";
-import { ConfigProvider } from "./features/config/context/ConfigContext";
 import { FavoritoProvider } from "./features/favoritos/context/FavoritoContext";
-import { HomeProvider } from "./features/home/context/HomeContext";
 
 const apiOrigin = new URL(config.API).origin;
+const themeStyles = {
+  '--dynamic-primary': config.CORES.PRIMARIA,
+  '--dynamic-secondary': config.CORES.SECUNDARIA,
+  '--dynamic-terciary': config.CORES.TERCIARIA,
+  '--dynamic-success': config.CORES.SUCESSO,
+  '--dynamic-success-strong': config.CORES.SUCESSO_FORTE,
+  '--dynamic-success-bg': config.CORES.SUCESSO_FUNDO,
+  '--dynamic-bg-header': config.CORES.FUNDO_HEADER,
+  '--dynamic-bg-footer': config.CORES.FUNDO_FOOTER,
+  '--dynamic-bg-main': config.CORES.FUNDO_MAIN,
+  '--dynamic-bg-sidebar': config.CORES.FUNDO_SIDEBAR,
+  '--dynamic-bg-product': config.CORES.FUNDO_PRODUTO,
+} as CSSProperties;
 
 export const links: Route.LinksFunction = () => [
   { rel: "dns-prefetch", href: apiOrigin },
@@ -39,10 +46,8 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&family=Playfair+Display:wght@400;500;700&display=swap",
   },
-  { rel: "stylesheet", href: swiperStyles },
-  { rel: "stylesheet", href: rangeSliderStyles },
   {
     rel: "stylesheet",
     href: toastStyles,
@@ -52,7 +57,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-br" translate="no" className="notranslate" suppressHydrationWarning>
+    <html lang="pt-br" translate="no" className="notranslate" style={themeStyles} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="google" content="notranslate" />
@@ -70,44 +75,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export function HydrateFallback() {
-  return <Loading titulo='Carregando' subtitulo='Aguarde um momento...' />
+  return (
+    <div className="min-h-dvh bg-[#f7f7f7] text-[#111]">
+      <div className="h-20 border-b border-black/10 bg-[#e5e5e5] px-4 sm:h-28">
+        <div className="mx-auto flex h-full max-w-[1520px] items-center gap-4">
+          <div className="h-12 w-12 animate-pulse bg-black/10 sm:h-16 sm:w-16" />
+          <div className="h-11 flex-1 animate-pulse border border-black/10 bg-white/65" />
+        </div>
+      </div>
+      <div className="mx-auto max-w-[1520px] px-4 py-5 sm:px-6">
+        <div className="h-[36vh] min-h-56 animate-pulse bg-black/5 sm:min-h-80" />
+        <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-20 animate-pulse border border-black/5 bg-white" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function App() {
-
-  useEffect(() => {
-    const coresAtivas = config.CORES;
-    const root = document.documentElement;
-    root.style.setProperty('--dynamic-primary', coresAtivas.PRIMARIA);
-    root.style.setProperty('--dynamic-secondary', coresAtivas.SECUNDARIA);
-    root.style.setProperty('--dynamic-terciary', coresAtivas.TERCIARIA);
-    root.style.setProperty('--dynamic-success', coresAtivas.SUCESSO);
-    root.style.setProperty('--dynamic-success-strong', coresAtivas.SUCESSO_FORTE);
-    root.style.setProperty('--dynamic-success-bg', coresAtivas.SUCESSO_FUNDO);
-    root.style.setProperty('--dynamic-bg-header', coresAtivas.FUNDO_HEADER);
-    root.style.setProperty('--dynamic-bg-footer', coresAtivas.FUNDO_FOOTER);
-    root.style.setProperty('--dynamic-bg-main', coresAtivas.FUNDO_MAIN);
-    root.style.setProperty('--dynamic-bg-sidebar', coresAtivas.FUNDO_SIDEBAR);
-    root.style.setProperty('--dynamic-bg-product', coresAtivas.FUNDO_PRODUTO);
-  }, []);
-
   return (
     <Suspense fallback={<Loader />}>
       <AuthProvider>
-        <ConfigProvider>
-          <HomeProvider>
-            <ProdutoProvider>
-              <FavoritoProvider>
-                <CarrinhoProvider>
-                  <HeaderProvider>
-                    <Outlet />
-                    <ToastContainer limit={3} newestOnTop />
-                  </HeaderProvider>
-                </CarrinhoProvider>
-              </FavoritoProvider>
-            </ProdutoProvider>
-          </HomeProvider>
-        </ConfigProvider>
+        <FavoritoProvider>
+          <CarrinhoProvider>
+            <HeaderProvider>
+              <Outlet />
+              <ToastContainer limit={3} newestOnTop />
+            </HeaderProvider>
+          </CarrinhoProvider>
+        </FavoritoProvider>
       </AuthProvider>
     </Suspense>
   );

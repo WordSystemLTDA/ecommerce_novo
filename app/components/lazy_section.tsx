@@ -1,11 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function LazySection({ children, forceVisible = false }: { children: React.ReactNode, forceVisible?: boolean }) {
+interface LazySectionProps {
+    children: React.ReactNode;
+    forceVisible?: boolean;
+    minHeight?: number;
+    rootMargin?: string;
+    className?: string;
+}
+
+export default function LazySection({
+    children,
+    forceVisible = false,
+    minHeight = 200,
+    rootMargin = '350px 0px',
+    className = '',
+}: LazySectionProps) {
     const [isVisible, setIsVisible] = useState(forceVisible);
     const domRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (forceVisible) {
+            setIsVisible(true);
+            return;
+        }
+
+        if (typeof IntersectionObserver === 'undefined') {
             setIsVisible(true);
             return;
         }
@@ -16,7 +35,7 @@ export default function LazySection({ children, forceVisible = false }: { childr
                 observer.disconnect();
             }
         }, {
-            rootMargin: '100px'
+            rootMargin
         });
 
         if (domRef.current) {
@@ -24,14 +43,16 @@ export default function LazySection({ children, forceVisible = false }: { childr
         }
 
         return () => observer.disconnect();
-    }, [forceVisible]);
+    }, [forceVisible, rootMargin]);
 
     return (
-        <div ref={domRef} className=" transition-opacity duration-500">
+        <div ref={domRef} className={`transition-opacity duration-300 ${className}`}>
             {isVisible ? children : (
-                <div className="w-full h-[200px] flex items-center justify-center bg-gray-50 rounded animate-pulse">
-                    <span className="text-gray-400 text-sm">Carregando...</span>
-                </div>
+                <div
+                    aria-hidden="true"
+                    className="w-full animate-pulse border border-primary/5 bg-product-bg/60"
+                    style={{ minHeight }}
+                />
             )}
         </div>
     );

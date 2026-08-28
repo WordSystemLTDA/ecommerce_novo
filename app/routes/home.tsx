@@ -1,44 +1,32 @@
+import config from "~/config/config";
 import { HomePage } from "~/features/home/HomePage";
+import { HomeProvider } from "~/features/home/context/HomeContext";
 import type { Route } from "./+types/home";
-// NÃO importe o hook useConfig aqui.
-// Importe a função que faz a chamada à API (exemplo hipotético abaixo):
-import {getConfig  } from "~/services/configService"; 
+import rangeSliderStyles from "react-range-slider-input/dist/style.css?url";
+import swiperStyles from "swiper/swiper-bundle.css?url";
 
-export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  // ERRO ERA AQUI: const config = useConfig(); 
-  
-  // SOLUÇÃO: Chame a função de busca diretamente
-  // Se você não tem uma função separada, faça o fetch aqui mesmo
-  
-  // Exemplo A: Usando uma função de serviço (recomendado)
-  const configData = await getConfig();
+export const links: Route.LinksFunction = () => [
+  { rel: "stylesheet", href: swiperStyles },
+  { rel: "stylesheet", href: rangeSliderStyles },
+];
 
-  // OU Exemplo B: Fazendo fetch direto se não tiver serviço
-  // const response = await fetch('/api/config');
-  // const configData = await response.json();
-
-  const dadosDoSite = {
-    nomeLoja: configData?.nome || "Minha Loja", // fallback caso venha null
-    promocaoAtiva: ""
-  };
-
-  return dadosDoSite;
-}
-
-// O meta recebe o retorno do clientLoader
-export function meta({ data }: Route.MetaArgs) {
-  if (!data) {
-    return [{ title: "E-commerce" }];
-  }
+// A home não deve aguardar a API para começar a renderizar.
+export function meta() {
+  const storeName = config.FOOTER_CONFIG.nomeExibicao || "E-commerce";
 
   return [
-    { title: `${data.nomeLoja}` },
-    { name: "description", content: `Aproveite as ${data.promocaoAtiva}!` },
+    { title: storeName },
+    {
+      name: "description",
+      content: `Encontre produtos e ofertas na ${storeName}.`,
+    },
   ];
 }
 
 export default function Home() {
-  // Aqui DENTRO do componente você PODE usar o hook se precisar
-  // const config = useConfig(); 
-  return <HomePage />;
+  return (
+    <HomeProvider>
+      <HomePage />
+    </HomeProvider>
+  );
 }

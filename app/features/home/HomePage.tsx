@@ -4,7 +4,7 @@ import Header from "~/components/header";
 import { Autoplay, EffectFade, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 
 import sign from 'jwt-encode';
 import { BsArrowRepeat, BsLightningChargeFill, BsShieldCheck, BsTruck } from "react-icons/bs";
@@ -28,9 +28,12 @@ import { getBannerImageFallback, getBrandImageFallback, getCategoryImageFallback
 import type { Categoria } from "../categoria/types";
 import type { Marca } from "../marca/types";
 import type { Banner } from "../produto/types";
-import { MobileFilterDrawer } from "./components/MobileFilterDrawer";
 import { defaultFilters, useHome, type ActiveFilters, type FilterOptions } from "./context/HomeContext";
 import { NormalizedProductImage } from "~/components/NormalizedProductImage";
+
+const MobileFilterDrawer = lazy(() =>
+  import('./components/MobileFilterDrawer').then((module) => ({ default: module.MobileFilterDrawer })),
+);
 
 interface TrustBadgeProps {
   icon: React.ReactNode;
@@ -41,13 +44,13 @@ interface TrustBadgeProps {
 
 function TrustBadge({ icon, title, description, accent }: TrustBadgeProps) {
   return (
-    <div className="group relative border border-primary/10 bg-product-bg p-3 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-0.5 lg:p-4">
-      <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 lg:h-11 lg:w-11 shrink-0 items-center justify-center rounded-xl border ${accent}`}>
+    <div className="group relative min-w-0 overflow-hidden border border-primary/10 bg-product-bg p-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-0.5 sm:p-3 lg:p-4">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border sm:h-10 sm:w-10 lg:h-11 lg:w-11 ${accent}`}>
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="line-clamp-2 text-xs font-semibold leading-snug text-primary sm:text-sm">{title}</p>
+          <p className="line-clamp-2 overflow-wrap-anywhere text-[11px] font-semibold leading-snug text-primary sm:text-sm">{title}</p>
           <p className="hidden truncate text-xs text-primary/60 sm:block">{description}</p>
         </div>
       </div>
@@ -155,7 +158,7 @@ function ModernHomePage() {
         )}
 
         <section className="page-container py-5 lg:py-7" aria-label="Benefícios da loja">
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 lg:grid-cols-4 lg:gap-3">
             <TrustBadge icon={<BsTruck size={20} />} title="Entrega para todo Brasil" description="Calcule o prazo pelo seu CEP" accent="border-terciary/20 bg-terciary/8 text-terciary" />
             <TrustBadge icon={<BsShieldCheck size={20} />} title="Compra protegida" description="Pagamento seguro e monitorado" accent="border-primary/15 bg-primary/5 text-primary" />
             <TrustBadge icon={<BsArrowRepeat size={20} />} title="Troca facilitada" description="Consulte as regras da loja" accent="border-terciary/20 bg-terciary/8 text-terciary" />
@@ -250,93 +253,103 @@ function ModernHomePage() {
         />
 
         <div className="page-container pb-12 lg:pb-16">
-          <section className="mt-10">
-            <SectionHeader eyebrow="Navegue por" title="Departamentos" description="Encontre exatamente o que procura" icon={<HiOutlineSparkles size={20} />} accent="primary" onLinkClick={scrollToCatalog} />
-            <LazySection forceVisible>
+          <LazySection minHeight={260} className="mt-10">
+            <section>
+              <SectionHeader eyebrow="Navegue por" title="Departamentos" description="Encontre exatamente o que procura" icon={<HiOutlineSparkles size={20} />} accent="primary" onLinkClick={scrollToCatalog} />
               <CarouselCategoriaComImagem
                 id="departamentos_home"
                 onChange={(category) => handleSectionCategoryClick('departamentos_home', category)}
                 selectedCategoryId={sectionCategories.departamentos_home}
                 canLoadImages={isInitialDataLoaded}
               />
-            </LazySection>
-          </section>
+            </section>
+          </LazySection>
 
           <div className="section-divider" />
 
-          <ProductSection
-            id="maisprocurados_home"
-            title="Tendências do momento"
-            eyebrow="Mais procurados"
-            description="O que todo mundo está olhando"
-            icon={<MdTrendingUp size={22} />}
-            accent="terciary"
-            filtros="maisprocurados"
-            selectedCategoryId={sectionCategories.maisprocurados_home}
-            onCategoryChange={handleSectionCategoryClick}
-            onLinkClick={scrollToCatalog}
-          />
+          <LazySection minHeight={520}>
+            <ProductSection
+              id="maisprocurados_home"
+              title="Tendências do momento"
+              eyebrow="Mais procurados"
+              description="O que todo mundo está olhando"
+              icon={<MdTrendingUp size={22} />}
+              accent="terciary"
+              filtros="maisprocurados"
+              selectedCategoryId={sectionCategories.maisprocurados_home}
+              onCategoryChange={handleSectionCategoryClick}
+              onLinkClick={scrollToCatalog}
+            />
+          </LazySection>
 
           {pos2Banners.length > 0 ? (
-            <div className="mt-10">
+            <LazySection minHeight={260} className="mt-10">
               <SecondaryBannerCarousel banners={pos2Banners} canLoadImages={isInitialDataLoaded} className="h-[180px] md:h-[260px]" />
-            </div>
+            </LazySection>
           ) : secondaryBanners.length === 0 && (
             <div className="mt-10"><FallbackBannerCard title="Destaques da loja" className="h-[180px] md:h-[260px]" /></div>
           )}
 
-          <section className="mt-10">
-            <SectionHeader eyebrow="As que você ama" title="Marcas em destaque" description="Seleções para todos os estilos" icon={<MdWorkspacePremium size={20} />} accent="amber" onLinkClick={scrollToCatalog} />
-            <LazySection forceVisible>
+          <LazySection minHeight={280} className="mt-10">
+            <section>
+              <SectionHeader eyebrow="As que você ama" title="Marcas em destaque" description="Seleções para todos os estilos" icon={<MdWorkspacePremium size={20} />} accent="amber" onLinkClick={scrollToCatalog} />
               <CarouselMarcaComImagem
                 id="marcas_home"
                 onChange={(brand) => handleSectionBrandClick('marcas_home', brand)}
                 selectedMarcaId={sectionMarcas.marcas_home}
                 canLoadImages={isInitialDataLoaded}
               />
-            </LazySection>
-          </section>
+            </section>
+          </LazySection>
 
           <div className="section-divider" />
 
-          <ProductSection
-            id="novidades_home"
-            title="Acabaram de chegar"
-            eyebrow="Novidades"
-            description="Lançamentos recém-chegados ao estoque"
-            icon={<MdNewReleases size={22} />}
-            accent="emerald"
-            filtros="order_by=recente"
-            selectedCategoryId={sectionCategories.novidades_home}
-            onCategoryChange={handleSectionCategoryClick}
-            onLinkClick={scrollToCatalog}
-          />
+          <LazySection minHeight={520}>
+            <ProductSection
+              id="novidades_home"
+              title="Acabaram de chegar"
+              eyebrow="Novidades"
+              description="Lançamentos recém-chegados ao estoque"
+              icon={<MdNewReleases size={22} />}
+              accent="emerald"
+              filtros="order_by=recente"
+              selectedCategoryId={sectionCategories.novidades_home}
+              onCategoryChange={handleSectionCategoryClick}
+              onLinkClick={scrollToCatalog}
+            />
+          </LazySection>
 
           <div className="section-divider" />
 
-          <ProductSection
-            id="maisvendidos_home"
-            title="Mais vendidos"
-            eyebrow="Preferidos dos clientes"
-            description="Produtos que fazem sucesso na loja"
-            icon={<MdLocalFireDepartment size={22} />}
-            accent="rose"
-            filtros="maisvendidos"
-            selectedCategoryId={sectionCategories.maisvendidos_home}
-            onCategoryChange={handleSectionCategoryClick}
-            onLinkClick={scrollToCatalog}
-          />
+          <LazySection minHeight={520}>
+            <ProductSection
+              id="maisvendidos_home"
+              title="Mais vendidos"
+              eyebrow="Preferidos dos clientes"
+              description="Produtos que fazem sucesso na loja"
+              icon={<MdLocalFireDepartment size={22} />}
+              accent="rose"
+              filtros="maisvendidos"
+              selectedCategoryId={sectionCategories.maisvendidos_home}
+              onCategoryChange={handleSectionCategoryClick}
+              onLinkClick={scrollToCatalog}
+            />
+          </LazySection>
         </div>
       </main>
 
       <Footer />
-      <MobileFilterDrawer
-        isOpen={isMobileFilterOpen}
-        onClose={() => setIsMobileFilterOpen(false)}
-        activeFilters={activeFilters}
-        filterOptions={filterOptions}
-        onApply={applyFilters}
-      />
+      {isMobileFilterOpen && (
+        <Suspense fallback={null}>
+          <MobileFilterDrawer
+            isOpen
+            onClose={() => setIsMobileFilterOpen(false)}
+            activeFilters={activeFilters}
+            filterOptions={filterOptions}
+            onApply={applyFilters}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

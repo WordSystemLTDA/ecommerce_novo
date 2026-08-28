@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'react-toastify';
-import Loading from '~/components/loading';
 import { authService } from '~/features/auth/services/authService';
 import type { Cliente } from '~/features/auth/types';
 import { AuthContext } from './AuthContext';
@@ -11,6 +10,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         async function checkUser() {
+            const token = localStorage.getItem('token');
+
+            // Visitantes não autenticados não precisam esperar uma chamada que
+            // inevitavelmente responderia 401 antes de visualizar a loja.
+            if (!token) {
+                setIsLoading(false);
+                return;
+            }
+
             try {
                 const response = await authService.eu();
 
@@ -77,9 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             login,
             logout
         }}>
-            {isLoading
-                ? <Loading titulo='Carregando' subtitulo='Carregando sessao...' />
-                : children}
+            {children}
         </AuthContext.Provider>
     );
 }

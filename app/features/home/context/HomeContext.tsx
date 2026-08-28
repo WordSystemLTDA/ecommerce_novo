@@ -54,6 +54,46 @@ export interface ActiveFilters {
 
 const HomeContext = createContext<HomeContextType | undefined>(undefined);
 const SIDEBAR_FILTERS_CACHE_KEY = 'home:sidebar-filters';
+const CATALOG_CACHE_KEY = 'home:catalog-default';
+
+interface CachedCatalog {
+    expiresAt: number;
+    produtos: Produto[];
+    total: number;
+}
+
+function getCachedCatalog(): CachedCatalog | null {
+    if (typeof window === 'undefined') return null;
+
+    try {
+        const cached = window.sessionStorage.getItem(CATALOG_CACHE_KEY);
+        if (!cached) return null;
+
+        const parsed = JSON.parse(cached) as CachedCatalog;
+        if (parsed.expiresAt <= Date.now() || !Array.isArray(parsed.produtos)) {
+            window.sessionStorage.removeItem(CATALOG_CACHE_KEY);
+            return null;
+        }
+
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
+function persistCatalog(produtos: Produto[], total: number) {
+    if (typeof window === 'undefined') return;
+
+    try {
+        window.sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({
+            expiresAt: Date.now() + 60_000,
+            produtos,
+            total,
+        } satisfies CachedCatalog));
+    } catch {
+        // Storage may be unavailable in private browsing or already full.
+    }
+}
 
 function getCachedSidebarFilters(): FilterOptions | null {
     if (typeof window === 'undefined') {
@@ -108,9 +148,10 @@ export const defaultFilters: ActiveFilters = {
 };
 
 export function HomeProvider({ children }: { children: ReactNode }) {
-    const cachedSidebarFilters = getCachedSidebarFilters();
+    const [cachedSidebarFilters] = useState<FilterOptions | null>(() => getCachedSidebarFilters());
+    const [cachedCatalog] = useState<CachedCatalog | null>(() => getCachedCatalog());
     const [produtos, setProdutos] = useState<ProdutosBanners[]>([]);
-    const [isLoadingFilters, setIsLoadingFilters] = useState(false);
+    const [isLoadingFilters, setIsLoadingFilters] = useState(!cachedCatalog);
     const [isLoadingSidebarFilters, setIsLoadingSidebarFilters] = useState(!cachedSidebarFilters);
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -121,8 +162,8 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         tamanhos: []
     });
     const [activeFilters, setActiveFilters] = useState<ActiveFilters>(defaultFilters);
-    const [filteredProducts, setFilteredProducts] = useState<Produto[]>([]);
-    const [filteredTotal, setFilteredTotal] = useState(0);
+    const [filteredProducts, setFilteredProducts] = useState<Produto[]>(cachedCatalog?.produtos ?? []);
+    const [filteredTotal, setFilteredTotal] = useState(cachedCatalog?.total ?? 0);
     const [filteredPage, setFilteredPage] = useState(1);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isFiltering, setIsFiltering] = useState(false);
@@ -167,70 +208,71 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     }, [filterOptions.categorias]);
 
     useEffect(() => {
-        const loadInitialData = async () => {
-            if (hasLoadedInitialDataRef.current) {
-                return;
+        if (hasLoadedInitialDataRef.current) return;
+
+        hasLoadedInitialDataRef.current = true;
+        setIsLoadingSidebarFilters(!cachedSidebarFilters);
+
+        const loadSidebarFilters = async () => {
+            try {
+                const filtersResult = await produtoService.listarFiltros();
+
+                if (filtersResult?.sucesso) {
+                    setFilterOptions(filtersResult.data);
+                    sectionCategoriesCacheRef.current = filtersResult.data.categorias ?? [];
+                    persistSidebarFilters(filtersResult.data);
+                }
+            } catch (error) {
+                console.error('Error loading sidebar filters', error);
+            } finally {
+                setIsLoadingSidebarFilters(false);
             }
-
-            hasLoadedInitialDataRef.current = true;
-            setIsLoadingSidebarFilters(!cachedSidebarFilters);
-
-            const loadSidebarFilters = async () => {
-                try {
-                    const filtersResult = await produtoService.listarFiltros();
-
-                    if (filtersResult?.sucesso) {
-                        setFilterOptions(filtersResult.data);
-                        sectionCategoriesCacheRef.current = filtersResult.data.categorias ?? [];
-                        persistSidebarFilters(filtersResult.data);
-                    }
-                } catch (error) {
-                    console.error('Error loading sidebar filters', error);
-                } finally {
-                    setIsLoadingSidebarFilters(false);
-                }
-            };
-
-            const loadBanners = async () => {
-                try {
-                    const [principalResult, secondaryResult] = await Promise.allSettled([
-                        getBanners('Principal'),
-                        getBanners('Secundario'),
-                    ]);
-
-                    if (principalResult.status === 'fulfilled') {
-                        setBanners(principalResult.value);
-                    }
-
-                    if (secondaryResult.status === 'fulfilled') {
-                        setSecondaryBanners(secondaryResult.value);
-                    }
-                } catch (error) {
-                    console.error('Error loading home banners', error);
-                } finally {
-                    setIsInitialDataLoaded(true);
-                }
-            };
-
-            loadSidebarFilters();
-            loadBanners();
         };
 
-        loadInitialData();
-    }, []);
+        const loadPrincipalBanner = async () => {
+            try {
+                setBanners(await getBanners('Principal'));
+            } catch (error) {
+                console.error('Error loading main home banner', error);
+            } finally {
+                // O banner principal não precisa aguardar banners secundários.
+                setIsInitialDataLoaded(true);
+            }
+        };
 
-    const fetchFilteredProducts = useCallback(async (token?: string, page = 1, append = false) => {
+        const loadSecondaryBanners = async () => {
+            try {
+                setSecondaryBanners(await getBanners('Secundario'));
+            } catch (error) {
+                console.error('Error loading secondary home banners', error);
+            }
+        };
+
+        void loadPrincipalBanner();
+
+        const isSmallScreen = window.matchMedia('(max-width: 1023px)').matches;
+        const filterDelay = cachedSidebarFilters ? 4000 : (isSmallScreen ? 1200 : 600);
+        const secondaryBannerTimer = window.setTimeout(() => void loadSecondaryBanners(), 500);
+        const sidebarFilterTimer = window.setTimeout(() => void loadSidebarFilters(), filterDelay);
+
+        return () => {
+            window.clearTimeout(secondaryBannerTimer);
+            window.clearTimeout(sidebarFilterTimer);
+        };
+    }, [cachedSidebarFilters]);
+
+    const fetchFilteredProducts = useCallback(async (token?: string, page = 1, append = false, keepCurrent = false) => {
         const requestKey = `${token || 'catalogo-padrao'}:pagina-${page}`;
         latestFilterRequestRef.current = requestKey;
         if (append) {
             setIsLoadingMore(true);
         } else {
             setIsLoadingMore(false);
-            setIsLoadingFilters(true);
+            setIsLoadingFilters(!keepCurrent);
         }
         try {
             const params = new URLSearchParams();
-            params.set('por_pagina', '24');
+            params.set('por_pagina', '16');
             params.set('pagina', String(page));
             if (token) {
                 params.append('filtros', token);
@@ -252,17 +294,23 @@ export function HomeProvider({ children }: { children: ReactNode }) {
             const response = await produtoService.listarProdutos(queryString);
 
             if (response.sucesso && latestFilterRequestRef.current === requestKey) {
+                const responseProducts = response.data.produtos as Produto[];
+                const responseTotal = Number(response.data.paginacao?.total ?? responseProducts.length);
                 setFilteredProducts((currentProducts) => {
-                    if (!append) return response.data.produtos;
+                    if (!append) return responseProducts;
 
                     const knownIds = new Set(currentProducts.map((product) => product.id));
                     return [
                         ...currentProducts,
-                        ...response.data.produtos.filter((product) => !knownIds.has(product.id)),
+                        ...responseProducts.filter((product) => !knownIds.has(product.id)),
                     ];
                 });
-                setFilteredTotal(Number(response.data.paginacao?.total ?? response.data.produtos.length));
+                setFilteredTotal(responseTotal);
                 setFilteredPage(page);
+
+                if (!token && !authToken && page === 1) {
+                    persistCatalog(responseProducts, responseTotal);
+                }
             }
         } catch (error) {
             console.error("Error fetching filtered products", error);
@@ -297,9 +345,9 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         } else {
             setIsFiltering(false);
             setActiveFilters(defaultFilters);
-            fetchFilteredProducts();
+            fetchFilteredProducts(undefined, 1, false, !!cachedCatalog);
         }
-    }, [fetchFilteredProducts, searchParams]);
+    }, [cachedCatalog, fetchFilteredProducts, searchParams]);
 
     const applyFilters = useCallback((filters: ActiveFilters) => {
         const payload: any = {};
