@@ -57,11 +57,27 @@ const HomeContext = createContext<HomeContextType | undefined>(undefined);
 const EMPRESAS_CACHE_SCOPE = config.EMPRESAS.join(',') || 'default';
 const SIDEBAR_FILTERS_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:sidebar-filters`;
 const CATALOG_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:catalog-default`;
+const SIDEBAR_FILTERS_CACHE_TTL = 5 * 60_000;
 
 interface CachedCatalog {
     expiresAt: number;
     produtos: Produto[];
     total: number;
+}
+
+interface CachedSidebarFilters {
+    expiresAt: number;
+    filters: FilterOptions;
+}
+
+function isFilterOptions(value: unknown): value is FilterOptions {
+    if (!value || typeof value !== 'object') return false;
+
+    const candidate = value as Partial<FilterOptions>;
+    return Array.isArray(candidate.marcas)
+        && Array.isArray(candidate.categorias)
+        && Array.isArray(candidate.cores)
+        && Array.isArray(candidate.tamanhos);
 }
 
 function getCachedCatalog(): CachedCatalog | null {
@@ -108,7 +124,19 @@ function getCachedSidebarFilters(): FilterOptions | null {
             return null;
         }
 
-        return JSON.parse(cached) as FilterOptions;
+        const parsed = JSON.parse(cached) as CachedSidebarFilters | FilterOptions;
+        if ('filters' in parsed) {
+            if (parsed.expiresAt <= Date.now() || !isFilterOptions(parsed.filters)) {
+                window.sessionStorage.removeItem(SIDEBAR_FILTERS_CACHE_KEY);
+                return null;
+            }
+
+            return parsed.filters;
+        }
+
+        // Compatibilidade com o cache salvo pelas versoes anteriores. Ele e
+        // revalidado em segundo plano assim que a Home abre.
+        return isFilterOptions(parsed) ? parsed : null;
     } catch {
         return null;
     }
@@ -120,7 +148,10 @@ function persistSidebarFilters(filters: FilterOptions) {
     }
 
     try {
-        window.sessionStorage.setItem(SIDEBAR_FILTERS_CACHE_KEY, JSON.stringify(filters));
+        window.sessionStorage.setItem(SIDEBAR_FILTERS_CACHE_KEY, JSON.stringify({
+            expiresAt: Date.now() + SIDEBAR_FILTERS_CACHE_TTL,
+            filters,
+        } satisfies CachedSidebarFilters));
     } catch {
         // Ignore cache persistence failures.
     }
@@ -179,7 +210,6 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     const [banners, setBanners] = useState<Banner[]>([]);
     const [secondaryBanners, setSecondaryBanners] = useState<Banner[]>([]);
     const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
-    const hasLoadedInitialDataRef = useRef(false);
     const sectionCategoriesCacheRef = useRef<Categoria[] | null>(cachedSidebarFilters?.categorias ?? null);
     const sectionCategoriesPromiseRef = useRef<Promise<Categoria[]> | null>(null);
 
@@ -210,56 +240,80 @@ export function HomeProvider({ children }: { children: ReactNode }) {
     }, [filterOptions.categorias]);
 
     useEffect(() => {
-        if (hasLoadedInitialDataRef.current) return;
-
-        hasLoadedInitialDataRef.current = true;
+        let isActive = true;
         setIsLoadingSidebarFilters(!cachedSidebarFilters);
 
         const loadSidebarFilters = async () => {
-            try {
-                const filtersResult = await produtoService.listarFiltros();
+            for (let attempt = 0; attempt < 2; attempt += 1) {
+                try {
+                    const filtersResult = await produtoService.listarFiltros();
+                    const loadedFilters = filtersResult?.data;
 
-                if (filtersResult?.sucesso) {
-                    setFilterOptions(filtersResult.data);
-                    sectionCategoriesCacheRef.current = filtersResult.data.categorias ?? [];
-                    persistSidebarFilters(filtersResult.data);
+                    if (!filtersResult?.sucesso || !isFilterOptions(loadedFilters)) {
+                        throw new Error('Resposta de filtros invalida.');
+                    }
+
+                    if (isActive) {
+                        setFilterOptions(loadedFilters);
+                        sectionCategoriesCacheRef.current = loadedFilters.categorias;
+                        persistSidebarFilters(loadedFilters);
+                    }
+                    return;
+                } catch (error) {
+                    if (attempt === 1) {
+                        console.error('Error loading sidebar filters', error);
+                    } else {
+                        await new Promise((resolve) => window.setTimeout(resolve, 350));
+                    }
                 }
-            } catch (error) {
-                console.error('Error loading sidebar filters', error);
+            }
+        };
+
+        const finishSidebarFilters = async () => {
+            try {
+                await loadSidebarFilters();
             } finally {
-                setIsLoadingSidebarFilters(false);
+                if (isActive) {
+                    setIsLoadingSidebarFilters(false);
+                }
             }
         };
 
         const loadPrincipalBanner = async () => {
             try {
-                setBanners(await getBanners('Principal'));
+                const principalBanners = await getBanners('Principal');
+                if (isActive) {
+                    setBanners(principalBanners);
+                }
             } catch (error) {
                 console.error('Error loading main home banner', error);
             } finally {
-                // O banner principal não precisa aguardar banners secundários.
-                setIsInitialDataLoaded(true);
+                if (isActive) {
+                    // O banner principal nao precisa aguardar banners secundarios.
+                    setIsInitialDataLoaded(true);
+                }
             }
         };
 
         const loadSecondaryBanners = async () => {
             try {
-                setSecondaryBanners(await getBanners('Secundario'));
+                const loadedBanners = await getBanners('Secundario');
+                if (isActive) {
+                    setSecondaryBanners(loadedBanners);
+                }
             } catch (error) {
                 console.error('Error loading secondary home banners', error);
             }
         };
 
         void loadPrincipalBanner();
+        void finishSidebarFilters();
 
-        const isSmallScreen = window.matchMedia('(max-width: 1023px)').matches;
-        const filterDelay = cachedSidebarFilters ? 4000 : (isSmallScreen ? 1200 : 600);
         const secondaryBannerTimer = window.setTimeout(() => void loadSecondaryBanners(), 500);
-        const sidebarFilterTimer = window.setTimeout(() => void loadSidebarFilters(), filterDelay);
 
         return () => {
+            isActive = false;
             window.clearTimeout(secondaryBannerTimer);
-            window.clearTimeout(sidebarFilterTimer);
         };
     }, [cachedSidebarFilters]);
 

@@ -1056,7 +1056,7 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoad
     >
       <div className="relative h-32 w-full overflow-hidden bg-main-bg">
         <NormalizedProductImage
-          src={categoria.imagem}
+          src={shouldNormalizeImage ? categoria.imagem : undefined}
           fallbackSrc={categoryImageFallback}
           allowNetworkLoad={canLoadImages}
           normalizeContent={shouldNormalizeImage}
@@ -1090,7 +1090,7 @@ export function MarcaCardComImagem({ marca, onClick, isSelected, canLoadImages =
     >
       <div className="relative h-40 w-full overflow-hidden bg-main-bg">
         <NormalizedProductImage
-          src={marca.imagem}
+          src={shouldNormalizeImage ? marca.imagem : undefined}
           fallbackSrc={fallbackMarcaImage}
           allowNetworkLoad={canLoadImages}
           normalizeContent={shouldNormalizeImage}
@@ -1355,10 +1355,18 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId, c
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
 
-  const { filterOptions } = useHome();
+  const { filterOptions, isLoadingSidebarFilters } = useHome();
   const categorias = filterOptions.categorias;
 
   if (!categorias || categorias.length <= 0) {
+    if (!isLoadingSidebarFilters) {
+      return (
+        <p className="border border-primary/10 bg-product-bg px-4 py-6 text-sm text-primary/55">
+          Nenhum departamento disponivel no momento.
+        </p>
+      );
+    }
+
     return (
       <div className="relative w-full">
         <div className="flex gap-3 overflow-hidden px-4 lg:px-0">
@@ -1425,10 +1433,18 @@ export function CarouselMarcaComImagem({ id, onChange, selectedMarcaId, canLoadI
   const prevButtonId = `${id}-category-carousel-prev`;
   const nextButtonId = `${id}-category-carousel-next`;
 
-  const { filterOptions } = useHome();
+  const { filterOptions, isLoadingSidebarFilters } = useHome();
   const marcas = filterOptions.marcas;
 
   if (!marcas || marcas.length <= 0) {
+    if (!isLoadingSidebarFilters) {
+      return (
+        <p className="border border-primary/10 bg-product-bg px-4 py-6 text-sm text-primary/55">
+          Nenhuma marca disponivel no momento.
+        </p>
+      );
+    }
+
     return (
       <div className="relative w-full">
         <div className="flex gap-3 overflow-hidden px-4 lg:px-0">

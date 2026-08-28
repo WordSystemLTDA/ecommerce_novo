@@ -23,14 +23,20 @@ export function OptimizedImage({
     const imageRef = useRef<HTMLImageElement>(null);
     const [hasError, setHasError] = useState(false);
     const [timedOut, setTimedOut] = useState(false);
+    const [hasLoaded, setHasLoaded] = useState(false);
     const [isNearViewport, setIsNearViewport] = useState(priority);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hasValidSrc = typeof src === "string" ? src.trim().length > 0 : !!src;
 
     // Reset error/timeout state when src changes
     useEffect(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
         setHasError(false);
         setTimedOut(false);
+        setHasLoaded(false);
     }, [src]);
 
     // O lazy-load nativo pode antecipar imagens que ainda estão muito abaixo da
@@ -63,16 +69,32 @@ export function OptimizedImage({
 
     // O timeout só começa quando a imagem realmente entra na fila de download.
     useEffect(() => {
-        if (!canRequestImage || !hasValidSrc || hasError || timedOut) return;
+        if (!canRequestImage || !hasValidSrc || hasError || timedOut || hasLoaded) return;
+
+        // Imagens vindas do cache podem concluir antes de o useEffect executar.
+        // Nesse caso o onLoad ja passou e criar um timeout faria a foto valida
+        // ser substituida pelo fallback alguns segundos depois.
+        const image = imageRef.current;
+        if (image?.complete && image.naturalWidth > 0) {
+            setHasLoaded(true);
+            return;
+        }
 
         timeoutRef.current = setTimeout(() => {
-            setTimedOut(true);
+            const currentImage = imageRef.current;
+            if (!currentImage?.complete || currentImage.naturalWidth <= 0) {
+                setTimedOut(true);
+            }
+            timeoutRef.current = null;
         }, timeoutMs);
 
         return () => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
         };
-    }, [src, canRequestImage, hasValidSrc, hasError, timedOut, timeoutMs]);
+    }, [src, canRequestImage, hasValidSrc, hasError, hasLoaded, timedOut, timeoutMs]);
 
     const resolvedSrc = useMemo(() => {
         if ((!hasValidSrc || hasError || timedOut) && fallbackSrc) {
@@ -94,11 +116,18 @@ export function OptimizedImage({
             decoding={decoding ?? "async"}
             fetchPriority={fetchPriority ?? (priority && allowNetworkLoad ? "high" : "auto")}
             onLoad={canRequestImage ? (event) => {
-                if (timeoutRef.current) clearTimeout(timeoutRef.current);
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                }
+                setHasLoaded(true);
                 if (onLoad) onLoad(event);
             } : undefined}
             onError={canRequestImage ? (event) => {
-                if (timeoutRef.current) clearTimeout(timeoutRef.current);
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                }
                 if (fallbackSrc && !hasError) {
                     setHasError(true);
                 }
