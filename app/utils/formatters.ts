@@ -36,5 +36,6 @@ export function calcularDataChegada(dataInicial: Date, diasUteis: number): strin
 export const currencyFormatter = Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-    maximumFractionDigits: 3,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
 });

@@ -2,6 +2,7 @@ import { loadMercadoPago } from '@mercadopago/sdk-js';
 import { useEffect, useId, useState } from 'react';
 import { FaLock } from 'react-icons/fa';
 import Loader from '~/components/loader';
+import { currencyFormatter } from '~/utils/formatters';
 import { mercadoPagoService } from './mercado_pago_service';
 import type { MercadoPagoCardData } from './types';
 
@@ -216,10 +217,7 @@ export function MercadoPagoCardBrick({
         <p className="mt-3 rounded-md bg-primary/5 px-3 py-2 text-sm text-gray-700">
           Você escolheu{' '}
           <strong>
-            {installments}x de {new Intl.NumberFormat('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            }).format(amount / installments)}
+            {installments}x de {currencyFormatter.format(amount / installments)}
           </strong>
           .
         </p>
