@@ -13,7 +13,10 @@ type ArrayFilterKey = 'categorias' | 'marcas' | 'cores' | 'tamanhos';
 
 export function FilterContent({ activeFilters, filterOptions, onFilterChange }: FilterContentProps) {
     const handleCheckboxChange = (type: ArrayFilterKey, value: number | string) => {
-        const currentValues = activeFilters[type] as Array<number | string>;
+        const rawCurrentValues = activeFilters?.[type];
+        const currentValues = Array.isArray(rawCurrentValues)
+            ? rawCurrentValues as Array<number | string>
+            : [];
         const nextValues = currentValues.includes(value)
             ? currentValues.filter((currentValue) => currentValue !== value)
             : [...currentValues, value];
@@ -25,46 +28,55 @@ export function FilterContent({ activeFilters, filterOptions, onFilterChange }: 
         onFilterChange({ ...activeFilters, [type]: !activeFilters[type] });
     };
 
+    const categorias = Array.isArray(filterOptions?.categorias) ? filterOptions.categorias : [];
+    const marcas = Array.isArray(filterOptions?.marcas) ? filterOptions.marcas : [];
+    const cores = Array.isArray(filterOptions?.cores) ? filterOptions.cores : [];
+    const tamanhos = Array.isArray(filterOptions?.tamanhos) ? filterOptions.tamanhos : [];
+    const selectedCategorias = Array.isArray(activeFilters?.categorias) ? activeFilters.categorias : [];
+    const selectedMarcas = Array.isArray(activeFilters?.marcas) ? activeFilters.marcas : [];
+    const selectedCores = Array.isArray(activeFilters?.cores) ? activeFilters.cores : [];
+    const selectedTamanhos = Array.isArray(activeFilters?.tamanhos) ? activeFilters.tamanhos : [];
+
     return (
         <div className="flex flex-col">
-            {filterOptions.categorias.length > 0 && (
+            {categorias.length > 0 && (
                 <FilterSection title="Departamentos" defaultOpen>
                     <CheckboxFilter
-                        items={filterOptions.categorias.map((category) => ({ id: Number(category.id), label: category.nome }))}
-                        selectedValues={activeFilters.categorias}
+                        items={categorias.map((category) => ({ id: Number(category.id), label: String(category.nome ?? '') }))}
+                        selectedValues={selectedCategorias}
                         onChange={(id) => handleCheckboxChange('categorias', id)}
                         showSearch
                     />
                 </FilterSection>
             )}
 
-            {filterOptions.marcas.length > 0 && (
+            {marcas.length > 0 && (
                 <FilterSection title="Marcas" defaultOpen>
                     <CheckboxFilter
-                        items={filterOptions.marcas.map((brand) => ({ id: Number(brand.id), label: brand.nome }))}
-                        selectedValues={activeFilters.marcas}
+                        items={marcas.map((brand) => ({ id: Number(brand.id), label: String(brand.nome ?? '') }))}
+                        selectedValues={selectedMarcas}
                         onChange={(id) => handleCheckboxChange('marcas', id)}
                         showSearch
                     />
                 </FilterSection>
             )}
 
-            {filterOptions.cores.length > 0 && (
+            {cores.length > 0 && (
                 <FilterSection title="Cores" defaultOpen>
                     <CheckboxFilter
-                        items={filterOptions.cores.map((color) => ({ id: Number(color.id), label: color.nome }))}
-                        selectedValues={activeFilters.cores}
+                        items={cores.map((color) => ({ id: Number(color.id), label: String(color.nome ?? '') }))}
+                        selectedValues={selectedCores}
                         onChange={(id) => handleCheckboxChange('cores', id)}
-                        showSearch={filterOptions.cores.length > 7}
+                        showSearch={cores.length > 7}
                     />
                 </FilterSection>
             )}
 
-            {filterOptions.tamanhos.length > 0 && (
+            {tamanhos.length > 0 && (
                 <FilterSection title="Tamanhos" defaultOpen>
                     <CheckboxFilter
-                        items={filterOptions.tamanhos.map((size) => ({ id: size, label: size }))}
-                        selectedValues={activeFilters.tamanhos}
+                        items={tamanhos.map((size) => ({ id: size, label: size }))}
+                        selectedValues={selectedTamanhos}
                         onChange={(id) => handleCheckboxChange('tamanhos', id)}
                         layout="grid"
                     />

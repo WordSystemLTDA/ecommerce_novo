@@ -9,6 +9,7 @@ import { ProductCard } from '~/components/ProductCard';
 import { SkeletonProductCard } from '~/components/skeleton_product_card';
 import config from '~/config/config';
 import { MobileFilterDrawer } from '~/features/home/components/MobileFilterDrawer';
+import { persistSidebarFiltersCache, readSidebarFiltersCache } from '~/features/home/utils/sidebarFiltersCache';
 import { produtoService } from '~/features/produto/services/produtoService';
 import type { Paginacao, Produto } from '~/features/produto/types';
 import { gerarSlug } from '~/utils/formatters';
@@ -46,6 +47,38 @@ const defaultFilters: ActiveFilters = {
 
 const EMPRESAS_CACHE_SCOPE = config.EMPRESAS.join(',') || 'default';
 const SIDEBAR_FILTERS_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:sidebar-filters`;
+
+function isFilterOptions(value: unknown): value is FilterOptions {
+    if (!value || typeof value !== 'object') return false;
+
+    const candidate = value as Partial<FilterOptions>;
+    return Array.isArray(candidate.marcas)
+        && Array.isArray(candidate.categorias)
+        && Array.isArray(candidate.cores)
+        && Array.isArray(candidate.tamanhos);
+}
+
+function getCachedFilterOptions() {
+    return readSidebarFiltersCache(SIDEBAR_FILTERS_CACHE_KEY, isFilterOptions);
+}
+
+function normalizeActiveFilters(value: unknown): ActiveFilters {
+    const candidate = value && typeof value === 'object'
+        ? value as Partial<ActiveFilters>
+        : {};
+
+    return {
+        ...defaultFilters,
+        ...candidate,
+        marcas: Array.isArray(candidate.marcas) ? candidate.marcas : [],
+        categorias: Array.isArray(candidate.categorias) ? candidate.categorias : [],
+        cores: Array.isArray(candidate.cores) ? candidate.cores : [],
+        tamanhos: Array.isArray(candidate.tamanhos) ? candidate.tamanhos : [],
+        freteGratis: candidate.freteGratis === true,
+        promocao: candidate.promocao === true,
+        ordenacao: typeof candidate.ordenacao === 'string' ? candidate.ordenacao : defaultFilters.ordenacao,
+    };
+}
 
 function decodeJwt(token: string): any {
     try {
@@ -163,18 +196,10 @@ export default function MarcaPage() {
     const [brandName, setBrandName] = useState('MARCA');
     const [porPagina, setPorPagina] = useState(20);
     const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-    const [isLoadingSidebar, setIsLoadingSidebar] = useState(() => {
-        try {
-            return !window.sessionStorage.getItem(SIDEBAR_FILTERS_CACHE_KEY);
-        } catch { return true; }
-    });
-
-    const [filterOptions, setFilterOptions] = useState<FilterOptions>(() => {
-        try {
-            const cached = window.sessionStorage.getItem(SIDEBAR_FILTERS_CACHE_KEY);
-            if (cached) return JSON.parse(cached);
-        } catch { }
-        return { marcas: [], categorias: [], cores: [], tamanhos: [] };
+    const [initialFilterOptions] = useState<FilterOptions | null>(() => getCachedFilterOptions());
+    const [isLoadingSidebar, setIsLoadingSidebar] = useState(() => !initialFilterOptions);
+    const [filterOptions, setFilterOptions] = useState<FilterOptions>(() => initialFilterOptions ?? {
+        marcas: [], categorias: [], cores: [], tamanhos: []
     });
     const [activeFilters, setActiveFilters] = useState<ActiveFilters>(defaultFilters);
 
@@ -183,16 +208,16 @@ export default function MarcaPage() {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const cached = window.sessionStorage.getItem(SIDEBAR_FILTERS_CACHE_KEY);
+                const cached = getCachedFilterOptions();
                 if (cached) {
-                    setFilterOptions(JSON.parse(cached));
+                    setFilterOptions(cached);
                     setIsLoadingSidebar(false);
                     return;
                 }
                 const response = await produtoService.listarFiltros();
-                if (response.sucesso) {
+                if (response.sucesso && isFilterOptions(response.data)) {
                     setFilterOptions(response.data);
-                    window.sessionStorage.setItem(SIDEBAR_FILTERS_CACHE_KEY, JSON.stringify(response.data));
+                    persistSidebarFiltersCache(SIDEBAR_FILTERS_CACHE_KEY, response.data);
                 }
             } catch (error) {
                 console.error("Erro ao buscar opções de filtro", error);
@@ -235,7 +260,7 @@ export default function MarcaPage() {
         if (token) {
             const decodedPartial = decodeJwt(token);
             if (decodedPartial) {
-                const mergedFilters = { ...defaultFilters, ...decodedPartial };
+                const mergedFilters = normalizeActiveFilters(decodedPartial);
 
                 // Force current brand ID
                 if (!mergedFilters.marcas.includes(Number(id))) {
