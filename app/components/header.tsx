@@ -15,10 +15,11 @@ import { SearchBar } from "./SearchBar";
 export default function Header() {
     let navigate = useNavigate();
     const { categorias, categoriasMenu, selectedAddress, handleAddressSelect } = useHeader();
-    const mobileCategorias = (categoriasMenu && categoriasMenu.length > 0 ? categoriasMenu : categorias) ?? [];
+    const mobileCategorias = categorias ?? [];
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isPartnerModalOpen, setIsPartnerModalOpen] = useState(false);
     const [isSearchBarOpen, setIsSearchBarOpen] = useState(false);
 
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -39,6 +40,23 @@ export default function Header() {
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [isMobileMenuOpen]);
+
+    useEffect(() => {
+        if (!isPartnerModalOpen) return;
+
+        const previousOverflow = document.body.style.overflow;
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') setIsPartnerModalOpen(false);
+        };
+
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isPartnerModalOpen]);
 
     const onAddressSelect = async (address: Endereco) => {
         await handleAddressSelect(address);
@@ -173,10 +191,16 @@ export default function Header() {
                         </div>
 
                         <div className="ml-4 hidden w-56 shrink-0 xl:block 2xl:w-64">
-                            <div className="flex cursor-pointer items-center justify-between gap-2 border border-primary/20 px-4 py-2 text-tiny font-medium uppercase tracking-[0.2em] text-primary transition-colors duration-500 hover:border-terciary hover:text-terciary">
+                            <button
+                                type="button"
+                                aria-haspopup="dialog"
+                                aria-expanded={isPartnerModalOpen}
+                                onClick={() => setIsPartnerModalOpen(true)}
+                                className="flex w-full cursor-pointer items-center justify-between gap-2 border border-primary/20 px-4 py-2 text-tiny font-medium uppercase tracking-[0.2em] text-primary transition-colors duration-500 hover:border-terciary hover:text-terciary"
+                            >
                                 Seja um sócio
                                 <MdKeyboardArrowDown className="-rotate-90" />
-                            </div>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -273,6 +297,54 @@ export default function Header() {
                                 <ButtonMaisVendidos />
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {isPartnerModalOpen && (
+                <div
+                    className="fixed inset-0 z-[70] flex items-end justify-center bg-primary/55 px-4 pb-4 backdrop-blur-sm sm:items-center sm:p-6"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="partner-modal-title"
+                    aria-describedby="partner-modal-description"
+                >
+                    <button
+                        type="button"
+                        aria-label="Fechar aviso de projeto em desenvolvimento"
+                        tabIndex={-1}
+                        className="absolute inset-0 cursor-default"
+                        onClick={() => setIsPartnerModalOpen(false)}
+                    />
+
+                    <div className="relative w-full max-w-md border border-primary/10 bg-product-bg p-6 text-primary shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-7">
+                        <button
+                            type="button"
+                            onClick={() => setIsPartnerModalOpen(false)}
+                            aria-label="Fechar"
+                            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center border border-primary/10 text-primary/60 transition-colors hover:border-terciary hover:text-terciary"
+                        >
+                            <MdClose size={20} />
+                        </button>
+
+                        <p className="mb-3 text-tiny font-semibold uppercase tracking-[0.25em] text-terciary">
+                            Em breve
+                        </p>
+                        <h2 id="partner-modal-title" className="pr-10 font-serif text-2xl leading-tight text-primary">
+                            Projeto em Desenvolvimento
+                        </h2>
+                        <p id="partner-modal-description" className="mt-4 text-sm leading-7 text-primary/72">
+                            Estamos preparando uma novidade para que você possa escolher essa opção e participar como Parceiro ou Sócio.
+                        </p>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsPartnerModalOpen(false)}
+                            autoFocus
+                            className="mt-6 inline-flex min-h-11 w-full items-center justify-center bg-primary px-5 text-xs font-semibold uppercase tracking-[0.16em] text-secondary transition-colors hover:bg-terciary"
+                        >
+                            Entendi
+                        </button>
                     </div>
                 </div>
             )}

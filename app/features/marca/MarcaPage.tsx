@@ -330,7 +330,7 @@ export default function MarcaPage() {
         }
 
         const token = sign(payload, 'secret');
-        setSearchParams({ filtros: token, page: '1' });
+        setSearchParams({ filtros: token, page: '1' }, { preventScrollReset: true });
     };
 
     const handlePageChange = (newPage: number) => {

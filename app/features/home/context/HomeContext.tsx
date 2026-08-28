@@ -437,7 +437,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
 
         if (Object.keys(payload).length === 0) {
             if (filters.ordenacao === 'mais_procurados') {
-                setSearchParams({});
+                setSearchParams({}, { preventScrollReset: true });
                 return;
             }
 
@@ -447,7 +447,7 @@ export function HomeProvider({ children }: { children: ReactNode }) {
         }
 
         const token = sign(payload, 'secret');
-        setSearchParams({ filtros: token });
+        setSearchParams({ filtros: token }, { preventScrollReset: true });
     }, [setSearchParams]);
 
     const listarProdutos = useCallback(async (id: string, filtros: string) => {

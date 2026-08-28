@@ -1,20 +1,24 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import {
+  ArrowRight,
   Heart,
   Inbox,
   LoaderCircle,
   Mail,
   MapPin,
-  Package,
   Pencil,
   ShoppingBag,
 } from "lucide-react";
 import { Link } from "react-router";
-import { OptimizedImage } from "~/components/OptimizedImage";
+import { OrderCard } from "~/components/OrderCard";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { minhacontaService } from "~/features/minhaconta/services/minhacontaService";
-import { currencyFormatter } from "~/utils/formatters";
-import { getProductImageFallback } from "~/utils/imagePlaceholders";
+import {
+  extractOrders,
+  getOrderDetailsPath,
+  getOrderId,
+  getOrderLookupId,
+} from "~/features/minhaconta/utils/orderHelpers";
 import type { Route } from "./+types/home";
 
 export function meta({ }: Route.MetaArgs) {
@@ -26,16 +30,19 @@ export function meta({ }: Route.MetaArgs) {
 const shortcuts = [
   {
     label: "Meus pedidos",
+    description: "Acompanhe suas compras",
     to: "/minha-conta/pedidos",
     icon: ShoppingBag,
   },
   {
-    label: "Endereços",
+    label: "Meus endereços",
+    description: "Gerencie suas entregas",
     to: "/minha-conta/enderecos",
     icon: MapPin,
   },
   {
-    label: "Favoritos",
+    label: "Meus favoritos",
+    description: "Veja os produtos salvos",
     to: "/minha-conta/favoritos",
     icon: Heart,
   },
@@ -88,103 +95,119 @@ export default function MinhaConta() {
   if (!cliente) return null;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <section>
-        <h1 className="mb-3 text-lg font-bold text-primary sm:text-xl">
+    <div className="mx-auto w-full max-w-5xl">
+      <header className="mb-7">
+        <p className="overline-label">Minha conta</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-primary sm:text-4xl">
           Central Minha Conta
         </h1>
+        <p className="mt-2 text-sm text-primary/60 sm:text-base">
+          Acompanhe seus pedidos e gerencie seus dados em um só lugar.
+        </p>
+      </header>
 
-        <div className="rounded-lg border border-primary/10 bg-product-bg p-4 shadow-[0_4px_18px_rgba(15,23,42,0.05)] sm:p-5">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary text-2xl font-bold text-secondary shadow-inner sm:h-20 sm:w-20">
-                {cliente.nome?.charAt(0).toUpperCase()}
-              </div>
-
-              <div className="min-w-0">
-                <h2 className="text-base font-bold leading-snug text-primary sm:text-lg">
-                  Bem-vindo, {cliente.nome}
-                </h2>
-                <p className="mt-1 flex min-w-0 items-center gap-2 text-sm text-primary/65">
-                  <Mail size={15} className="shrink-0 text-terciary" />
-                  <span className="truncate">{cliente.email}</span>
-                </p>
-              </div>
+      <section
+        className="rounded-2xl border border-primary/10 bg-product-bg p-5 shadow-[0_4px_14px_rgba(15,23,42,0.08)] sm:p-6"
+        aria-label="Dados da conta"
+      >
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary text-2xl font-bold text-secondary shadow-inner sm:h-20 sm:w-20">
+              {cliente.nome?.charAt(0).toUpperCase()}
             </div>
 
-            <Link
-              to="/minha-conta/dados"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-terciary px-5 py-3 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-primary sm:ml-auto sm:min-w-44"
-            >
-              <Pencil size={17} aria-hidden="true" />
-              Editar dados
-            </Link>
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-primary/50">
+                Bem-vindo de volta
+              </p>
+              <h2 className="mt-1 truncate text-lg font-bold leading-snug text-primary sm:text-xl">
+                {cliente.nome}
+              </h2>
+              <p className="mt-1.5 flex min-w-0 items-center gap-2 text-sm text-primary/60">
+                <Mail size={15} className="shrink-0" aria-hidden="true" />
+                <span className="truncate">{cliente.email}</span>
+              </p>
+            </div>
           </div>
+
+          <Link
+            to="/minha-conta/dados"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-primary/10 bg-primary px-5 text-sm font-bold text-secondary shadow-sm transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terciary/30 sm:ml-auto"
+          >
+            <Pencil size={16} aria-hidden="true" />
+            Editar dados
+          </Link>
         </div>
       </section>
 
-      <section>
-        <SectionTitle icon={<ShortcutDots />} title="Atalhos" />
+      <section className="mt-8">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold tracking-tight text-primary sm:text-2xl">
+            Acesso rápido
+          </h2>
+          <p className="mt-1 text-sm text-primary/55">
+            Encontre o que precisa com facilidade.
+          </p>
+        </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-3">
           {shortcuts.map((shortcut) => (
             <Link
               key={shortcut.to}
               to={shortcut.to}
-              className="group flex min-h-20 items-center gap-3 rounded-lg border border-primary/10 bg-product-bg p-3 shadow-[0_4px_18px_rgba(15,23,42,0.04)] transition-all last:col-span-2 hover:-translate-y-0.5 hover:border-terciary/40 hover:shadow-[0_10px_28px_rgba(15,23,42,0.08)] sm:p-4 lg:last:col-span-1"
+              className="group flex min-h-24 items-center gap-4 rounded-2xl border border-primary/10 bg-product-bg p-4 shadow-[0_4px_14px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-[0_8px_24px_rgba(15,23,42,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terciary/30"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-terciary/10 text-terciary transition-colors group-hover:bg-terciary group-hover:text-white">
-                <shortcut.icon size={19} aria-hidden="true" />
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-main-bg text-primary transition-colors group-hover:bg-primary group-hover:text-secondary">
+                <shortcut.icon size={20} strokeWidth={1.8} aria-hidden="true" />
               </span>
-              <span className="min-w-0 text-xs font-bold uppercase leading-snug tracking-wide text-primary sm:text-sm">
-                {shortcut.label}
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold text-primary">
+                  {shortcut.label}
+                </span>
+                <span className="mt-1 block text-xs text-primary/55">
+                  {shortcut.description}
+                </span>
               </span>
+              <ArrowRight
+                size={17}
+                className="shrink-0 text-primary/35 transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                aria-hidden="true"
+              />
             </Link>
           ))}
         </div>
       </section>
 
-      <section>
-        <SectionTitle
-          icon={<ShoppingBag size={20} className="text-terciary" />}
-          title="Resumo do último pedido"
-        />
+      <section className="mt-8">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-primary sm:text-2xl">
+              Seu último pedido
+            </h2>
+            <p className="mt-1 text-sm text-primary/55">
+              Consulte rapidamente o andamento da sua compra.
+            </p>
+          </div>
 
-        <LatestOrderCard
+          <Link
+            to="/minha-conta/pedidos"
+            className="inline-flex min-h-9 items-center justify-center gap-1 rounded-full border border-primary/10 bg-product-bg px-4 text-xs font-semibold text-primary shadow-sm transition-colors hover:border-primary/25 hover:bg-main-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terciary/30"
+          >
+            Ver todos os pedidos
+            <ArrowRight size={15} aria-hidden="true" />
+          </Link>
+        </div>
+
+        <LatestOrderContent
           isLoading={isLoadingOrder}
           order={latestOrder}
         />
       </section>
-
     </div>
   );
 }
 
-function SectionTitle({ icon, title }: { icon: ReactNode; title: string }) {
-  return (
-    <div className="flex items-center gap-2 text-primary">
-      {icon}
-      <h2 className="text-sm font-extrabold uppercase tracking-wide">
-        {title}
-      </h2>
-    </div>
-  );
-}
-
-function ShortcutDots() {
-  return (
-    <span
-      className="grid h-5 w-5 grid-cols-2 gap-1"
-      aria-hidden="true"
-    >
-      {Array.from({ length: 4 }).map((_, index) => (
-        <span key={index} className="rounded-full bg-terciary" />
-      ))}
-    </span>
-  );
-}
-
-function LatestOrderCard({
+function LatestOrderContent({
   isLoading,
   order,
 }: {
@@ -193,177 +216,42 @@ function LatestOrderCard({
 }) {
   if (isLoading) {
     return (
-      <div className="mt-3 flex min-h-36 items-center justify-center rounded-lg border border-primary/10 bg-product-bg">
+      <div className="flex min-h-44 flex-col items-center justify-center rounded-2xl border border-primary/10 bg-product-bg shadow-sm">
         <LoaderCircle className="animate-spin text-primary" size={30} />
+        <p className="mt-3 text-sm text-primary/55">Carregando seu pedido...</p>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="mt-3 flex flex-col items-center justify-center rounded-lg border border-dashed border-primary/20 bg-product-bg p-8 text-center">
-        <Inbox className="text-primary/35" size={38} />
-        <p className="mt-3 text-sm font-semibold text-primary">
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-primary/20 bg-product-bg p-8 text-center shadow-sm">
+        <Inbox className="text-primary/35" size={42} />
+        <h3 className="mt-4 text-lg font-semibold text-primary">
           Nenhum pedido ainda
+        </h3>
+        <p className="mt-1 text-sm text-primary/55">
+          Quando você fizer uma compra, ela aparecerá aqui.
         </p>
         <Link
           to="/"
-          className="mt-4 inline-flex min-h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-bold text-white transition-colors hover:bg-terciary"
+          className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-secondary transition-opacity hover:opacity-85"
         >
-          Ver produtos
+          Comprar agora
         </Link>
       </div>
     );
   }
 
-  const items = getOrderItems(order);
-  const status = formatStatus(order.status || order.situacao || "Pendente");
-  const payment = typeof order.pagamento === "string" ? order.pagamento :
-    order.pagamento?.nome ||
-    order.pagamento?.tipo ||
-    order.forma_pagamento ||
-    "Pagamento não informado";
-  const orderId =
-    order.numero_pedido ||
-    order.numeroPedido ||
-    order.codigo ||
-    order.numero ||
-    order.id_venda ||
-    order.id ||
-    "-";
-  const total = formatMoney(order.valor ?? order.total ?? order.valor_total);
+  const orderLookupId = getOrderLookupId(order) || getOrderId(order);
+  const detailsHref = orderLookupId
+    ? getOrderDetailsPath(orderLookupId)
+    : "/minha-conta/pedidos";
 
   return (
-    <article className="mt-3 overflow-hidden rounded-lg border border-primary/10 bg-product-bg shadow-[0_4px_18px_rgba(15,23,42,0.05)]">
-      <div className="border-b border-primary/10 p-4">
-        <div className="min-w-0 text-sm text-primary/75">
-          <span className="font-bold text-primary">Pedido:</span>{" "}
-          <span className="font-medium">{orderId}</span>
-          <span className="mx-2 text-primary/25">|</span>
-          <span>{formatDate(order.data_lanc || order.data || order.created_at)}</span>
-        </div>
-      </div>
-
-      <div className="border-b border-primary/10 px-4 py-3 text-sm font-semibold text-primary">
-        {status}
-      </div>
-
-      <div className="border-b border-primary/10 px-4 py-3 text-xs text-primary/60">
-        {payment}
-      </div>
-
-      {items.length > 0 ? (
-        <div>
-          <div className="divide-y divide-primary/10">
-            {items.map((item, index) => {
-              const productName = getOrderItemName(item);
-              const productImage = getOrderItemImage(item);
-
-              return (
-                <div key={`${productName}-${index}`} className="flex gap-3 p-4">
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-primary/10 bg-main-bg">
-                    {productImage ? (
-                      <OptimizedImage
-                        src={productImage}
-                        fallbackSrc={getProductImageFallback(productName)}
-                        alt={productName}
-                        className="h-full w-full object-contain p-1 mix-blend-multiply"
-                      />
-                    ) : (
-                      <Package size={26} className="text-primary/35" />
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 text-sm font-semibold text-primary">
-                      {productName}
-                    </p>
-                    <p className="mt-1 text-xs text-primary/55">
-                      Quantidade: {item.quantidade || 1}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="border-t border-primary/10 px-4 py-3 text-sm font-bold text-primary">
-            Total: {total}
-          </div>
-        </div>
-      ) : (
-        <div className="p-4 text-sm text-primary/60">
-          Itens do pedido indisponíveis.
-        </div>
-      )}
-    </article>
+    <OrderCard
+      pedido={order}
+      detailsHref={detailsHref}
+    />
   );
-}
-
-function extractOrders(response: any): any[] {
-  if (Array.isArray(response)) return response;
-  if (Array.isArray(response?.data?.dados)) return response.data.dados;
-  if (Array.isArray(response?.data)) return response.data;
-  if (Array.isArray(response?.dados)) return response.dados;
-
-  return [];
-}
-
-function getOrderItems(order: any): any[] {
-  if (Array.isArray(order?.itens)) return order.itens;
-  if (Array.isArray(order?.produtos)) return order.produtos;
-
-  return [];
-}
-
-function getOrderItemName(item: any) {
-  return item?.nome_do_produto ||
-    item?.nome ||
-    item?.produto?.nome ||
-    "Produto do pedido";
-}
-
-function getOrderItemImage(item: any) {
-  return item?.foto_principal ||
-    item?.foto ||
-    item?.imagem ||
-    item?.image ||
-    item?.produto?.foto ||
-    item?.produto?.imagem ||
-    item?.produto?.fotos?.m?.[0] ||
-    item?.fotos?.m?.[0] ||
-    "";
-}
-
-function formatDate(value: unknown) {
-  if (typeof value !== "string" || value.trim() === "") {
-    return "-";
-  }
-
-  const dateOnly = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
-
-  if (dateOnly) {
-    return `${dateOnly[3]}/${dateOnly[2]}/${dateOnly[1]}`;
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("pt-BR").format(date);
-}
-
-function formatMoney(value: unknown) {
-  const parsedValue = Number(value);
-
-  return currencyFormatter.format(Number.isFinite(parsedValue) ? parsedValue : 0);
-}
-
-function formatStatus(status: string) {
-  return status
-    .toLowerCase()
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }

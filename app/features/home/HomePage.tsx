@@ -1048,6 +1048,7 @@ interface CategoriaCardProps {
   onClick?: (categoria: Categoria) => void;
   isSelected?: boolean;
   canLoadImages?: boolean;
+  imagePriority?: boolean;
 }
 
 export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardProps) {
@@ -1061,10 +1062,16 @@ export function CategoriaCard({ categoria, onClick, isSelected }: CategoriaCardP
   );
 }
 
-export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoadImages = true }: CategoriaCardProps) {
+export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoadImages = true, imagePriority = false }: CategoriaCardProps) {
   let navigate = useNavigate();
   const categoryImageFallback = getCategoryImageFallback(categoria.nome);
-  const shouldNormalizeImage = !!categoria.imagem && !/sem[-_]?foto/i.test(categoria.imagem);
+  const categoryImage = typeof categoria.imagem === "string" ? categoria.imagem.trim() : "";
+  const hasCategoryImage = categoryImage.length > 0 && !/sem[-_]?foto/i.test(categoryImage);
+  const [isImageLoading, setIsImageLoading] = useState(canLoadImages && hasCategoryImage);
+
+  useEffect(() => {
+    setIsImageLoading(canLoadImages && hasCategoryImage);
+  }, [canLoadImages, categoryImage, hasCategoryImage]);
 
   return (
     <div
@@ -1073,13 +1080,25 @@ export function CategoriaCardComImagem({ categoria, onClick, isSelected, canLoad
         navigate('/categoria/' + categoria.id);
       }}
     >
-      <div className="relative h-32 w-full overflow-hidden bg-main-bg">
+      <div
+        className="relative h-32 w-full overflow-hidden bg-main-bg bg-cover bg-center"
+        style={{ backgroundImage: `url("${categoryImageFallback}")` }}
+      >
+        {isImageLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-main-bg/70" aria-hidden="true">
+            <div className="h-8 w-8 animate-pulse rounded-full border border-primary/15 bg-product-bg shadow-sm" />
+          </div>
+        )}
         <NormalizedProductImage
-          src={shouldNormalizeImage ? categoria.imagem : undefined}
+          src={hasCategoryImage ? categoryImage : undefined}
           fallbackSrc={categoryImageFallback}
           allowNetworkLoad={canLoadImages}
-          normalizeContent={shouldNormalizeImage}
+          normalizeContent={false}
           contentInset={12}
+          priority={imagePriority}
+          timeoutMs={4500}
+          isLoading={isImageLoading}
+          onLoad={() => setIsImageLoading(false)}
           alt={categoria.nome}
         />
       </div>
@@ -1377,6 +1396,28 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId, c
   const { filterOptions, isLoadingSidebarFilters } = useHome();
   const categorias = filterOptions.categorias;
 
+  useEffect(() => {
+    if (!canLoadImages || typeof window === "undefined" || !categorias?.length) return;
+
+    const preloadedImages = categorias
+      .slice(0, 8)
+      .map((categoria) => (typeof categoria.imagem === "string" ? categoria.imagem.trim() : ""))
+      .filter((image) => image.length > 0 && !/sem[-_]?foto/i.test(image))
+      .map((image) => {
+        const preloadedImage = new Image();
+        preloadedImage.decoding = "async";
+        preloadedImage.src = image;
+        return preloadedImage;
+      });
+
+    return () => {
+      preloadedImages.forEach((image) => {
+        image.onload = null;
+        image.onerror = null;
+      });
+    };
+  }, [canLoadImages, categorias]);
+
   if (!categorias || categorias.length <= 0) {
     if (!isLoadingSidebarFilters) {
       return (
@@ -1415,13 +1456,14 @@ export function CarouselCategoriaComImagem({ id, onChange, selectedCategoryId, c
         }}
         className="select-none"
       >
-        {categorias.map((categoria) => (
+        {categorias.map((categoria, index) => (
           <SwiperSlide key={`${id}-${categoria.id}`} className="whitespace-nowrap" style={{ height: 'auto', width: 'auto' }}>
             <CategoriaCardComImagem
               categoria={categoria as any}
               onClick={onChange}
               isSelected={selectedCategoryId === Number(categoria.id)}
               canLoadImages={canLoadImages}
+              imagePriority={index < 8}
             />
           </SwiperSlide>
         ))}

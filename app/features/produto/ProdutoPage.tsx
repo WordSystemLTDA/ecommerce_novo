@@ -927,7 +927,7 @@ function ProductRecommendations({ produto }: ProdutoProps) {
     const [colorProducts, setColorProducts] = useState<Produto[]>([]);
     const [similarProducts, setSimilarProducts] = useState<Produto[]>([]);
     const [loading, setLoading] = useState(false);
-    const [recentProducts, setRecentProducts] = useState<ProductPreview[]>([]);
+    const [recentProducts, setRecentProducts] = useState<Produto[]>([]);
     const linkedColors = useMemo(
         () => (produto.cores ?? []).filter((color) => Number(color.id) !== Number(produto.id)),
         [produto.cores, produto.id],
@@ -935,7 +935,33 @@ function ProductRecommendations({ produto }: ProdutoProps) {
     const colorIdsKey = linkedColors.map((color) => color.id).join(",");
 
     useEffect(() => {
-        setRecentProducts(getRecentlyViewed(produto.id));
+        let active = true;
+        const recentItems = getRecentlyViewed(produto.id);
+
+        if (recentItems.length === 0) {
+            setRecentProducts([]);
+            return;
+        }
+
+        const loadRecentProducts = async () => {
+            const loadedProducts = await Promise.all(recentItems.slice(0, 5).map(async (item) => {
+                try {
+                    const response = await produtoService.listarProduto(String(item.id));
+                    return response.data;
+                } catch {
+                    return previewToProduct(item);
+                }
+            }));
+
+            if (active) {
+                setRecentProducts(loadedProducts.filter((item): item is Produto => Boolean(item)));
+            }
+        };
+
+        void loadRecentProducts();
+        return () => {
+            active = false;
+        };
     }, [produto.id]);
 
     useEffect(() => {
@@ -986,7 +1012,7 @@ function ProductRecommendations({ produto }: ProdutoProps) {
         const fullProduct = colorProducts.find((item) => Number(item.id) === Number(color.id));
         return productToPreview(fullProduct, color, produto.nome);
     });
-    if (!loading && otherColorCards.length === 0 && similarProducts.length === 0) return null;
+    if (!loading && otherColorCards.length === 0 && similarProducts.length === 0 && recentProducts.length === 0) return null;
 
     return (
         <div>
@@ -1008,11 +1034,10 @@ function ProductRecommendations({ produto }: ProdutoProps) {
             )}
 
             {recentProducts.length > 0 && (
-                <ProductShelf
+                <RelatedProductShelf
                     title="Vistos recentemente"
                     subtitle="Continue de onde parou neste dispositivo"
                     products={recentProducts}
-                    columns="four"
                 />
             )}
 
@@ -1083,6 +1108,69 @@ function ProductPreviewCard({ product }: { product: ProductPreview }) {
             {product.price != null && <p className="mt-0.5 text-sm text-primary/60">{currencyFormatter.format(product.price)}</p>}
         </Link>
     );
+}
+
+function previewToProduct(product: ProductPreview): Produto {
+    const price = String(product.price ?? 0);
+
+    return {
+        sucesso: true,
+        mensagem: undefined,
+        id: product.id,
+        nome: product.name,
+        preco: price,
+        precoAntigo: 0,
+        valorDescontoPix: "0",
+        percentualPix: "0",
+        fotos: {
+            p: [product.image],
+            m: [product.image],
+            g: [product.image],
+            gg: [product.image],
+        },
+        imagens: [product.image],
+        estoque: 1,
+        avaliacao: 0,
+        quantidadeAvaliacoes: 0,
+        temFreteGratis: false,
+        promocaoAtiva: product.tag ? "Sim" : "Nao",
+        ehFavorito: "Nao",
+        nomeCategoria: "Produto",
+        nomeSubCategoria: "",
+        links: { self: "" },
+        menu: "",
+        categoriaId: 0,
+        descricaolonga1: "",
+        descricaolonga2: "",
+        descricao: "",
+        peso: 0,
+        quantidade: 0,
+        descontoPorcentagem: 0,
+        precoComDesconto: 0,
+        ehPreEncomenda: false,
+        dataPreEncomenda: 0,
+        disponivel: true,
+        tipo_de_estoque: "",
+        limiteCompra: 0,
+        tipo: 0,
+        garantia: "",
+        ehMarketplace: false,
+        tagDescricao: "",
+        produtoEmDestaque: false,
+        parcelaMaxima: "",
+        linkProduto: "",
+        vendidoPor: "",
+        dataLimitePromocao: "",
+        horaLimitePromocao: "",
+        tipoDeDesconto: "",
+        tipoDaPromocao: 0,
+        quantidadeLimiteDesconto: "",
+        idPromocoesEcommerce: "",
+        tipodeestoque: "",
+        dataHoraLimitePromocao: "",
+        quantidadeCompradoPromocao: "",
+        habilitarAviso: "",
+    };
 }
 
 function getProductImages(produto: Produto) {

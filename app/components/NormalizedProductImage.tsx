@@ -18,6 +18,8 @@ interface NormalizedProductImageProps {
     contentInset?: number;
     normalizeContent?: boolean;
     fillFrame?: boolean;
+    priority?: boolean;
+    timeoutMs?: number;
     isLoading?: boolean;
     onLoad?: () => void;
 }
@@ -204,6 +206,8 @@ export function NormalizedProductImage({
     contentInset,
     normalizeContent = true,
     fillFrame = false,
+    priority = false,
+    timeoutMs,
     isLoading = false,
     onLoad,
 }: NormalizedProductImageProps) {
@@ -237,8 +241,9 @@ export function NormalizedProductImage({
 
         const loadedSource = image.currentSrc || image.src;
         const loadedFallback = !!fallbackSrc && loadedSource === fallbackSrc;
+        const shouldAnalyzeContent = !fillFrame && normalizeContent && allowNetworkLoad && !loadedFallback;
 
-        if (!fillFrame && normalizeContent && allowNetworkLoad && !loadedFallback) {
+        if (shouldAnalyzeContent) {
             const cacheKey = loadedSource;
             let bounds = boundsCache.get(cacheKey);
 
@@ -262,7 +267,9 @@ export function NormalizedProductImage({
                 alt={alt}
                 fallbackSrc={fallbackSrc}
                 allowNetworkLoad={allowNetworkLoad}
-                crossOrigin="anonymous"
+                priority={priority}
+                timeoutMs={timeoutMs}
+                crossOrigin={!fillFrame && normalizeContent && allowNetworkLoad ? "anonymous" : undefined}
                 className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${fillFrame ? "object-fill p-0" : "object-contain p-4 sm:p-5"} ${isLoading ? "opacity-0" : "opacity-100"}`}
                 style={fillFrame ? fillFrameImageLayout : imageLayout ?? {
                     ...defaultImageLayout,

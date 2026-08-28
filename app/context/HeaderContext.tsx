@@ -14,6 +14,28 @@ interface HeaderContextType {
 
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
 
+function isActiveMenuFlag(value: unknown) {
+    if (value === undefined || value === null || value === "") return true;
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value === 1;
+
+    const normalized = String(value)
+        .trim()
+        .toLocaleLowerCase("pt-BR")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    return normalized === "sim" || normalized === "s" || normalized === "true" || normalized === "1";
+}
+
+function isLateralMenuCategory(category: Categoria) {
+    return isActiveMenuFlag(category.ativo_menu_loja ?? category.ativoMenuLoja);
+}
+
+function isPrincipalMenuCategory(category: Categoria) {
+    return isActiveMenuFlag(category.ativo_menu_principal_loja ?? category.ativoMenuPrincipalLoja);
+}
+
 export function HeaderProvider({ children }: { children: ReactNode }) {
     const { cliente, isAuthenticated } = useAuth();
     const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -53,10 +75,10 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
                 if (cancelled) return;
 
                 const menuCategories = categoriasMenuResponse.data ?? [];
-                setCategoriasMenu(menuCategories);
+                setCategoriasMenu(menuCategories.filter(isPrincipalMenuCategory));
                 // O menu de departamentos já fica utilizável enquanto as
                 // subcategorias completas são carregadas depois.
-                setCategorias(menuCategories);
+                setCategorias(menuCategories.filter(isLateralMenuCategory));
             } catch (error) {
                 console.error("Erro ao buscar categorias do menu", error);
             } finally {
@@ -67,7 +89,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
         const loadCategoriesWithChildren = async () => {
             try {
                 const response = await categoriaService.listarCategoriasComSubCategorias();
-                if (!cancelled) setCategorias(response.data ?? []);
+                if (!cancelled) setCategorias((response.data ?? []).filter(isLateralMenuCategory));
             } catch (error) {
                 console.error("Erro ao buscar subcategorias do menu", error);
             }
