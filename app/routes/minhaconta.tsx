@@ -29,19 +29,19 @@ export function meta({ }: Route.MetaArgs) {
 
 const shortcuts = [
   {
-    label: "Meus pedidos",
+    label: "Meus Pedidos",
     description: "Acompanhe suas compras",
     to: "/minha-conta/pedidos",
     icon: ShoppingBag,
   },
   {
-    label: "Meus endereços",
+    label: "Meus Endereços",
     description: "Gerencie suas entregas",
     to: "/minha-conta/enderecos",
     icon: MapPin,
   },
   {
-    label: "Meus favoritos",
+    label: "Meus Favoritos",
     description: "Veja os produtos salvos",
     to: "/minha-conta/favoritos",
     icon: Heart,
@@ -96,7 +96,7 @@ export default function MinhaConta() {
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <header className="mb-7">
+      <div className="mb-7 border-b border-primary/10 pb-5">
         <p className="overline-label">Minha conta</p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight text-primary sm:text-4xl">
           Central Minha Conta
@@ -104,7 +104,7 @@ export default function MinhaConta() {
         <p className="mt-2 text-sm text-primary/60 sm:text-base">
           Acompanhe seus pedidos e gerencie seus dados em um só lugar.
         </p>
-      </header>
+      </div>
 
       <section
         className="rounded-2xl border border-primary/10 bg-product-bg p-5 shadow-[0_4px_14px_rgba(15,23,42,0.08)] sm:p-6"
@@ -182,7 +182,7 @@ export default function MinhaConta() {
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-primary sm:text-2xl">
-              Seu último pedido
+              Seu último Pedido
             </h2>
             <p className="mt-1 text-sm text-primary/55">
               Consulte rapidamente o andamento da sua compra.

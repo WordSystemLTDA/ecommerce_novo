@@ -131,7 +131,7 @@ function PageHeader({ count, loading = false }: PageHeaderProps) {
     <div className="mb-6 flex flex-col gap-3 border-b border-primary/10 pb-5 md:flex-row md:items-end md:justify-between">
       <div>
         <h1 className="text-xl font-semibold text-primary md:text-2xl">
-          Meus endereços
+          Meus Endereços
         </h1>
         {!loading && count > 0 && (
           <p className="mt-1 text-sm text-primary/55">

@@ -75,7 +75,7 @@ export default function MinhaContaFavoritosPage() {
             <div className="flex flex-col gap-3 border-b border-primary/10 pb-5 md:flex-row md:items-end md:justify-between">
                 <div>
                     <h1 className="text-xl font-semibold text-primary md:text-2xl">
-                        Meus favoritos
+                        Meus Favoritos
                     </h1>
                     <p className="mt-1 text-sm text-primary/55">
                         {total > 0

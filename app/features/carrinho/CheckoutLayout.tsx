@@ -79,9 +79,9 @@ const getActionLabel = (step: number) => {
         case 2:
             return 'Escolher entrega';
         case 3:
-            return 'Ir para pagamento';
+            return 'Ir para Pagamento';
         case 4:
-            return 'Revisar pedido';
+            return 'Revisar Pedido';
         case 5:
             return 'Finalizar Pedido';
         default:
@@ -220,7 +220,7 @@ const CheckoutStepper = ({
             <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                     <h1 className="text-xl font-bold text-gray-900">
-                        Finalize seu pedido
+                        Finalize seu Pedido
                     </h1>
                 </div>
 
@@ -384,7 +384,7 @@ const CartSummary = ({
         {
             label: 'Pagamento',
             value: selectedCardInstallments != null
-                ? `${pagamentoSelecionado?.nome || 'Cartão de crédito'} · ${selectedCardInstallments}x de ${currencyFormatter.format(retornarValorFinal() / selectedCardInstallments)}`
+                ? `${pagamentoSelecionado?.nome || 'Cartão de Crédito'} · ${selectedCardInstallments}x de ${currencyFormatter.format(retornarValorFinal() / selectedCardInstallments)}`
                 : pagamentoSelecionado?.nome || pagamentoSelecionado?.tipo || 'Pendente',
             done: pagamentoSelecionado != undefined &&
                 !requiresInstallmentSelection,

@@ -32,9 +32,9 @@ function getPaymentLabel(pagamento: Pagamento) {
     case 'PIX':
       return 'PIX';
     case 'CREDITO':
-      return 'Cartao de credito';
+      return 'Cartão de Crédito';
     case 'DEBITO':
-      return 'Cartao de debito';
+      return 'Cartão de Débito';
     case 'DINHEIRO':
       return 'Dinheiro';
     case 'MERCADO_PAGO':
@@ -156,7 +156,7 @@ export default function PaymentPage() {
       mercado_pago_method: method,
       nome: method === 'pix'
         ? 'PIX via Mercado Pago'
-        : 'Cartão de crédito via Mercado Pago',
+        : 'Cartão de Crédito via Mercado Pago',
       max_parcelas: maxInstallments,
       mercado_pago_installments: previousInstallments,
     });
@@ -234,7 +234,7 @@ export default function PaymentPage() {
                       checked={creditCardSelected}
                       description={`Pagamento seguro em até ${maxInstallments}x.`}
                       icon={<FaCreditCard className="text-primary" size={22} />}
-                      label="Cartão de crédito"
+                      label="Cartão de Crédito"
                       onSelect={() => selectGatewayMethod('credit_card')}
                       value={`${gatewayPayment.id}-credit-card`}
                     />

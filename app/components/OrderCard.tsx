@@ -1,20 +1,13 @@
-import { useState } from "react";
 import {
     ChevronRight,
     CreditCard,
-    LoaderCircle,
     Package,
-    QrCode,
     Store,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router";
-import { toast } from "react-toastify";
+import { Link } from "react-router";
 import { OptimizedImage } from "~/components/OptimizedImage";
+import { OrderPaymentActions } from "~/components/OrderPaymentActions";
 import config from "~/config/config";
-import {
-    mercadoPagoService,
-    mercadoPagoStatus,
-} from "~/features/mercado_pago/mercado_pago_service";
 import {
     formatOrderDate,
     formatOrderMoney,
@@ -25,9 +18,8 @@ import {
     getOrderItemQuantity,
     getOrderItemTotal,
     getOrderItems,
-    getOrderLookupId,
     getOrderPaymentLabel,
-    isPendingMercadoPagoPixOrder,
+    isPendingMercadoPagoOrder,
     normalizeText,
     type OrderItem,
 } from "~/features/minhaconta/utils/orderHelpers";
@@ -39,12 +31,10 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ pedido, detailsHref }: OrderCardProps) {
-    const navigate = useNavigate();
-    const [isGeneratingPix, setIsGeneratingPix] = useState(false);
     const items = getOrderItems(pedido);
     const orderId = getOrderId(pedido);
     const payment = getOrderPaymentLabel(pedido);
-    const canPayWithPix = isPendingMercadoPagoPixOrder(pedido);
+    const canManagePayment = isPendingMercadoPagoOrder(pedido);
     const totalItems = items.reduce(
         (total, item) => total + getOrderItemQuantity(item),
         0,
@@ -58,45 +48,7 @@ export function OrderCard({ pedido, detailsHref }: OrderCardProps) {
         pedido.frete?.valor ??
         pedido.entrega?.valor ??
         0;
-    const statusBadge = getStatusBadge(pedido, canPayWithPix);
-
-    async function handlePayWithPix() {
-        const saleId = Number(getOrderLookupId(pedido));
-        if (!Number.isInteger(saleId) || saleId <= 0) {
-            toast.error("Não foi possível identificar esta venda.");
-            return;
-        }
-
-        try {
-            setIsGeneratingPix(true);
-            const order = await mercadoPagoService.getOrRenewPix(saleId);
-            mercadoPagoService.storeOrder(order);
-
-            if (mercadoPagoStatus.isApproved(order.status)) {
-                toast.success("Este pedido já está pago.");
-                navigate(`/pedido/sucesso/${saleId}`);
-                return;
-            }
-            if (!order.qrCode) {
-                throw new Error("O Mercado Pago não retornou um QR Code PIX válido.");
-            }
-
-            toast.success(
-                order.renewed
-                    ? "Um novo QR Code PIX foi gerado."
-                    : "QR Code PIX pronto para pagamento.",
-            );
-            navigate(`/pedido/pendente/${saleId}`);
-        } catch (error) {
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Não foi possível preparar o pagamento PIX.",
-            );
-        } finally {
-            setIsGeneratingPix(false);
-        }
-    }
+    const statusBadge = getStatusBadge(pedido, canManagePayment);
 
     return (
         <article className="overflow-hidden rounded-2xl border border-primary/10 bg-product-bg shadow-[0_4px_14px_rgba(15,23,42,0.08)] transition-shadow hover:shadow-[0_8px_24px_rgba(15,23,42,0.11)]">
@@ -163,7 +115,7 @@ export function OrderCard({ pedido, detailsHref }: OrderCardProps) {
             )}
 
             <div
-                className={`flex flex-col gap-4 border-t border-primary/10 px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6 ${canPayWithPix ? "bg-amber-50/50" : "bg-product-bg"}`}
+                className={`flex flex-col gap-4 border-t border-primary/10 px-4 py-4 sm:flex-row sm:items-end sm:justify-between sm:px-6 ${canManagePayment ? "bg-amber-50/50" : "bg-product-bg"}`}
             >
                 <div>
                     <p className="text-[10px] uppercase tracking-[0.14em] text-primary/60">
@@ -174,29 +126,8 @@ export function OrderCard({ pedido, detailsHref }: OrderCardProps) {
                     </p>
                 </div>
 
-                {canPayWithPix ? (
-                    <div className="flex flex-col items-stretch sm:items-end">
-                        <button
-                            type="button"
-                            onClick={handlePayWithPix}
-                            disabled={isGeneratingPix}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-extrabold uppercase text-secondary transition-opacity hover:opacity-85 disabled:cursor-wait disabled:opacity-60"
-                        >
-                            {isGeneratingPix ? (
-                                <LoaderCircle
-                                    size={18}
-                                    className="animate-spin"
-                                    aria-hidden="true"
-                                />
-                            ) : (
-                                <QrCode size={18} aria-hidden="true" />
-                            )}
-                            {isGeneratingPix ? "Preparando PIX..." : "Pagar com PIX"}
-                        </button>
-                        <p className="mt-2 text-center text-[11px] text-primary/55 sm:text-right">
-                            Gere o QR Code e finalize em segundos.
-                        </p>
-                    </div>
+                {canManagePayment ? (
+                    <OrderPaymentActions pedido={pedido} />
                 ) : (
                     <p className="text-xs text-primary/55">
                         Frete {formatOrderMoney(shipping)}
@@ -252,10 +183,10 @@ function formatOrderCardDate(pedido: any) {
     return time ? `${date} às ${time}` : date;
 }
 
-function getStatusBadge(pedido: any, canPayWithPix: boolean) {
+function getStatusBadge(pedido: any, canManagePayment: boolean) {
     const status = normalizeText(pedido.status || pedido.situacao || "pendente");
 
-    if (canPayWithPix || status.includes("pend")) {
+    if (canManagePayment || status.includes("pend")) {
         return {
             label: "Aguardando pagamento",
             className: "bg-amber-100 text-amber-700",

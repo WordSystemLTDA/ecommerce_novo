@@ -102,7 +102,7 @@ export function Footer() {
                         <FooterTitle title="Pagamento e segurança" />
                         <p className="text-sm leading-7 text-secondary/76">As formas habilitadas aparecem no checkout antes da confirmação do pedido.</p>
                         <div className="mt-5 grid grid-cols-2 gap-2.5">
-                            {['PIX', 'Cartão de crédito', 'Ambiente protegido', 'Mercado Pago'].map((label) => (
+                            {['PIX', 'Cartão de Crédito', 'Ambiente protegido', 'Mercado Pago'].map((label) => (
                                 <div key={label} className="flex min-h-12 items-center justify-center border border-secondary/16 bg-white/10 px-3 text-center text-xs font-medium text-secondary/90">
                                     {label}
                                 </div>

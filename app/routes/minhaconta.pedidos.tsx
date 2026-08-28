@@ -270,7 +270,7 @@ function PedidosHeader({
                 </Link>
                 <div>
                     <h1 className="text-3xl font-semibold tracking-tight text-primary sm:text-4xl">
-                        Meus pedidos
+                        Meus Pedidos
                     </h1>
                     {!loading && (
                         <p className="mt-1 text-sm text-primary/65">

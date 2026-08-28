@@ -18,6 +18,7 @@ import {
 import { Link, useParams } from "react-router";
 import { toast } from "react-toastify";
 import { OptimizedImage } from "~/components/OptimizedImage";
+import { OrderPaymentActions } from "~/components/OrderPaymentActions";
 import config from "~/config/config";
 import { useAuth } from "~/features/auth/context/AuthContext";
 import { minhacontaService } from "~/features/minhaconta/services/minhacontaService";
@@ -121,6 +122,7 @@ export default function PedidoDetalhesPage() {
             <PedidoBreadcrumb orderId={orderId} />
             <PedidoHeader pedido={pedido} orderId={orderId} />
             <OrderStatusTimeline pedido={pedido} />
+            <OrderPaymentActions pedido={pedido} variant="panel" />
             <OrderProductsCard pedido={pedido} />
             <OrderDetailsGrid pedido={pedido} />
         </div>

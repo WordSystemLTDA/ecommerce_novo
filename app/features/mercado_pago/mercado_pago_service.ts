@@ -305,6 +305,19 @@ export const mercadoPagoService = {
       ),
     ),
 
+  cancelOrder: async (orderId: string) =>
+    apiRequest<MercadoPagoOrderResult>(
+      apiClient.post(
+        `/pagamentos/mercadopago/orders/${encodeURIComponent(orderId)}/cancelar`,
+        {},
+        {
+          headers: {
+            'X-Idempotency-Key': createUuid(),
+          },
+        },
+      ),
+    ),
+
   getOrCreateIdempotencyKey: (
     saleId: number,
     method: MercadoPagoMethod,

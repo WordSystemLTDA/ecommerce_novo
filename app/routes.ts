@@ -39,6 +39,10 @@ export default [
             "meus-pedidos/detalhes/:id",
             "routes/minhaconta.pedido_detalhes.tsx",
         ),
+        route(
+            "meus-pedidos/pagamento/:id",
+            "routes/minhaconta.pedido_pagamento.tsx",
+        ),
         route("dados", "routes/minhaconta.dados.tsx"),
     ]),
 

@@ -40,8 +40,9 @@ export default function DepartmentMenu(props: { categorias: Categoria[] }) {
     <div className="relative" ref={menuRef} onMouseLeave={handleMouseLeave}>
 
       <button
+        type="button"
         onClick={toggleMenu}
-        className="flex h-full items-center gap-2 px-6 py-2 text-[10px] uppercase tracking-[0.2em] font-medium transition-colors duration-500 cursor-pointer border border-primary bg-secondary text-primary hover:bg-primary hover:text-secondary"
+        className="flex h-full cursor-pointer items-center gap-2 rounded-md border border-primary/30 bg-secondary px-6 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-primary transition-all duration-300 hover:border-primary hover:bg-primary hover:text-secondary"
       >
         <FaBars />
         <p>Departamentos</p>

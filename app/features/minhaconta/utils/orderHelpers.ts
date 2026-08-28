@@ -37,6 +37,10 @@ export function getOrderDetailsPath(orderId: string | number) {
     return `/minha-conta/meus-pedidos/detalhes/${encodeURIComponent(orderId)}`;
 }
 
+export function getOrderPaymentPath(orderId: string | number) {
+    return `/minha-conta/meus-pedidos/pagamento/${encodeURIComponent(orderId)}`;
+}
+
 export function getOrderLookupId(order: OrderRecord | null | undefined) {
     const value =
         order?.id_venda ??
@@ -131,13 +135,94 @@ export function getOrderItemTotal(item: OrderItem | null | undefined) {
 }
 
 export function getOrderPaymentLabel(order: OrderRecord | null | undefined) {
-    return (
+    const label =
         (typeof order?.pagamento === "string" ? order.pagamento : "") ||
         order?.pagamento?.nome ||
         order?.pagamento?.tipo ||
         order?.forma_pagamento ||
         order?.pagamento_ecommerce?.payment_method ||
-        "Pagamento não informado."
+        "";
+
+    return normalizePaymentLabel(label);
+}
+
+export function getOrderPaymentMethod(
+    order: OrderRecord | null | undefined,
+): "pix" | "credit_card" | null {
+    const method = normalizeText(
+        order?.pagamento_ecommerce?.metodo ||
+        order?.pagamento_ecommerce?.payment_method ||
+        getOrderPaymentLabel(order),
+    );
+
+    if (method.includes("pix")) return "pix";
+    if (method.includes("credit") || method.includes("cartao")) {
+        return "credit_card";
+    }
+
+    return null;
+}
+
+export function isOrderPaid(order: OrderRecord | null | undefined) {
+    const paid = normalizeText(order?.pago || "");
+    const status = normalizeText(order?.status || order?.situacao || "");
+    const paymentStatus = normalizeText(
+        order?.pagamento_ecommerce?.status ||
+        order?.pagamento_ecommerce?.payment_status ||
+        "",
+    );
+
+    return (
+        ["sim", "s", "1", "true"].includes(paid) ||
+        ["approved", "partially_refunded"].includes(paymentStatus) ||
+        ["concl", "pago", "aprov", "entreg"].some((value) =>
+            status.includes(value),
+        )
+    );
+}
+
+export function isPendingMercadoPagoOrder(
+    order: OrderRecord | null | undefined,
+) {
+    const status = normalizeText(order?.status || order?.situacao || "");
+    const gateway = normalizeText(order?.pagamento_ecommerce?.gateway || "");
+    const paymentStatus = normalizeText(
+        order?.pagamento_ecommerce?.status ||
+        order?.pagamento_ecommerce?.payment_status ||
+        "",
+    );
+    const paymentLabel = normalizeText(getOrderPaymentLabel(order));
+    const cancellationReason = normalizeText(order?.motivo_cancelamento || "");
+    const manuallyCanceled =
+        status.includes("cancel") &&
+        cancellationReason !== "" &&
+        !cancellationReason.includes("expir") &&
+        !cancellationReason.includes("pix") &&
+        !cancellationReason.includes("pagamento");
+    const pendingSale = status.includes("pend") || status.includes("aguard");
+    const pendingPayment = [
+        "",
+        "created",
+        "pending",
+        "processing",
+        "in_process",
+        "action_required",
+        "rejected",
+        "canceled",
+        "expired",
+    ].includes(paymentStatus);
+    const isMercadoPago =
+        gateway.includes("mercado_pago") ||
+        gateway.includes("mercado pago") ||
+        paymentLabel.includes("mercado pago");
+
+    return (
+        pendingSale &&
+        pendingPayment &&
+        !manuallyCanceled &&
+        !isOrderPaid(order) &&
+        isMercadoPago &&
+        getOrderPaymentMethod(order) !== null
     );
 }
 
@@ -171,6 +256,7 @@ export function isPendingMercadoPagoPixOrder(
     const isPix = method === "pix" || paymentLabel.includes("pix");
 
     return (
+        (isPendingMercadoPagoOrder(order) || hasRetryablePixStatus) &&
         (isPending || hasRetryablePixStatus) &&
         !isPaid &&
         !wasManuallyCanceled &&
@@ -433,6 +519,33 @@ function normalizeMoneyString(value: string) {
     }
 
     return dotParts.join("");
+}
+
+function normalizePaymentLabel(value: unknown) {
+    const rawLabel = String(value || "").trim();
+
+    if (!rawLabel) return "Pagamento não informado.";
+
+    const normalized = normalizeText(rawLabel).replace(/_/g, " ");
+    const hasMercadoPago =
+        normalized.includes("mercado pago") ||
+        normalized.includes("mercado-pago");
+
+    if (normalized.includes("pix")) {
+        return hasMercadoPago ? "PIX via Mercado Pago" : "PIX";
+    }
+
+    if (normalized.includes("credit") || normalized.includes("credito")) {
+        return hasMercadoPago
+            ? "Cartão de Crédito via Mercado Pago"
+            : "Cartão de Crédito";
+    }
+
+    if (normalized.includes("debit") || normalized.includes("debito")) {
+        return "Cartão de Débito";
+    }
+
+    return rawLabel;
 }
 
 function joinParts(parts: Array<string | number | null | undefined>, glue = ", ") {

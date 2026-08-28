@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import config from "~/config/config";
 import { useHeader } from "~/context/HeaderContext";
+import { useAuth } from "~/features/auth/context/AuthContext";
 import type { Endereco } from "~/features/minhaconta/types";
 import { gerarSlug } from "~/utils/formatters";
 import { AddressSelectionModal } from "./AddressSelectionModal";
@@ -14,6 +15,7 @@ import { SearchBar } from "./SearchBar";
 
 export default function Header() {
     let navigate = useNavigate();
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const { categorias, categoriasMenu, selectedAddress, handleAddressSelect } = useHeader();
     const mobileCategorias = categorias ?? [];
 
@@ -136,7 +138,7 @@ export default function Header() {
                             <SearchBar ref={inputRef} />
                         </div>
 
-                        <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-primary/10 bg-secondary/25 p-0.5 text-primary shadow-[0_2px_10px_rgba(0,0,0,0.04)] sm:gap-1 lg:gap-3 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none xl:gap-6">
+                        <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-primary/10 bg-secondary/25 p-0.5 text-primary shadow-[0_2px_10px_rgba(0,0,0,0.04)] sm:gap-1 lg:rounded-xl lg:bg-secondary/20 lg:p-1 lg:shadow-[0_2px_10px_rgba(0,0,0,0.035)]">
                             <ButtonEntreOuCadastrese />
 
                             <div className="lg:hidden">
@@ -151,15 +153,19 @@ export default function Header() {
                             </div>
 
                             <div className="lg:hidden">
-                                <ButtonConta />
-                            </div>
-
-                            <div className="lg:hidden">
                                 <ButtonCarrinho />
                             </div>
 
-                            <div className="hidden lg:flex items-center gap-3 xl:gap-4">
-                                <MdHeadsetMic size={22} className="cursor-pointer text-primary/70 hover:text-terciary transition-colors duration-300" title="Atendimento" />
+                            <div className="hidden items-center gap-0.5 lg:flex">
+                                <button
+                                    type="button"
+                                    aria-label="Abrir atendimento"
+                                    title="Atendimento"
+                                    onClick={() => navigate('/contato')}
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg text-primary/70 transition-all duration-300 hover:bg-primary/[0.07] hover:text-terciary active:scale-95"
+                                >
+                                    <MdHeadsetMic size={21} />
+                                </button>
                                 <ButtonFavoritos />
                                 <ButtonCarrinho />
                             </div>
@@ -173,17 +179,20 @@ export default function Header() {
                                 <ButtonMaisVendidos />
                             </div>
 
-                            <nav className="flex items-center gap-4 xl:gap-6 ml-2 no-scrollbar flex-1 min-w-0 overflow-x-auto overflow-y-hidden whitespace-nowrap">
+                            <nav className="no-scrollbar ml-2 flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overflow-y-hidden whitespace-nowrap xl:gap-2">
                                 {(categoriasMenu ?? []).slice(0, 5).map((categoria) => (
                                     <a
                                         key={categoria.id}
+                                        title={categoria.nome}
                                         onClick={() => navigate(`/categoria/${categoria.id}/${gerarSlug(categoria.nome)}`)}
-                                        className="text-tiny uppercase tracking-[0.15em] font-medium text-primary/70 hover:text-terciary whitespace-nowrap cursor-pointer transition-colors duration-500">
-                                        {categoria.nome}
+                                        className="inline-flex h-[34px] min-w-[4.25rem] max-w-24 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md bg-secondary/35 px-2.5 text-tiny font-medium uppercase tracking-[0.15em] text-primary/70 transition-all duration-300 hover:bg-primary/[0.06] hover:text-primary">
+                                        <span className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                                            {categoria.nome}
+                                        </span>
                                     </a>
                                 ))}
                                 {categoriasMenu.length > 5 && (
-                                    <div className="shrink-0 ml-2">
+                                    <div className="ml-0.5 shrink-0">
                                         <ButtonMore hiddenCategories={categoriasMenu.slice(5)} />
                                     </div>
                                 )}
@@ -196,7 +205,7 @@ export default function Header() {
                                 aria-haspopup="dialog"
                                 aria-expanded={isPartnerModalOpen}
                                 onClick={() => setIsPartnerModalOpen(true)}
-                                className="flex w-full cursor-pointer items-center justify-between gap-2 border border-primary/20 px-4 py-2 text-tiny font-medium uppercase tracking-[0.2em] text-primary transition-colors duration-500 hover:border-terciary hover:text-terciary"
+                                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-primary/20 px-4 py-2 text-tiny font-medium uppercase tracking-[0.2em] text-primary transition-all duration-300 hover:border-primary/35 hover:bg-primary/[0.045]"
                             >
                                 Seja um sócio
                                 <MdKeyboardArrowDown className="-rotate-90" />
@@ -204,6 +213,10 @@ export default function Header() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="w-full border-t border-primary/8 px-4 py-1.5 lg:hidden">
+                <ButtonConta />
             </div>
 
             <div className={`w-full border-t border-primary/8 px-3 pb-3 pt-2 transition-all duration-300 lg:hidden ${isSearchBarOpen ? 'block' : 'hidden'}`}>
@@ -249,11 +262,33 @@ export default function Header() {
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 border-b border-primary/10 p-4 text-center">
-                            <button className="flex min-w-0 flex-col items-center gap-2 rounded-xl border border-primary/10 bg-secondary/20 px-1 py-3 transition-all hover:-translate-y-0.5 hover:border-terciary/40" onClick={() => { navigate('/minha-conta'); setIsMobileMenuOpen(false); }}>
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-secondary">
+                            <button
+                                type="button"
+                                disabled={isAuthLoading}
+                                aria-busy={isAuthLoading}
+                                className={`flex min-w-0 flex-col items-center gap-2 rounded-xl border px-1 py-3 transition-all ${isAuthLoading
+                                    ? 'cursor-wait border-primary/10 bg-primary/5 opacity-60'
+                                    : isAuthenticated
+                                        ? 'border-primary/15 bg-primary/8 hover:-translate-y-0.5 hover:border-terciary/40'
+                                        : 'border-terciary/30 bg-terciary/10 hover:-translate-y-0.5 hover:border-terciary'
+                                    }`}
+                                onClick={() => {
+                                    if (isAuthLoading) return;
+                                    navigate(isAuthenticated ? '/minha-conta' : '/entrar');
+                                    setIsMobileMenuOpen(false);
+                                }}
+                            >
+                                <div className={`flex h-9 w-9 items-center justify-center rounded-full text-secondary ${isAuthenticated ? 'bg-primary' : 'bg-terciary'}`}>
                                     <MdPersonOutline size={20} />
                                 </div>
-                                <span className="text-tiny text-primary/70 tracking-wider uppercase">Conta</span>
+                                <span className="flex flex-col text-primary/75">
+                                    <span className="text-[9px] font-semibold uppercase leading-tight tracking-[0.08em]">
+                                        {isAuthLoading ? 'Verificando' : isAuthenticated ? 'Minha conta' : 'Entrar ou'}
+                                    </span>
+                                    <span className="mt-0.5 text-[8px] leading-tight">
+                                        {isAuthLoading ? 'sua conta' : isAuthenticated ? 'Pedidos e dados' : 'Cadastre-se'}
+                                    </span>
+                                </span>
                             </button>
                             <button className="flex min-w-0 flex-col items-center gap-2 rounded-xl border border-primary/10 bg-secondary/20 px-1 py-3 transition-all hover:-translate-y-0.5 hover:border-terciary/40" onClick={() => { navigate('/minha-conta/favoritos'); setIsMobileMenuOpen(false); }}>
                                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-secondary">

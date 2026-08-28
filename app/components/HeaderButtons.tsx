@@ -9,18 +9,35 @@ import type { Categoria } from "~/features/categoria/types";
 
 export function ButtonEntreOuCadastrese() {
     let navigate = useNavigate();
-    let { isAuthenticated } = useAuth();
+    let { isAuthenticated, isLoading } = useAuth();
+
+    const primaryLabel = isLoading
+        ? "Verificando"
+        : isAuthenticated
+            ? "Minha conta"
+            : "Entrar ou";
+    const secondaryLabel = isLoading
+        ? "sua conta"
+        : isAuthenticated
+            ? "Pedidos e dados"
+            : "Cadastre-se";
 
     return (
         <button
             type="button"
-            aria-label={isAuthenticated ? "Acessar minha conta" : "Entrar ou cadastrar"}
-            title={isAuthenticated ? "Logado" : "Entrar ou cadastrar"}
-            className={`max-lg:hidden flex h-8 w-8 items-center justify-center border transition-all duration-500 ${isAuthenticated
-                ? "border-primary bg-primary text-secondary shadow-[0_4px_14px_rgba(0,0,0,0.12)] hover:bg-terciary hover:border-terciary"
-                : "border-primary/25 text-primary hover:border-terciary hover:text-terciary"
+            aria-label={isLoading ? "Verificando sua conta" : isAuthenticated ? "Acessar minha conta e meus pedidos" : "Entrar ou cadastrar-se"}
+            aria-busy={isLoading}
+            title={isAuthenticated ? "Minha conta e meus pedidos" : "Entrar ou cadastre-se"}
+            disabled={isLoading}
+            className={`hidden min-h-10 min-w-[132px] items-center gap-2 rounded-lg border border-transparent px-2 py-1 text-left text-primary transition-all duration-300 lg:flex ${isLoading
+                ? "cursor-wait bg-primary/[0.025] text-primary/50"
+                : isAuthenticated
+                    ? "bg-primary/[0.055] hover:border-primary/10 hover:bg-primary/[0.09]"
+                    : "bg-transparent hover:border-primary/10 hover:bg-primary/[0.055]"
                 }`}
             onClick={() => {
+                if (isLoading) return;
+
                 if (isAuthenticated) {
                     navigate('/minha-conta');
                 } else {
@@ -28,11 +45,26 @@ export function ButtonEntreOuCadastrese() {
                 }
             }}
         >
-            {isAuthenticated ? (
-                <BsPersonFillCheck size={18} />
-            ) : (
-                <MdPerson size={18} />
-            )}
+            <span className={`relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${isLoading
+                ? "animate-pulse border-primary/10 bg-primary/[0.025]"
+                : "border-primary/15 bg-header-bg"
+                }`}>
+                {isAuthenticated ? (
+                    <BsPersonFillCheck size={16} />
+                ) : (
+                    <MdPerson size={17} />
+                )}
+                {isAuthenticated && !isLoading && (
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-header-bg bg-emerald-500" aria-hidden="true" />
+                )}
+            </span>
+
+            <span className="flex min-w-0 flex-col leading-none">
+                <span className="whitespace-nowrap text-[11px] font-semibold">{primaryLabel}</span>
+                <span className="mt-1 whitespace-nowrap text-[8px] font-medium uppercase tracking-[0.08em] text-primary/50">
+                    {secondaryLabel}
+                </span>
+            </span>
         </button>
     );
 }
@@ -48,12 +80,12 @@ export function ButtonFavoritos() {
         <button
             type="button"
             aria-label="Abrir favoritos"
-            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-colors duration-500 hover:text-terciary lg:h-auto lg:w-auto"
+            className="relative flex h-10 w-9 cursor-pointer items-center justify-center text-primary transition-all duration-300 hover:text-terciary lg:h-9 lg:w-9 lg:rounded-lg lg:text-primary/70 lg:hover:bg-primary/[0.07]"
             onClick={() => navigate('/minha-conta/favoritos')}
         >
             <MdOutlineFavorite size={24} />
             {quantidade > 0 && (
-                <span className="absolute -top-1 -right-2 inline-flex items-center justify-center px-1 py-0 text-xs font-medium text-white bg-red-500 rounded-full">
+                <span className="absolute right-0 top-0 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold leading-none text-white">
                     {quantidade}
                 </span>
             )}
@@ -81,14 +113,34 @@ export function ButtonBuscar({ aoClicar }: ButtonBuscarProps) {
 
 export function ButtonConta() {
     let navigate = useNavigate();
-    let { isAuthenticated } = useAuth();
+    let { isAuthenticated, isLoading } = useAuth();
+
+    const primaryLabel = isLoading
+        ? "Verificando"
+        : isAuthenticated
+            ? "Minha conta"
+            : "Entrar ou";
+    const secondaryLabel = isLoading
+        ? "sua conta"
+        : isAuthenticated
+            ? "Pedidos"
+            : "Cadastre-se";
 
     return (
         <button
             type="button"
-            aria-label={isAuthenticated ? "Abrir minha conta" : "Entrar"}
-            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-primary transition-all duration-300 hover:bg-primary/8 hover:text-terciary active:scale-95 sm:h-10 sm:w-10"
+            aria-label={isLoading ? "Verificando sua conta" : isAuthenticated ? "Abrir minha conta e meus pedidos" : "Entrar ou cadastrar-se"}
+            aria-busy={isLoading}
+            disabled={isLoading}
+            className={`relative mx-auto flex h-11 w-full items-center justify-center gap-2.5 rounded-xl border px-3 text-left transition-all duration-300 active:scale-[0.99] sm:max-w-xs ${isLoading
+                ? "cursor-wait border-primary/8 bg-primary/[0.025] text-primary/50"
+                : isAuthenticated
+                    ? "cursor-pointer border-primary/12 bg-primary/[0.055] text-primary hover:bg-primary/[0.09]"
+                    : "cursor-pointer border-primary/10 bg-primary/[0.035] text-primary hover:border-primary/15 hover:bg-primary/[0.07]"
+                }`}
             onClick={() => {
+                if (isLoading) return;
+
                 if (isAuthenticated) {
                     navigate('/minha-conta');
                 } else {
@@ -96,12 +148,26 @@ export function ButtonConta() {
                 }
             }}
         >
-            {isAuthenticated ?
-                <BsPersonFillCheck size={21} />
-                :
-                <BsPersonFill size={21} />
-            }
+            <span className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${isLoading
+                ? "animate-pulse border-primary/10 bg-primary/[0.025]"
+                : "border-primary/15 bg-header-bg"
+                }`}>
+                {isAuthenticated ?
+                    <BsPersonFillCheck size={18} />
+                    :
+                    <BsPersonFill size={18} />
+                }
+                {isAuthenticated && !isLoading && (
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-header-bg bg-emerald-500" aria-hidden="true" />
+                )}
+            </span>
 
+            <span className="flex min-w-0 flex-col leading-none">
+                <span className="whitespace-nowrap text-[11px] font-semibold">{primaryLabel}</span>
+                <span className="mt-0.5 whitespace-nowrap text-[9px] font-medium uppercase tracking-[0.06em] opacity-80">
+                    {secondaryLabel}
+                </span>
+            </span>
         </button>
     );
 }
@@ -114,7 +180,7 @@ export function ButtonCarrinho() {
         <button
             type="button"
             aria-label="Abrir carrinho"
-            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-primary transition-all duration-300 hover:bg-primary/8 hover:text-terciary active:scale-95 sm:h-10 sm:w-10 lg:h-auto lg:w-auto lg:rounded-none lg:hover:bg-transparent"
+            className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-primary transition-all duration-300 hover:bg-primary/8 hover:text-terciary active:scale-95 sm:h-10 sm:w-10 lg:h-9 lg:w-9 lg:rounded-lg lg:text-primary/70 lg:hover:bg-primary/[0.07]"
             onClick={() => navigate('/carrinho')}
         >
             <FaShoppingCart size={20} className="max-lg:hidden" />
@@ -131,7 +197,7 @@ export function ButtonCarrinho() {
 
 export function ButtonMaisVendidos() {
     return (
-        <div className="bg-primary hover:bg-terciary text-secondary px-5 py-2 text-[10px] uppercase tracking-[0.2em] font-medium cursor-pointer transition-colors duration-500 whitespace-nowrap border border-primary">
+        <div className="cursor-pointer whitespace-nowrap rounded-md border border-primary bg-primary px-5 py-2 text-[10px] font-medium uppercase tracking-[0.2em] text-secondary transition-all duration-300 hover:border-terciary hover:bg-terciary">
             Mais Vendidos
         </div>
     );
@@ -175,13 +241,14 @@ export function ButtonMore({ hiddenCategories }: { hiddenCategories: Categoria[]
 
     return (
         <div
-            className="flex items-center gap-0 cursor-pointer relative text-primary hover:text-terciary"
+            className="relative flex cursor-pointer items-center gap-0 text-primary hover:text-terciary"
             ref={menuRef} onMouseLeave={handleMouseLeave}
         >
 
             <button
+                type="button"
                 onClick={toggleMenu}
-                className="flex h-full items-center py-1.5 text-[10px] uppercase tracking-[0.2em] font-medium transition-colors duration-500 cursor-pointer"
+                className="flex h-[34px] w-24 cursor-pointer items-center justify-center gap-1 rounded-md bg-secondary/35 px-2 text-[10px] font-medium uppercase tracking-[0.2em] transition-all duration-300 hover:bg-primary/[0.06]"
             >
                 <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Mais</span>
 

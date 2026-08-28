@@ -19,7 +19,8 @@ export default function MinhaContaLayout() {
   const currentPath = location.pathname.replace(/\/$/, "");
   const isOrdersPage =
     currentPath === "/minha-conta/pedidos" ||
-    currentPath.startsWith("/minha-conta/meus-pedidos/detalhes");
+    currentPath.startsWith("/minha-conta/meus-pedidos/detalhes") ||
+    currentPath.startsWith("/minha-conta/meus-pedidos/pagamento");
   const showAccountShell = !isAccountHome && !isOrdersPage;
 
   const handleLogout = async () => {
