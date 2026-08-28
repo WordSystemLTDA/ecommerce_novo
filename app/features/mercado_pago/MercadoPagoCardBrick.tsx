@@ -44,11 +44,15 @@ declare global {
 export function MercadoPagoCardBrick({
   amount,
   email,
+  installments,
   onSubmit,
+  processing = false,
 }: {
   amount: number;
   email: string;
+  installments: number;
   onSubmit: (payment: MercadoPagoCardData) => Promise<void>;
+  processing?: boolean;
 }) {
   const reactId = useId();
   const containerId = `mercado-pago-card-${reactId.replace(/:/g, '')}`;
@@ -61,9 +65,21 @@ export function MercadoPagoCardBrick({
 
     async function renderBrick() {
       try {
+        if (!Number.isFinite(amount) || amount <= 0) {
+          throw new Error('O valor do pedido é inválido.');
+        }
+        if (!Number.isSafeInteger(installments) || installments < 1) {
+          throw new Error('O parcelamento escolhido é inválido.');
+        }
+
         const configuration = await mercadoPagoService.getPublicConfig();
         if (!configuration.enabled || !configuration.publicKey) {
           throw new Error('O Mercado Pago ainda nao foi configurado.');
+        }
+        if (installments > configuration.maxInstallments) {
+          throw new Error(
+            'O parcelamento escolhido excede o limite configurado.',
+          );
         }
 
         await loadMercadoPago();
@@ -85,8 +101,8 @@ export function MercadoPagoCardBrick({
             },
             customization: {
               paymentMethods: {
-                minInstallments: 1,
-                maxInstallments: configuration.maxInstallments,
+                minInstallments: installments,
+                maxInstallments: installments,
                 types: {
                   excluded: ['debit_card', 'prepaid_card'],
                 },
@@ -98,36 +114,53 @@ export function MercadoPagoCardBrick({
             callbacks: {
               onReady: () => {
                 if (!disposed) {
+                  setError(null);
                   setReady(true);
                 }
               },
               onSubmit: async (
                 formData: BrickFormData,
-                additionalData: { paymentTypeId?: string },
+                additionalData?: { paymentTypeId?: string },
               ) => {
-                const installments = Number(formData.installments);
+                const brickInstallments = Number(formData.installments);
 
                 if (
                   !formData.token ||
                   !formData.payment_method_id ||
-                  additionalData.paymentTypeId !== 'credit_card' ||
-                  !Number.isSafeInteger(installments)
+                  (additionalData?.paymentTypeId != null &&
+                    additionalData.paymentTypeId !== 'credit_card') ||
+                  !Number.isSafeInteger(brickInstallments) ||
+                  brickInstallments !== installments
                 ) {
-                  throw new Error('Confira os dados informados no cartao.');
+                  throw new Error(
+                    'Confira os dados do cartão e o parcelamento escolhido.',
+                  );
                 }
 
-                await onSubmit({
-                  method: 'credit_card',
-                  token: formData.token,
-                  paymentMethodId: formData.payment_method_id,
-                  installments,
-                });
+                try {
+                  setError(null);
+                  await onSubmit({
+                    method: 'credit_card',
+                    token: formData.token,
+                    paymentMethodId: formData.payment_method_id,
+                    installments,
+                  });
+                } catch (submitError) {
+                  if (!disposed) {
+                    setError(
+                      submitError instanceof Error
+                        ? submitError.message
+                        : 'Não foi possível processar o cartão.',
+                    );
+                  }
+                  throw submitError;
+                }
               },
               onError: (brickError: unknown) => {
                 console.error('Erro no Card Payment Brick.', brickError);
                 if (!disposed) {
                   setError(
-                    'Nao foi possivel carregar o formulario do cartao.',
+                    'Não foi possível carregar o formulário do cartão.',
                   );
                 }
               },
@@ -140,7 +173,7 @@ export function MercadoPagoCardBrick({
           setError(
             brickError instanceof Error
               ? brickError.message
-              : 'Nao foi possivel carregar o Mercado Pago.',
+              : 'Não foi possível carregar o Mercado Pago.',
           );
         }
       }
@@ -154,20 +187,41 @@ export function MercadoPagoCardBrick({
         void controller.unmount();
       }
     };
-  }, [amount, containerId, email, onSubmit]);
+  }, [amount, containerId, email, installments, onSubmit]);
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-lg border border-primary/20 bg-white p-4 shadow-sm sm:p-6">
+    <section
+      className="relative min-w-0 overflow-hidden rounded-lg border border-primary/20 bg-white p-4 shadow-sm sm:p-6"
+      aria-busy={processing}
+    >
+      {processing && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-white/90 px-6 text-center backdrop-blur-[1px]">
+          <Loader />
+          <p className="text-sm font-semibold text-gray-800">
+            Processando o pagamento com segurança...
+          </p>
+        </div>
+      )}
       <div className="mb-4">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary/70">
           Checkout transparente
         </p>
         <h2 className="text-lg font-bold text-gray-800">
-          Dados do cartao
+          Dados do cartão
         </h2>
         <p className="mt-1 flex items-center gap-2 text-sm text-gray-600">
           <FaLock className="text-primary" />
-          Os dados sao criptografados diretamente pelo Mercado Pago.
+          Os dados são criptografados diretamente pelo Mercado Pago.
+        </p>
+        <p className="mt-3 rounded-md bg-primary/5 px-3 py-2 text-sm text-gray-700">
+          Você escolheu{' '}
+          <strong>
+            {installments}x de {new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            }).format(amount / installments)}
+          </strong>
+          .
         </p>
       </div>
 

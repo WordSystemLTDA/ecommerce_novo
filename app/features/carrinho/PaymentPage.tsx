@@ -11,7 +11,17 @@ import { mercadoPagoService } from
 import type { MercadoPagoConfigResponse } from
   '~/features/mercado_pago/types';
 import type { Pagamento } from '~/types/Pagamento';
+import { currencyFormatter } from '~/utils/formatters';
 import { useCarrinho } from './context/CarrinhoContext';
+
+function normalizeMaxInstallments(...values: Array<number | undefined>) {
+  const limits = values.filter(
+    (value): value is number =>
+      Number.isSafeInteger(value) && Number(value) > 0,
+  );
+
+  return Math.min(36, ...(limits.length > 0 ? limits : [12]));
+}
 
 function getPaymentLabel(pagamento: Pagamento) {
   if (pagamento.nome) {
@@ -64,6 +74,7 @@ export default function PaymentPage() {
     listarPagamentos,
     carregandoPagamentos,
     tipoDeEntregaSelecionada,
+    retornarValorFinal,
   } = useCarrinho();
   const [gatewayConfig, setGatewayConfig] =
     useState<MercadoPagoConfigResponse | null>(null);
@@ -103,10 +114,39 @@ export default function PaymentPage() {
       : ['pix', 'credit_card'];
   }, [gatewayPayment]);
 
+  const maxInstallments = normalizeMaxInstallments(
+    gatewayPayment?.max_parcelas,
+    gatewayConfig?.maxInstallments,
+  );
+  const total = retornarValorFinal();
+  const installmentOptions = useMemo(
+    () => Array.from({ length: maxInstallments }, (_, index) => {
+      const installments = index + 1;
+      return {
+        installments,
+        amount: total / installments,
+      };
+    }),
+    [maxInstallments, total],
+  );
+  const creditCardSelected =
+    pagamentoSelecionado?.id === gatewayPayment?.id &&
+    pagamentoSelecionado?.mercado_pago_method === 'credit_card';
+  const selectedInstallments = creditCardSelected
+    ? pagamentoSelecionado.mercado_pago_installments
+    : undefined;
+
   const selectGatewayMethod = (method: 'pix' | 'credit_card') => {
     if (!gatewayPayment) {
       return;
     }
+
+    const previousInstallments =
+      method === 'credit_card' &&
+      pagamentoSelecionado?.id === gatewayPayment.id &&
+      pagamentoSelecionado.mercado_pago_method === 'credit_card'
+        ? pagamentoSelecionado.mercado_pago_installments
+        : undefined;
 
     setPagamentoSelecionado({
       ...gatewayPayment,
@@ -116,7 +156,36 @@ export default function PaymentPage() {
       mercado_pago_method: method,
       nome: method === 'pix'
         ? 'PIX via Mercado Pago'
-        : 'Cartao de credito via Mercado Pago',
+        : 'Cartão de crédito via Mercado Pago',
+      max_parcelas: maxInstallments,
+      mercado_pago_installments: previousInstallments,
+    });
+  };
+
+  const selectInstallments = (installments: number) => {
+    if (
+      !creditCardSelected ||
+      !pagamentoSelecionado ||
+      (installments !== 0 &&
+        (!Number.isSafeInteger(installments) ||
+          installments < 1 ||
+          installments > maxInstallments))
+    ) {
+      return;
+    }
+
+    if (installments === 0) {
+      setPagamentoSelecionado({
+        ...pagamentoSelecionado,
+        mercado_pago_installments: undefined,
+      });
+      return;
+    }
+
+    setPagamentoSelecionado({
+      ...pagamentoSelecionado,
+      max_parcelas: maxInstallments,
+      mercado_pago_installments: installments,
     });
   };
 
@@ -160,21 +229,71 @@ export default function PaymentPage() {
                   />
                 )}
                 {gatewayMethods.includes('credit_card') && (
-                  <PaymentOption
-                    checked={
-                      pagamentoSelecionado?.id === gatewayPayment.id &&
-                      pagamentoSelecionado.mercado_pago_method ===
-                        'credit_card'
-                    }
-                    description={`Pagamento seguro em ate ${
-                      gatewayPayment.max_parcelas ??
-                      gatewayConfig.maxInstallments
-                    }x.`}
-                    icon={<FaCreditCard className="text-primary" size={22} />}
-                    label="Cartao de credito"
-                    onSelect={() => selectGatewayMethod('credit_card')}
-                    value={`${gatewayPayment.id}-credit-card`}
-                  />
+                  <div className="space-y-3">
+                    <PaymentOption
+                      checked={creditCardSelected}
+                      description={`Pagamento seguro em até ${maxInstallments}x.`}
+                      icon={<FaCreditCard className="text-primary" size={22} />}
+                      label="Cartão de crédito"
+                      onSelect={() => selectGatewayMethod('credit_card')}
+                      value={`${gatewayPayment.id}-credit-card`}
+                    />
+
+                    {creditCardSelected && (
+                      <div className="rounded-md border border-primary/25 bg-primary/5 p-4 sm:ml-7 sm:p-5">
+                        <label
+                          htmlFor="credit-card-installments"
+                          className="text-sm font-bold text-gray-800"
+                        >
+                          Escolha a quantidade de parcelas
+                        </label>
+                        <p className="mt-1 text-xs text-gray-600">
+                          Veja a prévia abaixo. A disponibilidade será confirmada
+                          pelo Mercado Pago ao informar o cartão.
+                        </p>
+                        <select
+                          id="credit-card-installments"
+                          value={selectedInstallments ?? ''}
+                          onChange={(event) => {
+                            selectInstallments(
+                              event.target.value === ''
+                                ? 0
+                                : Number(event.target.value),
+                            );
+                          }}
+                          className="mt-3 w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-sm text-gray-800 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        >
+                          <option value="">Selecione o parcelamento</option>
+                          {installmentOptions.map((option) => (
+                            <option
+                              key={option.installments}
+                              value={option.installments}
+                            >
+                              {option.installments}x de{' '}
+                              {currencyFormatter.format(option.amount)} sem juros
+                            </option>
+                          ))}
+                        </select>
+
+                        {selectedInstallments != null && (
+                          <div
+                            className="mt-3 flex flex-col gap-1 rounded-md border border-gray-200 bg-white px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+                            aria-live="polite"
+                          >
+                            <span className="text-gray-600">
+                              Parcelamento escolhido
+                            </span>
+                            <strong className="text-gray-900">
+                              {selectedInstallments}x de{' '}
+                              {currencyFormatter.format(
+                                total / selectedInstallments,
+                              )}
+                            </strong>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </>
             )}

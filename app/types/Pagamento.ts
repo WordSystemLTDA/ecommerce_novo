@@ -13,6 +13,7 @@ export interface Pagamento {
 	mercado_pago_method?: "pix" | "credit_card",
 	mercado_pago_methods?: Array<"pix" | "credit_card">,
 	max_parcelas?: number,
+	mercado_pago_installments?: number,
 	sandbox?: boolean,
 }
 

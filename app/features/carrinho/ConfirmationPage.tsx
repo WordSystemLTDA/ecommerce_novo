@@ -16,7 +16,7 @@ import { useMercadoPagoPayment } from
 
 export default function ConfirmationPage() {
   let { cliente } = useAuth();
-  const { processCardPayment } = useMercadoPagoPayment();
+  const { processCardPayment, processing } = useMercadoPagoPayment();
   const paymentProcessor = useRef(processCardPayment);
   paymentProcessor.current = processCardPayment;
   const submitCardPayment = useCallback(
@@ -31,6 +31,10 @@ export default function ConfirmationPage() {
     pagamentoSelecionado,
     retornarValorFinal,
   } = useCarrinho();
+  const selectedInstallments =
+    pagamentoSelecionado?.mercado_pago_method === 'credit_card'
+      ? pagamentoSelecionado.mercado_pago_installments
+      : undefined;
 
   if (cliente == undefined) {
     return (
@@ -91,6 +95,19 @@ export default function ConfirmationPage() {
             {pagamentoSelecionado?.nome_banco && (
               <p>{pagamentoSelecionado.nome_banco}</p>
             )}
+            {selectedInstallments != null && (
+              <div className="mt-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  Parcelamento escolhido
+                </p>
+                <p className="font-bold text-gray-900">
+                  {selectedInstallments}x de{' '}
+                  {currencyFormatter.format(
+                    retornarValorFinal() / selectedInstallments,
+                  )}
+                </p>
+              </div>
+            )}
             <p className="text-gray-500">
               Confira os dados antes de finalizar o pedido.
             </p>
@@ -128,11 +145,14 @@ export default function ConfirmationPage() {
       </div>
 
       {pagamentoSelecionado?.tipo === 'MERCADO_PAGO' &&
-        pagamentoSelecionado.mercado_pago_method === 'credit_card' && (
+        pagamentoSelecionado.mercado_pago_method === 'credit_card' &&
+        selectedInstallments != null && (
           <MercadoPagoCardBrick
             amount={retornarValorFinal()}
             email={cliente.email}
+            installments={selectedInstallments}
             onSubmit={submitCardPayment}
+            processing={processing}
           />
         )}
     </div>

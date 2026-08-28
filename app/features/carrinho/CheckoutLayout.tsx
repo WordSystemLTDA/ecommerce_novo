@@ -53,6 +53,25 @@ const formatAddress = (endereco: ReturnType<typeof useCarrinho>['enderecoSelecio
         .join(', ');
 };
 
+const getSelectedCardInstallments = (
+    pagamento: ReturnType<typeof useCarrinho>['pagamentoSelecionado'],
+) => {
+    if (
+        pagamento?.tipo !== 'MERCADO_PAGO' ||
+        pagamento.mercado_pago_method !== 'credit_card'
+    ) {
+        return null;
+    }
+
+    const installments = pagamento.mercado_pago_installments;
+    const maxInstallments = pagamento.max_parcelas ?? 12;
+    return Number.isSafeInteger(installments) &&
+        Number(installments) >= 1 &&
+        Number(installments) <= maxInstallments
+        ? Number(installments)
+        : null;
+};
+
 const getActionLabel = (step: number) => {
     switch (step) {
         case 1:
@@ -295,6 +314,13 @@ const CartSummary = ({
     let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, tipoDeEntregaSelecionada, pagamentoSelecionado, selectedItems, produtos } = useCarrinho();
 
     const isConfirmationStep = step === 5;
+    const selectedCardInstallments = getSelectedCardInstallments(
+        pagamentoSelecionado,
+    );
+    const requiresInstallmentSelection =
+        pagamentoSelecionado?.tipo === 'MERCADO_PAGO' &&
+        pagamentoSelecionado.mercado_pago_method === 'credit_card' &&
+        selectedCardInstallments == null;
     const selectedProducts = produtos.filter((produto) =>
         selectedItems.includes(produto.internalId)
     );
@@ -315,8 +341,11 @@ const CartSummary = ({
                     ? 'Escolha uma forma de entrega.'
                     : '';
             case 4:
-                return pagamentoSelecionado == undefined
-                    ? 'Escolha uma forma de pagamento.'
+                if (pagamentoSelecionado == undefined) {
+                    return 'Escolha uma forma de pagamento.';
+                }
+                return requiresInstallmentSelection
+                    ? 'Escolha a quantidade de parcelas do cartão.'
                     : '';
             case 5:
                 return !termsAccepted
@@ -327,7 +356,10 @@ const CartSummary = ({
         }
     };
     const blockedMessage = getBlockedMessage();
-    const isDisabled = loading || blockedMessage !== '' || requiresCardForm;
+    const isDisabled =
+        loading ||
+        blockedMessage !== '' ||
+        (isConfirmationStep && requiresCardForm);
 
     const summaryItems = [
         {
@@ -351,8 +383,11 @@ const CartSummary = ({
         },
         {
             label: 'Pagamento',
-            value: pagamentoSelecionado?.nome || pagamentoSelecionado?.tipo || 'Pendente',
-            done: pagamentoSelecionado != undefined,
+            value: selectedCardInstallments != null
+                ? `${pagamentoSelecionado?.nome || 'Cartão de crédito'} · ${selectedCardInstallments}x de ${currencyFormatter.format(retornarValorFinal() / selectedCardInstallments)}`
+                : pagamentoSelecionado?.nome || pagamentoSelecionado?.tipo || 'Pendente',
+            done: pagamentoSelecionado != undefined &&
+                !requiresInstallmentSelection,
         },
     ];
 
@@ -536,6 +571,11 @@ export default function CheckoutLayout() {
     const requiresCardForm =
         pagamentoSelecionado?.tipo === 'MERCADO_PAGO' &&
         pagamentoSelecionado.mercado_pago_method === 'credit_card';
+    const selectedCardInstallments = getSelectedCardInstallments(
+        pagamentoSelecionado,
+    );
+    const requiresInstallmentSelection =
+        requiresCardForm && selectedCardInstallments == null;
     const checkoutFingerprint = JSON.stringify({
         address: enderecoSelecionado?.id,
         delivery: tipoDeEntregaSelecionada?.id,
@@ -546,6 +586,7 @@ export default function CheckoutLayout() {
         payment: [
             pagamentoSelecionado?.id,
             pagamentoSelecionado?.mercado_pago_method,
+            pagamentoSelecionado?.mercado_pago_installments,
         ],
     });
 
@@ -567,7 +608,10 @@ export default function CheckoutLayout() {
         if (step === 2) return true;
         if (step === 3) return enderecoSelecionado != undefined;
         if (step === 4) return tipoDeEntregaSelecionada != undefined;
-        if (step === 5) return pagamentoSelecionado != undefined;
+        if (step === 5) {
+            return pagamentoSelecionado != undefined &&
+                !requiresInstallmentSelection;
+        }
         return false;
     };
 
@@ -600,6 +644,13 @@ export default function CheckoutLayout() {
         const isAtomicMercadoPagoPix =
             isTransparentMercadoPago &&
             pagamentoSelecionado.mercado_pago_method === 'pix';
+
+        if (
+            pagamentoSelecionado.mercado_pago_method === 'credit_card' &&
+            selectedCardInstallments == null
+        ) {
+            throw new Error('Escolha a quantidade de parcelas do cartão.');
+        }
 
         setCheckoutError(null);
         setLoading(true);
@@ -695,6 +746,15 @@ export default function CheckoutLayout() {
                 if (!mercadoPagoOrder) {
                     throw new Error(
                         'A API nao retornou os dados do pagamento PIX.',
+                    );
+                }
+
+                if (
+                    configuredMethod === 'credit_card' &&
+                    cardPayment?.installments !== selectedCardInstallments
+                ) {
+                    throw new Error(
+                        'O parcelamento do cartão mudou. Revise a forma de pagamento.',
                     );
                 }
                 if (
@@ -841,6 +901,13 @@ export default function CheckoutLayout() {
                 return;
             }
 
+            if (requiresInstallmentSelection) {
+                toast.error('Escolha a quantidade de parcelas do cartão.', {
+                    position: 'top-center',
+                });
+                return;
+            }
+
             navigate("/carrinho/confirmacao");
             return;
         }
@@ -885,7 +952,11 @@ export default function CheckoutLayout() {
         return <Navigate to="/carrinho/entrega" replace />;
     }
 
-    if (!orderCompleted && activeStep >= 5 && pagamentoSelecionado == undefined) {
+    if (
+        !orderCompleted &&
+        activeStep >= 5 &&
+        (pagamentoSelecionado == undefined || requiresInstallmentSelection)
+    ) {
         return <Navigate to="/carrinho/pagamento" replace />;
     }
 
