@@ -774,12 +774,20 @@ export default function CheckoutLayout() {
             }, 500);
         } catch (error) {
             console.error('Erro ao finalizar pedido.', error);
-            if (
-                isAtomicMercadoPagoPix &&
+            const requestRejectedByApi =
                 typeof error === 'object' &&
                 error !== null &&
-                typeof (error as { error?: unknown }).error === 'object'
+                (
+                    typeof (error as { response?: unknown }).response === 'object' ||
+                    typeof (error as { error?: unknown }).error === 'object'
+                );
+            if (
+                isAtomicMercadoPagoPix &&
+                requestRejectedByApi
             ) {
+                // A API respondeu e confirmou que o checkout atomico falhou.
+                // Uma nova tentativa precisa criar outra cobranca/idempotency key.
+                // Em erro puramente de rede mantemos a chave, evitando venda duplicada.
                 pendingPixIdempotencyKey.current = null;
             }
             const checkoutErrorMessage = getCheckoutErrorMessage(error);
