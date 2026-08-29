@@ -295,6 +295,7 @@ const CartSummary = ({
     let { retornarValorProdutos, valorFrete, valorDesconto, retornarValorFinal, enderecoSelecionado, tipoDeEntregaSelecionada, pagamentoSelecionado, selectedItems, produtos } = useCarrinho();
 
     const isConfirmationStep = step === 5;
+    const isFreeShipping = tipoDeEntregaSelecionada?.frete_gratis === true;
     const selectedProducts = produtos.filter((produto) =>
         selectedItems.includes(produto.internalId)
     );
@@ -381,7 +382,9 @@ const CartSummary = ({
                 {(step > 2) && (
                     <div className="flex justify-between text-gray-600">
                         <span>Frete:</span>
-                        <span className="font-medium text-gray-800">{currencyFormatter.format(valorFrete)}</span>
+                        <span className={`font-medium ${isFreeShipping ? 'text-(--dynamic-success-strong)' : 'text-gray-800'}`}>
+                            {isFreeShipping ? 'Grátis' : currencyFormatter.format(valorFrete)}
+                        </span>
                     </div>
                 )}
 
@@ -440,7 +443,11 @@ const CartSummary = ({
                         <p>{formatAddress(enderecoSelecionado)}</p>
                         <div className="flex justify-between items-center border border-gray-300 rounded p-2">
                             <span>{tipoDeEntregaSelecionada?.name}</span>
-                            <span className="font-bold">{currencyFormatter.format(getDeliveryPrice(tipoDeEntregaSelecionada))}</span>
+                            <span className={`font-bold ${isFreeShipping ? 'text-(--dynamic-success-strong)' : ''}`}>
+                                {isFreeShipping
+                                    ? 'Grátis'
+                                    : currencyFormatter.format(getDeliveryPrice(tipoDeEntregaSelecionada))}
+                            </span>
                         </div>
                         <p className="text-xs text-gray-500">*Mediante a confirmação de pagamento até às 13 horas.</p>
                     </div>
