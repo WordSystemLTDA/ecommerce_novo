@@ -3,6 +3,14 @@ export interface TipoDeEntrega {
     name: string;
     price: string;
     custom_price?: string;
+    original_price?: string;
+    frete_gratis?: boolean;
+    frete_gratis_mensagem?: string;
+    frete_gratis_regra?: {
+        id?: number;
+        tipo?: string;
+        nome?: string;
+    } | null;
     discount?: string;
     currency?: string;
     delivery_time: number;

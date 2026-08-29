@@ -22,6 +22,8 @@ import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import config from "~/config/config";
 import { MercadoPagoCardBrick } from "~/features/mercado_pago/MercadoPagoCardBrick";
+import { resolveInstallmentPolicy } from
+    "~/features/mercado_pago/installmentPolicy";
 import {
     mercadoPagoService,
     mercadoPagoStatus,
@@ -77,7 +79,6 @@ export default function PedidoPagamentoPage() {
     const [gatewayPayment, setGatewayPayment] = useState<Pagamento | null>(null);
     const [selectedMethod, setSelectedMethod] =
         useState<MercadoPagoMethod | null>(null);
-    const [installments, setInstallments] = useState(1);
 
     useEffect(() => {
         const orderId = Number(id);
@@ -130,11 +131,6 @@ export default function PedidoPagamentoPage() {
                         ? currentMethod
                         : methods[0] ?? null,
                 );
-                setInstallments(normalizeInstallments(
-                    order?.pagamento_ecommerce?.parcelas,
-                    config.maxInstallments,
-                ));
-
                 if (!order) {
                     setErrorMessage("Pedido nao encontrado.");
                     return;
@@ -205,21 +201,11 @@ export default function PedidoPagamentoPage() {
                 method === "pix" || method === "credit_card",
         );
     }, [gatewayPayment]);
-    const maxInstallments = useMemo(() => {
-        const limits = [
-            gatewayPayment?.max_parcelas,
-            gatewayConfig?.maxInstallments,
-        ].filter(
-            (value): value is number =>
-                Number.isSafeInteger(value) && Number(value) > 0,
-        );
-
-        return Math.min(36, ...(limits.length > 0 ? limits : [12]));
-    }, [gatewayConfig?.maxInstallments, gatewayPayment?.max_parcelas]);
-    const installmentOptions = useMemo(
-        () => Array.from({ length: maxInstallments }, (_, index) => index + 1),
-        [maxInstallments],
+    const installmentPolicy = useMemo(
+        () => resolveInstallmentPolicy(total, gatewayPayment, gatewayConfig),
+        [gatewayConfig, gatewayPayment, total],
     );
+    const { maxInstallments } = installmentPolicy;
     const currentCardCanBeRetried = replaceableStatuses.includes(
         currentPaymentStatus,
     );
@@ -480,7 +466,11 @@ export default function PedidoPagamentoPage() {
                                             <MethodButton
                                                 active={selectedMethod === "credit_card"}
                                                 current={currentMethod === "credit_card"}
-                                                description={`Pagamento seguro em ate ${maxInstallments}x`}
+                                                description={
+                                                    installmentPolicy.interestFreeInstallments === maxInstallments
+                                                        ? `Pagamento seguro em ate ${maxInstallments}x sem juros`
+                                                        : `Ate ${installmentPolicy.interestFreeInstallments}x sem juros ou ${maxInstallments}x com juros`
+                                                }
                                                 icon={<CreditCard size={21} />}
                                                 label="Cartão de Crédito"
                                                 onClick={() => setSelectedMethod("credit_card")}
@@ -501,12 +491,10 @@ export default function PedidoPagamentoPage() {
                                     <PaymentMethodContent
                                         email={email}
                                         gatewayEnabled={Boolean(gatewayConfig?.enabled)}
-                                        installmentOptions={installmentOptions}
-                                        installments={installments}
                                         isContinuing={isContinuing}
                                         isProcessing={isProcessing}
+                                        maxInstallments={maxInstallments}
                                         selectedMethod={selectedMethod}
-                                        setInstallments={setInstallments}
                                         showCardForm={showCardForm}
                                         total={total}
                                         currentMethod={currentMethod}
@@ -534,30 +522,26 @@ function PaymentMethodContent({
     currentMethod,
     email,
     gatewayEnabled,
-    installmentOptions,
-    installments,
     isContinuing,
     isProcessing,
+    maxInstallments,
     onCardSubmit,
     onContinueCurrentCard,
     onPixPayment,
     selectedMethod,
-    setInstallments,
     showCardForm,
     total,
 }: {
     currentMethod: MercadoPagoMethod | null;
     email: string;
     gatewayEnabled: boolean;
-    installmentOptions: number[];
-    installments: number;
     isContinuing: boolean;
     isProcessing: boolean;
+    maxInstallments: number;
     onCardSubmit: (payment: MercadoPagoCardData) => Promise<void>;
     onContinueCurrentCard: () => void;
     onPixPayment: () => void;
     selectedMethod: MercadoPagoMethod | null;
-    setInstallments: (value: number) => void;
     showCardForm: boolean;
     total: number;
 }) {
@@ -601,32 +585,12 @@ function PaymentMethodContent({
 
     if (selectedMethod === "credit_card" && showCardForm) {
         return (
-            <div className="mt-5 space-y-4">
-                <label className="block">
-                    <span className="text-sm font-bold text-primary">
-                        Parcelamento
-                    </span>
-                    <select
-                        value={installments}
-                        onChange={(event) =>
-                            setInstallments(Number(event.target.value))
-                        }
-                        disabled={isProcessing}
-                        className="mt-2 min-h-11 w-full rounded-xl border border-primary/15 bg-product-bg px-4 text-sm text-primary outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    >
-                        {installmentOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}x de {formatOrderMoney(total / option)} sem juros
-                            </option>
-                        ))}
-                    </select>
-                </label>
-
+            <div className="mt-5">
                 {email ? (
                     <MercadoPagoCardBrick
                         amount={total}
                         email={email}
-                        installments={installments}
+                        maxInstallments={maxInstallments}
                         onSubmit={onCardSubmit}
                         processing={isProcessing}
                     />
@@ -865,13 +829,6 @@ function PaymentError({
             </div>
         </div>
     );
-}
-
-function normalizeInstallments(value: unknown, maxInstallments: number) {
-    const parsed = Number(value);
-    return Number.isSafeInteger(parsed) && parsed >= 1 && parsed <= maxInstallments
-        ? parsed
-        : 1;
 }
 
 function parseOrderMoney(value: unknown) {

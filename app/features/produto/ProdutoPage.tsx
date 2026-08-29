@@ -857,7 +857,7 @@ function ProductDetails({ produto }: ProdutoProps) {
         .map(([label, value]): [string, string] => [label, String(value)]);
 
     const dimensions = formatDimensions(produto);
-    const weight = formatMeasurement(produto.peso, "kg");
+    const weight = formatWeight(produto.peso);
 
     return (
         <section className="mt-7 grid gap-4 border-t border-primary/10 pt-5 sm:mt-8 sm:pt-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,0.85fr)] lg:gap-6">
@@ -1241,6 +1241,36 @@ function formatNumber(value: number) {
 function formatMeasurement(value: unknown, unit: string) {
     const number = parseNumber(value);
     return number > 0 ? `${formatNumber(number)} ${unit}` : "Não informado";
+}
+
+function parseDecimalMeasurement(value: unknown) {
+    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+    if (typeof value !== "string") return 0;
+
+    const sanitized = value.replace(/[^\d,.-]/g, "").trim();
+    if (!sanitized) return 0;
+
+    const commaIndex = sanitized.lastIndexOf(",");
+    const dotIndex = sanitized.lastIndexOf(".");
+    let normalized = sanitized;
+
+    if (commaIndex >= 0 && dotIndex >= 0) {
+        normalized = commaIndex > dotIndex
+            ? sanitized.replace(/\./g, "").replace(",", ".")
+            : sanitized.replace(/,/g, "");
+    } else if (commaIndex >= 0) {
+        normalized = sanitized.replace(",", ".");
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatWeight(value: unknown) {
+    const number = parseDecimalMeasurement(value);
+    return number > 0
+        ? `${number.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })} kg`
+        : "Não informado";
 }
 
 function formatDimensions(produto: Produto) {

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import config from "~/config/config";
 import { useHeader } from "~/context/HeaderContext";
 import { useAuth } from "~/features/auth/context/AuthContext";
+import { FreeShippingBanner } from "~/features/frete-gratis/FreeShippingBanner";
 import type { Endereco } from "~/features/minhaconta/types";
 import { gerarSlug } from "~/utils/formatters";
 import { AddressSelectionModal } from "./AddressSelectionModal";
@@ -72,6 +73,7 @@ export default function Header() {
 
     return (
         <header className="sticky top-0 z-50 flex w-full flex-col overflow-x-clip border-b border-primary/10 bg-header-bg pt-[env(safe-area-inset-top)] shadow-[0_3px_18px_rgba(0,0,0,0.06)]">
+            <FreeShippingBanner authScope={isAuthenticated} />
             <div className="page-container relative flex min-h-[4.25rem] w-full min-w-0 flex-row items-center gap-1 px-3 sm:px-4 lg:min-h-16 lg:gap-0">
                 <button
                     type="button"

@@ -119,8 +119,13 @@ export default function DeliveryPage() {
                 />
               )}
 
-              {entregasDisponiveis.map((tipoDeEntrega) => (
-                (
+              {entregasDisponiveis.map((tipoDeEntrega) => {
+                const isFreeShipping = tipoDeEntrega.frete_gratis === true;
+                const originalPrice = Number(
+                  tipoDeEntrega.original_price ?? 0,
+                );
+
+                return (
                   <label
                     key={`${tipoDeEntrega.company.id}-${tipoDeEntrega.id}-${tipoDeEntrega.name}`}
                     className={`
@@ -151,6 +156,11 @@ export default function DeliveryPage() {
                               <FaTruck className="text-primary" />
                             )}
                             <span className="font-bold">{tipoDeEntrega.name}</span>
+                            {isFreeShipping && (
+                              <span className="bg-(--dynamic-success-bg) px-2 py-0.5 text-[10px] font-bold text-(--dynamic-success-strong)">
+                                Frete grátis
+                              </span>
+                            )}
                             {tipoDeEntregaSelecionada?.id == tipoDeEntrega.id && (
                               <span className="flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
                                 <FaCheck size={9} /> Selecionada
@@ -164,11 +174,22 @@ export default function DeliveryPage() {
                         </div>
                       </div>
 
-                      <span className="shrink-0 self-end text-sm font-bold sm:self-auto">{currencyFormatter.format(getDeliveryPrice(tipoDeEntrega))}</span>
+                      <span className="flex shrink-0 items-center gap-2 self-end text-sm sm:self-auto">
+                        {isFreeShipping && originalPrice > 0 && (
+                          <span className="text-xs text-gray-400 line-through">
+                            {currencyFormatter.format(originalPrice)}
+                          </span>
+                        )}
+                        <strong className={isFreeShipping ? 'text-(--dynamic-success-strong)' : ''}>
+                          {isFreeShipping
+                            ? 'Grátis'
+                            : currencyFormatter.format(getDeliveryPrice(tipoDeEntrega))}
+                        </strong>
+                      </span>
                     </div>
                   </label>
-                )
-              ))}
+                );
+              })}
 
               <label
                 className={`

@@ -13,7 +13,7 @@ export interface Produto extends DefaultResponse {
     descricaolonga1: string,
     descricaolonga2: string,
     descricao: string,
-    peso: number,
+    peso: number | string,
     largura?: number | string,
     altura?: number | string,
     comprimento?: number | string,

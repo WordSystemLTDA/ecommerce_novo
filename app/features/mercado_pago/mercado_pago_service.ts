@@ -5,6 +5,7 @@ import type {
   MercadoPagoOrderRequest,
   MercadoPagoOrderResult,
   MercadoPagoPaymentStatus,
+  MercadoPagoSavedCardsResponse,
 } from './types';
 
 const paymentStoragePrefix = 'mercado_pago_order_';
@@ -252,6 +253,11 @@ export const mercadoPagoService = {
       throw error;
     }
   },
+
+  getSavedCards: async () =>
+    apiRequest<MercadoPagoSavedCardsResponse>(
+      apiClient.get('/pagamentos/mercadopago/cartoes'),
+    ),
 
   createOrder: async (request: MercadoPagoOrderRequest) => {
     const deviceId = await getDeviceSessionIdWithTimeout();

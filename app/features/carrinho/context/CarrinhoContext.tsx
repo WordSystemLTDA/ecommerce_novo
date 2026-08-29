@@ -411,7 +411,16 @@ export function CarrinhoProvider({ children }: { children: ReactNode }) {
             const response = await produtoService.calcularFrete(cepDestino, produtosParaCalculo);
 
             const data = response.data;
-            setTipoDeEntregas(Array.isArray(data) ? data : []);
+            const entregas = Array.isArray(data) ? data : [];
+            const entregaGratis = entregas.find(
+                (entrega) => entrega.error == null && entrega.frete_gratis === true,
+            );
+
+            setTipoDeEntregas(entregas);
+            if (entregaGratis) {
+                setTipoDeEntregaSelecionada(entregaGratis);
+                setValorFrete(0);
+            }
 
         } catch (error) {
             console.error("Erro ao listar tipoDeEntregas:", error);

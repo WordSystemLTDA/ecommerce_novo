@@ -13,6 +13,10 @@ export interface Pagamento {
 	mercado_pago_method?: "pix" | "credit_card",
 	mercado_pago_methods?: Array<"pix" | "credit_card">,
 	max_parcelas?: number,
+	valor_base_sem_juros?: number,
+	valor_limite_primeira_faixa_sem_juros?: number,
+	parcelas_sem_juros_abaixo_valor_base?: number,
+	parcelas_sem_juros_faixa_intermediaria?: number,
 	mercado_pago_installments?: number,
 	sandbox?: boolean,
 }

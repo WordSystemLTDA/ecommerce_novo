@@ -10,6 +10,8 @@ import type { MercadoPagoCardData } from
   '~/features/mercado_pago/types';
 import { MercadoPagoCardBrick } from
   '~/features/mercado_pago/MercadoPagoCardBrick';
+import { resolveInstallmentPolicy } from
+  '~/features/mercado_pago/installmentPolicy';
 import { useMercadoPagoPayment } from
   '~/features/mercado_pago/MercadoPagoPaymentContext';
 
@@ -31,10 +33,14 @@ export default function ConfirmationPage() {
     pagamentoSelecionado,
     retornarValorFinal,
   } = useCarrinho();
-  const selectedInstallments =
-    pagamentoSelecionado?.mercado_pago_method === 'credit_card'
-      ? pagamentoSelecionado.mercado_pago_installments
-      : undefined;
+  const total = retornarValorFinal();
+  const installmentPolicy = resolveInstallmentPolicy(
+    total,
+    pagamentoSelecionado,
+  );
+  const creditCardSelected =
+    pagamentoSelecionado?.tipo === 'MERCADO_PAGO' &&
+    pagamentoSelecionado.mercado_pago_method === 'credit_card';
 
   if (cliente == undefined) {
     return (
@@ -95,16 +101,17 @@ export default function ConfirmationPage() {
             {pagamentoSelecionado?.nome_banco && (
               <p>{pagamentoSelecionado.nome_banco}</p>
             )}
-            {selectedInstallments != null && (
+            {creditCardSelected && (
               <div className="mt-3 rounded-md border border-primary/20 bg-primary/5 px-3 py-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Parcelamento escolhido
+                  Condição de parcelamento
                 </p>
                 <p className="font-bold text-gray-900">
-                  {selectedInstallments}x de{' '}
-                  {currencyFormatter.format(
-                    retornarValorFinal() / selectedInstallments,
-                  )}
+                  Até {installmentPolicy.interestFreeInstallments}x sem juros
+                  {installmentPolicy.interestFreeInstallments <
+                    installmentPolicy.maxInstallments && (
+                      <> ou até {installmentPolicy.maxInstallments}x com juros</>
+                    )}
                 </p>
               </div>
             )}
@@ -144,13 +151,11 @@ export default function ConfirmationPage() {
         })}
       </div>
 
-      {pagamentoSelecionado?.tipo === 'MERCADO_PAGO' &&
-        pagamentoSelecionado.mercado_pago_method === 'credit_card' &&
-        selectedInstallments != null && (
+      {creditCardSelected && (
           <MercadoPagoCardBrick
-            amount={retornarValorFinal()}
+            amount={total}
             email={cliente.email}
-            installments={selectedInstallments}
+            maxInstallments={installmentPolicy.maxInstallments}
             onSubmit={submitCardPayment}
             processing={processing}
           />

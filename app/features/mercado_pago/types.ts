@@ -7,6 +7,11 @@ export interface MercadoPagoConfigResponse {
   publicKey: string | null;
   paymentMethodId: number | null;
   maxInstallments: number;
+  interestFreeBaseAmount: number;
+  interestFreeInstallmentsBelowBase: number;
+  firstInterestFreeRangeMaxAmount: number;
+  firstInterestFreeRangeInstallments: number;
+  intermediateInterestFreeInstallments: number;
   pixExpirationMinutes: number;
   sandbox: boolean;
 }
@@ -16,6 +21,26 @@ export interface MercadoPagoCardData {
   token: string;
   paymentMethodId: string;
   installments: number;
+  issuerId?: string;
+  linkedCardId?: number;
+  saveCard?: boolean;
+}
+
+export interface MercadoPagoLinkedCard {
+  id: number;
+  mercadoPagoCardId: string;
+  paymentMethodId: string;
+  brand: string;
+  lastFourDigits: string;
+  expirationMonth: number | null;
+  expirationYear: number | null;
+  securityCodeLength: number | null;
+  isDefault: boolean;
+}
+
+export interface MercadoPagoSavedCardsResponse {
+  customerId: string | null;
+  cards: MercadoPagoLinkedCard[];
 }
 
 export interface MercadoPagoPixData {
