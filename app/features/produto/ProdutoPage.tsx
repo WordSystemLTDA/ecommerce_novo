@@ -377,6 +377,12 @@ function ProductHeading({ produto }: ProdutoProps) {
     return (
         <div>
             <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em]">
+                {produto.temFreteGratis && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1.5 text-white shadow-[0_4px_14px_rgba(5,150,105,0.25)]">
+                        <Truck className="h-3.5 w-3.5" aria-hidden />
+                        Frete grátis
+                    </span>
+                )}
                 {badge && <span className="bg-primary px-2.5 py-1 text-secondary">{badge}</span>}
                 <span className="text-primary/55">Produto disponível</span>
                 {rating > 0 && reviewCount > 0 && (
@@ -779,6 +785,18 @@ function FreightCalculator({ produto }: ProdutoProps) {
                 <Truck className="h-4 w-4" />
                 <h2 className="text-[11px] font-semibold uppercase tracking-[0.17em]">Calcular frete e prazo</h2>
             </div>
+
+            {produto.temFreteGratis && (
+                <div className="mt-3 flex items-start gap-2.5 border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-emerald-900">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
+                        <Truck className="h-4 w-4" aria-hidden />
+                    </span>
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.1em]">Frete grátis neste produto</p>
+                        <p className="mt-0.5 text-[11px] leading-4 text-emerald-800">Informe o CEP para consultar o prazo de entrega.</p>
+                    </div>
+                </div>
+            )}
 
             <form onSubmit={calculateFreight} className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
                 <input

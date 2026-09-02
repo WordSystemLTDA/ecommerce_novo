@@ -57,8 +57,8 @@ export interface ActiveFilters {
 
 const HomeContext = createContext<HomeContextType | undefined>(undefined);
 const EMPRESAS_CACHE_SCOPE = config.EMPRESAS.join(',') || 'default';
-const SIDEBAR_FILTERS_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:sidebar-filters`;
-const CATALOG_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:catalog-default`;
+const SIDEBAR_FILTERS_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:sidebar-filters-v2`;
+const CATALOG_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:catalog-default-v2`;
 const SIDEBAR_FILTERS_CACHE_TTL = 5 * 60_000;
 
 interface CachedCatalog {

@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { BsBoxes, BsCartPlus } from "react-icons/bs";
-import { MdFavorite, MdFavoriteBorder, MdOutlineAddShoppingCart, MdShoppingCartCheckout, MdStar } from "react-icons/md";
+import { MdFavorite, MdFavoriteBorder, MdLocalShipping, MdOutlineAddShoppingCart, MdShoppingCartCheckout, MdStar } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { toast } from 'react-toastify';
 import { useAuth } from '~/features/auth/context/AuthContext';
@@ -143,6 +143,25 @@ export function ProductCard({ produto, compact = false, onFavoriteChange }: Prod
             }}
         >
             <div className={`relative shrink-0 overflow-hidden bg-white ${compact ? 'h-36 min-[380px]:h-40 sm:h-48 xl:h-52' : 'h-40 min-[380px]:h-44 sm:h-56 xl:h-64'}`}>
+                <div className="pointer-events-none absolute left-1.5 top-1.5 z-20 flex max-w-[calc(100%-4rem)] flex-col items-start gap-1.5 sm:left-2 sm:top-2">
+                    {produto.temFreteGratis && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-white shadow-[0_4px_14px_rgba(5,150,105,0.3)] sm:text-[10px]">
+                            <MdLocalShipping size={14} aria-hidden />
+                            Frete grátis
+                        </span>
+                    )}
+                    {produto.promocaoAtiva === 'Sim' && (Number(produto.quantidadeLimiteDesconto) <= Number(produto.estoque) && produto.idPromocoesEcommerce) ? (
+                        <span className="inline-flex items-center gap-1 bg-primary px-2 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-secondary shadow-sm sm:text-[10px]">
+                            <BsBoxes aria-hidden />
+                            Restam {(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} un.
+                        </span>
+                    ) : produto.idPromocoesEcommerce && produto.promocaoAtiva === 'Sim' ? (
+                        <span className="inline-flex border border-primary bg-white/95 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-primary shadow-sm sm:text-[10px]">
+                            Oferta
+                        </span>
+                    ) : null}
+                </div>
+
                 <div className="absolute right-1.5 top-1.5 z-10 flex cursor-auto gap-0.5 bg-white/95 p-0.5 opacity-100 shadow-sm transition-opacity duration-300 sm:right-2 sm:top-2 sm:gap-1 sm:p-1 lg:opacity-0 lg:group-hover:opacity-100">
                     <button onClick={toggleFavorite} className="flex h-7 w-7 items-center justify-center transition-transform duration-300 hover:scale-110 sm:h-8 sm:w-8" aria-label="Adicionar aos favoritos">
                         {isFavorite ? (
@@ -213,21 +232,6 @@ export function ProductCard({ produto, compact = false, onFavoriteChange }: Prod
                             </span>
                         )}
 
-                        {produto.promocaoAtiva === 'Sim' && (Number(produto.quantidadeLimiteDesconto) <= Number(produto.estoque) && produto.idPromocoesEcommerce) ? (
-                            <span className="text-medium-tiny absolute left-2 top-2 flex items-center gap-0.5 bg-primary px-1 py-0.5 font-bold text-secondary">
-                                <BsBoxes />
-                                Restam {(Number(produto.quantidadeLimiteDesconto) - Number(produto.quantidadeCompradoPromocao)).toFixed(0)} un.
-                            </span>
-
-                        )
-                            :
-                            produto.idPromocoesEcommerce && produto.promocaoAtiva === 'Sim' &&
-                            (
-                                <span className="text-medium-tiny font-bold text-primary border border-primary px-1 py-0.5 flex items-center gap-0.5 absolute top-2 left-2">
-                                    OFERTA
-                                </span>
-                            )
-                        }
                     </div>
 
                     <span className="block min-h-3 text-[8px] leading-snug text-pix sm:text-medium-tiny">
@@ -242,13 +246,14 @@ export function ProductCard({ produto, compact = false, onFavoriteChange }: Prod
                         </span>
                     )}
                     {produto.temFreteGratis && (
-                        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-terciary">
-                            Frete grátis
+                        <span className="mt-2 inline-flex w-fit items-center gap-1.5 border-l-2 border-emerald-600 bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-800 sm:text-[10px]">
+                            <MdLocalShipping size={13} aria-hidden />
+                            Você não paga o frete
                         </span>
                     )}
                 </div>
 
-                <div className="mt-3 flex shrink-0 gap-0.5">
+                <div className="mt-auto flex shrink-0 gap-0.5 pt-3">
                     <button
                         className="z-10 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center bg-primary py-2 text-xs font-medium text-secondary transition-colors duration-500 hover:bg-terciary sm:h-10 sm:w-10"
                         aria-label="Adicionar ao carrinho"

@@ -46,7 +46,7 @@ const defaultFilters: ActiveFilters = {
 };
 
 const EMPRESAS_CACHE_SCOPE = config.EMPRESAS.join(',') || 'default';
-const SIDEBAR_FILTERS_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:sidebar-filters`;
+const SIDEBAR_FILTERS_CACHE_KEY = `home:${EMPRESAS_CACHE_SCOPE}:sidebar-filters-v2`;
 
 function isFilterOptions(value: unknown): value is FilterOptions {
     if (!value || typeof value !== 'object') return false;
